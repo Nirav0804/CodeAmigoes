@@ -52,7 +52,12 @@ public class OAuth2LoginController {
         if (!user.isProfileComplete()) {
 
             // redirect to frontend register form
-            return new RedirectView("http://localhost:5173/register?oauth=true&userId=" + user.getId());
+            String redirectUrl = String.format(
+                    "http://localhost:5173/register?oauth=true&username=%s&id=%s",
+                    githubUsername, user.getId()
+            );
+            return new RedirectView(redirectUrl);
+//            return new RedirectView("http://localhost:5173/register?oauth=true&userId=" + user.getId());
         }
 
         return new RedirectView("http://localhost:5173/deshborad");

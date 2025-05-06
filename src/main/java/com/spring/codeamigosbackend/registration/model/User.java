@@ -53,6 +53,6 @@ public class User {
     private int githubId;
     private String githubAccessToken;
     private String githubAvatarUrl;
-    private String githubUser;
+//    private String githubUser;
     private boolean isProfileComplete = false;
 }
