@@ -58,6 +58,7 @@ public class HackathonService {
         hackathon.setCreatedAt(LocalDateTime.now());
         hackathon.setUpdatedAt(LocalDateTime.now());
         hackathon.setCreatedBy(request.getCreatedBy());
+        hackathon.setCreatedById(request.getCreatedById());
 
         return hackathonRepository.save(hackathon);
     }

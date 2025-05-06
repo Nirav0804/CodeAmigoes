@@ -44,6 +44,7 @@ public class HackathonDTO {
     private HackathonDates hackathonDates;
 
     private String createdBy;
+    private String createdById;
     private int currentTeamSize;
 
     @Data
