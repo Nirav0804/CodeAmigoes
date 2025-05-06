@@ -25,6 +25,7 @@ public class Hackathon {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
+    private String createdById;
     private int currentTeamSize;
 
     @Data
