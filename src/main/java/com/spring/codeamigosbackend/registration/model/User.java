@@ -3,6 +3,7 @@ package com.spring.codeamigosbackend.registration.model;
 
 import jakarta.validation.constraints.Pattern;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
@@ -46,4 +47,12 @@ public class User {
     private String gifUrl;
     private String coverPhotoUrl;
     private String emoji;
+
+    //Oauth2
+    @Indexed(unique = true)
+    private int githubId;
+    private String githubAccessToken;
+    private String githubAvatarUrl;
+    private String githubUser;
+    private boolean isProfileComplete = false;
 }

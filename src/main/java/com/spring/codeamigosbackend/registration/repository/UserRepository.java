@@ -15,4 +15,5 @@ public interface UserRepository extends MongoRepository<User, java.lang.String> 
     Optional<User> findById(java.lang.String id);
 
     List<User> findAllById(List<User> userid);
+    Optional<User> findByGithubId(int githubId);
 }
