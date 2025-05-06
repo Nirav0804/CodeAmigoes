@@ -1,5 +1,6 @@
 package com.spring.codeamigosbackend;
 
+import com.spring.codeamigosbackend.config.LoadEnvConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class CodeAmigosBackendApplication {
 
 	public static void main(String[] args) {
+		LoadEnvConfig.load();
 		SpringApplication.run(CodeAmigosBackendApplication.class, args);
 	}
 
