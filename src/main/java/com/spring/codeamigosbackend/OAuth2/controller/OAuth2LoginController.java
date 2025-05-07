@@ -49,6 +49,8 @@ public class OAuth2LoginController {
         System.out.println("Authentication Token: " + authentication);
         System.out.println("OAuth2 User: " + oAuth2User.getAttributes());
 
+        user.evaluateProfileCompletion();
+
         if (!user.isProfileComplete()) {
 
             // redirect to frontend register form
@@ -60,6 +62,10 @@ public class OAuth2LoginController {
 //            return new RedirectView("http://localhost:5173/register?oauth=true&userId=" + user.getId());
         }
 
-        return new RedirectView("http://localhost:5173/deshborad");
+        String redirectUrl = String.format(
+                "http://localhost:5173/dashboard?username=%s&userId=%s&githubUsername=%s",
+                user.getUsername(),user.getId(),user.getGithubUsername()
+        );
+        return new RedirectView(redirectUrl);
     }
 }

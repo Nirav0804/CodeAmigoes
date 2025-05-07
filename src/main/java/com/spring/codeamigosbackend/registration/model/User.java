@@ -3,6 +3,7 @@ package com.spring.codeamigosbackend.registration.model;
 
 import jakarta.validation.constraints.Pattern;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class User {
     @NotBlank(message = "Display name is required")
     private String displayName;
 
+    @Transient
     @NotBlank(message = "Password is required")
     private String password;
 
@@ -57,4 +59,19 @@ public class User {
     private boolean isProfileComplete = false;
 
     private String status = "not paid";
+
+     // evaluate false
+        public void evaluateProfileCompletion() {
+            boolean complete =
+                    this.username != null && !this.username.trim().isEmpty() &&
+                            this.displayName != null && !this.displayName.trim().isEmpty() &&
+                            this.password != null && !this.password.trim().isEmpty() &&
+                            this.email != null && !this.email.trim().isEmpty() &&
+                            this.collegeName != null && !this.collegeName.trim().isEmpty() &&
+                            this.githubUsername != null && !this.githubUsername.trim().isEmpty() &&
+                            this.leetcodeUsername != null && !this.leetcodeUsername.trim().isEmpty() &&
+                            this.codechefUsername != null && !this.codechefUsername.trim().isEmpty();
+
+            this.isProfileComplete =complete;
+    }
 }
