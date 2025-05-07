@@ -58,7 +58,6 @@ public class UserController {
                 u.setPassword(user.getPassword());
                 u.setDisplayName(user.getDisplayName());
                 u.setEmail(user.getEmail());
-                u.setCollegeName(user.getCollegeName());
                 u.setLeetcodeUsername(user.getLeetcodeUsername());
                 u.setCodechefUsername(user.getCodechefUsername());
 

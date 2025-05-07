@@ -22,7 +22,6 @@ public class User {
     private String displayName;
 
     @Transient
-    @NotBlank(message = "Password is required")
     private String password;
 
     @Pattern(
@@ -32,8 +31,7 @@ public class User {
     @NotBlank(message = "Email is required")
     private String email;
 
-    @NotBlank(message = "College name is required")
-    private String collegeName;
+
 
     private String githubUsername;
     private String leetcodeUsername;
@@ -67,7 +65,7 @@ public class User {
                             this.displayName != null && !this.displayName.trim().isEmpty() &&
                             this.password != null && !this.password.trim().isEmpty() &&
                             this.email != null && !this.email.trim().isEmpty() &&
-                            this.collegeName != null && !this.collegeName.trim().isEmpty() &&
+
                             this.githubUsername != null && !this.githubUsername.trim().isEmpty() &&
                             this.leetcodeUsername != null && !this.leetcodeUsername.trim().isEmpty() &&
                             this.codechefUsername != null && !this.codechefUsername.trim().isEmpty();

@@ -75,9 +75,6 @@ public class UserService {
             if (user.getPassword() != null) {
                 userToUpdate.setPassword(user.getPassword());
             }
-            if (user.getCollegeName() != null) {
-                userToUpdate.setCollegeName(user.getCollegeName());
-            }
             if (user.getBio() != null) {
                 userToUpdate.setBio(user.getBio());
             }
