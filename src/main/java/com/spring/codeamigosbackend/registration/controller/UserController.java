@@ -1,5 +1,7 @@
 package com.spring.codeamigosbackend.registration.controller;
 
+import com.spring.codeamigosbackend.recommendation.controllers.FrameworkController;
+import com.spring.codeamigosbackend.recommendation.dtos.GithubScoreRequest;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import com.spring.codeamigosbackend.registration.service.UserService;
@@ -23,16 +25,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@RequiredArgsConstructor
+
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*") // Adjust according to frontend URL
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    @Autowired
-    private PaymentOrderRepository paymentOrderRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private final FrameworkController frameworkController;
+    private final PaymentOrderRepository paymentOrderRepository;
+
+    private final UserRepository userRepository;
 
     // Register endpoint
     @PostMapping("/register")
@@ -42,7 +45,6 @@ public class UserController {
             String id = user.getId();
 //            System.out.println("GitHub Username: " + githubUsername);
             Optional<User> existingUser = userRepository.findById(id);
-
             System.out.println("User from DB: " + existingUser);
 
             User savedUser;
@@ -63,7 +65,11 @@ public class UserController {
                 System.out.println("New user. Saving...");
                 savedUser = userRepository.save(user); // register
             }
-
+            GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
+            githubScoreRequest.setUsername(user.getUsername());
+            githubScoreRequest.setEmail(user.getEmail());
+            githubScoreRequest.setAccessToken(user.getGithubAccessToken());
+            frameworkController.getGithubScore(githubScoreRequest);
             return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
             e.printStackTrace();

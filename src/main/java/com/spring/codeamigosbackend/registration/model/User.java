@@ -63,7 +63,6 @@ public class User {
             boolean complete =
                     this.username != null && !this.username.trim().isEmpty() &&
                             this.displayName != null && !this.displayName.trim().isEmpty() &&
-                            this.password != null && !this.password.trim().isEmpty() &&
                             this.email != null && !this.email.trim().isEmpty() &&
 
                             this.githubUsername != null && !this.githubUsername.trim().isEmpty() &&
