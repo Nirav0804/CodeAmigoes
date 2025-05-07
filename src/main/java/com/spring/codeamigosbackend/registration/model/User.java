@@ -55,4 +55,6 @@ public class User {
     private String githubAvatarUrl;
     private String githubUser;
     private boolean isProfileComplete = false;
+
+    private String status = "not paid";
 }

@@ -5,8 +5,8 @@ import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import com.spring.codeamigosbackend.registration.service.UserService;
 import com.spring.codeamigosbackend.registration.exception.UserAlreadyExistsException;
 import com.spring.codeamigosbackend.registration.exception.InvalidCredentialsException;
-//import com.spring.codeamigosbackend.subscription.model.PaymentOrder;
-//import com.spring.codeamigosbackend.subscription.repository.PaymentOrderRepository;
+import com.spring.codeamigosbackend.subscription.model.PaymentOrder;
+import com.spring.codeamigosbackend.subscription.repository.PaymentOrderRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayException;
 import com.razorpay.RazorpayClient;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -29,9 +30,10 @@ import java.util.Map;
 public class UserController {
 
 
+
     private final UserService userService;
-//    @Autowired
-//    private PaymentOrderRepository paymentOrderRepository;
+    @Autowired
+    private PaymentOrderRepository paymentOrderRepository;
     @Autowired
     private UserRepository userRepository;
 
@@ -50,7 +52,6 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody User loginRequest) {
         try {
-            System.out.println(loginRequest);
             User authenticatedUser = userService.authenticateUser(
                     loginRequest.getUsername(), loginRequest.getPassword()
             );
@@ -80,59 +81,74 @@ public class UserController {
 
     @PutMapping("/{username}")
     public ResponseEntity<?> updateUserByUsername(@RequestBody User user, @PathVariable java.lang.String username) {
-        User user1 = userService.updateUser(user, username);
-        if (user1 == null) {
+        User user1=userService.updateUser(user, username);
+        if(user1==null) {
             return ResponseEntity.badRequest().body("User not found.");
         }
         return ResponseEntity.ok(user1);
     }
 
-//    @PostMapping("/create_order")
-//    @ResponseBody
-//    public String createOrder(@RequestBody Map<String, String> data, Principal principal) throws RazorpayException {
-//
-//        System.out.println("Order created successfully");
-//
-//        int amt = Integer.parseInt(data.get("amount").toString());
-//        var client = new RazorpayClient("rzp_test_LADJfV2vRiNrkZ", "ESUWr3U8EwK99fD1afKYIA6z");
-//        //RazorpayClient("Key_id","key_secret");
-//
-//        JSONObject ob = new JSONObject();
-//        ob.put("amount", amt * 100);
-//        ob.put("currency", "INR");
-//        ob.put("receipt", "order_RC_123456789");
-//
-//
-//        // Creating order
-//        Order order = client.orders.create(ob);
-//        System.out.println(order);
-//
-//        // save this order into database...
-//        PaymentOrder paymentOrder = new PaymentOrder();
-//        paymentOrder.setAmount(order.get("amount") + "");
-//        paymentOrder.setOrderId(order.get("id")); // correct key
-//        paymentOrder.setStatus("created");
-//        String username = data.get("username");
-//        User user = userService.getUserByUsername(username);
-//        paymentOrder.setUser(user);
-//
-//
-//        paymentOrderRepository.save(paymentOrder);
-//
-//        return order.toString(); // Return order details
-//
-//    }
-//
-//    @PostMapping("/update_order")
-//    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data) throws RazorpayException {
-//
-//        PaymentOrder paymentOrder = paymentOrderRepository.findByOrderId(data.get("order_id").toString());
-//        paymentOrder.setPaymentId(data.get("payment_id").toString());
-//        paymentOrder.setStatus(data.get("status").toString());
-//
-//        paymentOrderRepository.save(paymentOrder);
-//
-//        System.out.println(data);
-//        return ResponseEntity.ok(Map.of("msg", "updated status successfully"));
-//    }
+    @PostMapping("/create_order")
+    @ResponseBody
+    public String createOrder(@RequestBody Map<String, String> data) throws RazorpayException {
+
+        System.out.println( "Order created successfully");
+
+        int amt = Integer.parseInt(data.get("amount").toString());
+        var client = new RazorpayClient("rzp_test_LADJfV2vRiNrkZ","ESUWr3U8EwK99fD1afKYIA6z");
+        //RazorpayClient("Key_id","key_secret");
+
+        JSONObject ob = new JSONObject();
+        ob.put("amount", amt*100);
+        ob.put("currency", "INR");
+        ob.put("receipt", "order_RC_123456789");
+
+
+        // Creating order
+        Order order = client.orders.create(ob);
+        System.out.println(order);
+
+        // save this order into database...
+        PaymentOrder paymentOrder = new PaymentOrder();
+        paymentOrder.setAmount(order.get("amount")+"");
+        paymentOrder.setOrderId(order.get("id")); // correct key
+        paymentOrder.setStatus("created");
+        paymentOrder.setUserId(data.get("userId").toString());
+
+        Optional<User> user = userRepository.findById(data.get("userId").toString());
+        if(user.isPresent()) {
+            user.get().setStatus("created");
+            userRepository.save(user.get());
+        }
+
+        paymentOrderRepository.save(paymentOrder);
+
+        return order.toString(); // Return order details
+
+    }
+
+    @PostMapping("/update_order")
+    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data) throws RazorpayException {
+
+        PaymentOrder paymentOrder =  paymentOrderRepository.findByOrderId(data.get("order_id").toString());
+        paymentOrder.setPaymentId(data.get("payment_id").toString());
+        paymentOrder.setStatus(data.get("status").toString());
+        Optional<User> user = userRepository.findById(data.get("userId").toString());
+        if(user.isPresent()) {
+            user.get().setStatus("paid");
+            userRepository.save(user.get());
+        }
+        paymentOrder.setUserId(data.get("userId").toString());
+        paymentOrderRepository.save(paymentOrder);
+
+        System.out.println(data);
+        return ResponseEntity.ok(Map.of("msg","updated status successfully"));
+    }
+
+    @GetMapping("/get_status/{username}")
+    public ResponseEntity<?> getUserStatus(@PathVariable String username) {
+        User user = userService.getUserByUsername(username);
+        return ResponseEntity.ok(Map.of("status", user.getStatus()));
+    }
+
 }
