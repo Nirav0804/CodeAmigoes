@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -22,4 +23,5 @@ public class HackathonRequest {
     private String requestedBy;
     private LocalDateTime requestedAt;
     private String status;
+    private List<String> frameworks;
 }

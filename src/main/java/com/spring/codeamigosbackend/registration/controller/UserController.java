@@ -28,9 +28,6 @@ import java.util.Optional;
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*") // Adjust according to frontend URL
 public class UserController {
-
-
-
     private final UserService userService;
     @Autowired
     private PaymentOrderRepository paymentOrderRepository;
