@@ -64,7 +64,6 @@ public class User {
                     this.username != null && !this.username.trim().isEmpty() &&
                             this.displayName != null && !this.displayName.trim().isEmpty() &&
                             this.email != null && !this.email.trim().isEmpty() &&
-
                             this.githubUsername != null && !this.githubUsername.trim().isEmpty() &&
                             this.leetcodeUsername != null && !this.leetcodeUsername.trim().isEmpty() &&
                             this.codechefUsername != null && !this.codechefUsername.trim().isEmpty();

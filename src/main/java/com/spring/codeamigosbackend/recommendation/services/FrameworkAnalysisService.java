@@ -27,6 +27,7 @@ public class FrameworkAnalysisService {
     @Async
     public void analyseUserFrameworkStats(GithubScoreRequest request) {
         // Validate request
+        System.out.println("Analyzing user framework stats");
         if (request.getUsername() == null || request.getAccessToken() == null) {
             throw new ApiException(400, "Username and access token are required");
         }
