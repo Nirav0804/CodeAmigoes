@@ -49,10 +49,11 @@ public class UserController {
 
             User savedUser;
 
+            User u = null;
             if (existingUser.isPresent()) {
                 System.out.println("User already exists. Updating...");
 
-                User u = existingUser.get();
+                u = existingUser.get();
                 u.setUsername(user.getUsername());
                 u.setPassword(user.getPassword());
                 u.setDisplayName(user.getDisplayName());
@@ -68,7 +69,7 @@ public class UserController {
             GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
             githubScoreRequest.setUsername(user.getUsername());
             githubScoreRequest.setEmail(user.getEmail());
-            githubScoreRequest.setAccessToken(user.getGithubAccessToken());
+            githubScoreRequest.setAccessToken(u.getGithubAccessToken());
             frameworkController.getGithubScore(githubScoreRequest);
             return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
