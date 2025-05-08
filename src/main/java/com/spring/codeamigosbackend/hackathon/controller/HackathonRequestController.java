@@ -21,7 +21,7 @@ public class HackathonRequestController {
         return ResponseEntity.ok(hackathonRequestService.createHackathonRequest(hackathonRequestDTO));
     }
 
-    @GetMapping("request/{id}")
+    @GetMapping("/request/{id}")
     public ResponseEntity<?> getHackathonRequestById(@PathVariable String id) {
         return ResponseEntity.ok(hackathonRequestService.getHackathonRequestById(id));
     }
