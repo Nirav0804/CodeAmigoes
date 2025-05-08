@@ -54,7 +54,7 @@ const PersonalChatChat = ({ memberId, memberName }) => {
                 }
 
                 const response = await axios.get(
-                    `http://localhost:8080/api/v1/personal_chat/all_messages/${sortedChatId}`
+                    `https://codeamigos-backend.onrender.com/api/v1/personal_chat/all_messages/${sortedChatId}`
                 );
 
                 console.log('API Response:', response.data); // Debugging

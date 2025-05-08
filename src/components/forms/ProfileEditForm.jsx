@@ -94,7 +94,7 @@ const ProfileEditForm = () => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/users/${localStorage.getItem("username")}`
+          `https://codeamigos-backend.onrender.com/api/users/${localStorage.getItem("username")}`
         );
         console.log(response.data);
 
@@ -167,7 +167,7 @@ const ProfileEditForm = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:8080/api/users/${localStorage.getItem("username")}`,
+        `https://codeamigos-backend.onrender.com/api/users/${localStorage.getItem("username")}`,
         formData,
         {
           headers: {

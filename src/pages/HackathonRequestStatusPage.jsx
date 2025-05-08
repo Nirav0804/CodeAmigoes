@@ -23,7 +23,7 @@ const HackathonRequestStatusPage = () => {
   const fetchHackathonRequests = async (username) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/requests/status/${username}`
+        `https://codeamigos-backend.onrender.com/requests/status/${username}`
       );
       setHackathonRequests(response.data.reverse());
     } catch (error) {

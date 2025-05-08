@@ -111,7 +111,7 @@ const ProfileDashboard = () => {
   useEffect(() => {
     // Fetch user data
     axios
-      .get(`http://localhost:8080/api/users/${username}`)
+      .get(`https://codeamigos-backend.onrender.com/api/users/${username}`)
       .then((response) => {
         console.log(response.data);
         setUserData(response.data);

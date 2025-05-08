@@ -55,7 +55,7 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
 
   const handleAccept = async () => {
     try {
-      await axios.put(`http://localhost:8080/request/${id}/accepted`);
+      await axios.put(`https://codeamigos-backend.onrender.com/request/${id}/accepted`);
       setStatusx("accepted");
     } catch (error) {
       console.error("Error updating request status:", error);
@@ -64,7 +64,7 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
 
   const handleReject = async () => {
     try {
-      await axios.put(`http://localhost:8080/request/${id}/rejected`);
+      await axios.put(`https://codeamigos-backend.onrender.com/request/${id}/rejected`);
       setStatusx("rejected");
     } catch (error) {
       console.error("Error updating request status:", error);

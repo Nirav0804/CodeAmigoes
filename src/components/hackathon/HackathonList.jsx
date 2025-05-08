@@ -15,13 +15,13 @@ const HackathonList = ({
   const radius= 600
   const fetchHackathons = async () => {
     // if (type === "active") {
-    //   const response = await fetch("http://localhost:8080/api/hackathons");
+    //   const response = await fetch("https://codeamigos-backend.onrender.com/api/hackathons");
     //   const data = await response.json();
     //   setHackathons(data);
     //   setFilteredHackathons(data);
     // }
     if (type === "past") {
-      const response = await fetch(`http://localhost:8080/api/hackathons/past`);
+      const response = await fetch(`https://codeamigos-backend.onrender.com/api/hackathons/past`);
       const data = await response.json();
       console.log(response);
       setHackathons(data);
@@ -29,7 +29,7 @@ const HackathonList = ({
     }
     if (type === "ongoing") {
       const response = await fetch(
-        `http://localhost:8080/api/hackathons/ongoing`
+        `https://codeamigos-backend.onrender.com/api/hackathons/ongoing`
       );
       const data = await response.json();
       setHackathons(data);
@@ -37,7 +37,7 @@ const HackathonList = ({
     }
     if (type === "upcoming") {
       const response = await fetch(
-        `http://localhost:8080/api/hackathons/upcoming`
+        `https://codeamigos-backend.onrender.com/api/hackathons/upcoming`
       );
       const data = await response.json();
       setHackathons(data);
@@ -45,7 +45,7 @@ const HackathonList = ({
     }
     if ( type == "nearby" ){
       const response = await fetch(
-        `http://localhost:8080/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`
+        `https://codeamigos-backend.onrender.com/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`
       );
       const data = await response.json();
       setHackathons(data);
@@ -55,7 +55,7 @@ const HackathonList = ({
       console.log("Hello");
       
       const response = await fetch(
-        `http://localhost:8080/api/hackathons/recommended-hackathons?username=${username}`
+        `https://codeamigos-backend.onrender.com/api/hackathons/recommended-hackathons?username=${username}`
       );
       const data = await response.json();
       console.log(data);

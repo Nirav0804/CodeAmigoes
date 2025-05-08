@@ -34,7 +34,7 @@ function ChatDropDown() {
             if (userId) {
                 try {
                     // Fetch personal chats
-                    const response = await axios.get(`http://localhost:8080/api/v1/personal_chat/all_personal_chats/${userId}`);
+                    const response = await axios.get(`https://codeamigos-backend.onrender.com/api/v1/personal_chat/all_personal_chats/${userId}`);
                     console.log(response.data);
                     
                     const sortedPersonalChat = response.data

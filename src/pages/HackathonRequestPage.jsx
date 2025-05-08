@@ -23,7 +23,7 @@ const HackathonRequestPage = () => {
   const fetchHackathonRequests = async (username) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/requests/${username}`
+        `https://codeamigos-backend.onrender.com/requests/${username}`
       );
       setHackathonRequests(response.data.reverse());
     } catch (error) {

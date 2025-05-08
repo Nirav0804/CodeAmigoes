@@ -73,7 +73,7 @@ const RegistrationForm = () => {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:8080/api/users/register", {
+      const response = await fetch("https://codeamigos-backend.onrender.com/api/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -36,7 +36,7 @@ const HackathonDetailsPage = () => {
     const fetchHackathonData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/hackathons/${id}`
+          `https://codeamigos-backend.onrender.com/api/hackathons/${id}`
         );
         setHackathonData(response.data);
         setRequestObject({
@@ -84,7 +84,7 @@ const HackathonDetailsPage = () => {
       const leader = hackathonData.createdBy;   
       console.log(member2Id);
       const response = await axios.post(
-        `http://localhost:8080/api/v1/personal_chat/create_or_get_personal_chat/${currentUserId}/${member2Id}`
+        `https://codeamigos-backend.onrender.com/api/v1/personal_chat/create_or_get_personal_chat/${currentUserId}/${member2Id}`
       );
       navigate('/dashboard/chat?leader=' + leader);
       console.log(response);
@@ -96,7 +96,7 @@ const HackathonDetailsPage = () => {
   };
   const handleJoin = async () => {
     try {
-      await axios.post("http://localhost:8080/request", requestObject, {
+      await axios.post("https://codeamigos-backend.onrender.com/request", requestObject, {
         headers: { "Content-Type": "application/json" },
       });
       toast.success("Request sent successfully!", {

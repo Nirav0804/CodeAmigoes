@@ -311,7 +311,7 @@ const HackathonRegistrationForm = () => {
       submitFormData.append("data", JSON.stringify(dataWithoutLogo));
 
       const response = await axios.post(
-        "http://localhost:8080/api/hackathons",
+        "https://codeamigos-backend.onrender.com/api/hackathons",
         submitFormData,
         {
           headers: {
