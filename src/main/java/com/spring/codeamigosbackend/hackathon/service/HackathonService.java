@@ -1,6 +1,7 @@
 package com.spring.codeamigosbackend.hackathon.service;
 
 import com.cloudinary.Cloudinary;
+import com.spring.codeamigosbackend.geolocation.services.GeolocationService;
 import com.spring.codeamigosbackend.hackathon.dto.HackathonDTO;
 
 import com.spring.codeamigosbackend.hackathon.model.Hackathon;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class HackathonService {
     private final HackathonRepository hackathonRepository;
     private final Cloudinary cloudinary;
+    private final GeolocationService  geolocationService;
 
     @Transactional
     public Hackathon createHackathon(HackathonDTO request) throws IOException {
@@ -37,6 +39,10 @@ public class HackathonService {
         hackathon.setMode(request.getMode());
         hackathon.setAbout(request.getAbout());
         hackathon.setLocation(request.getLocation());
+        hackathon.setTechStacks(request.getTechStacks());
+        List<Double> coordinates = this.geolocationService.getCoordinatesFromLocation(request.getLocation());
+        hackathon.setLatitude(coordinates.get(0));
+        hackathon.setLongitude(coordinates.get(1));
 
         if (request.getTeamSize() != null) {
             Hackathon.TeamSize teamSize = new Hackathon.TeamSize();
@@ -54,7 +60,6 @@ public class HackathonService {
         hackathonDates.setStart(request.getHackathonDates().getStart());
         hackathonDates.setEnd(request.getHackathonDates().getEnd());
         hackathon.setHackathonDates(hackathonDates);
-
         hackathon.setCreatedAt(LocalDateTime.now());
         hackathon.setUpdatedAt(LocalDateTime.now());
         hackathon.setCreatedBy(request.getCreatedBy());
@@ -108,4 +113,35 @@ public class HackathonService {
             throw new RuntimeException("Failed to upload image to Cloudinary");
         }
     }
+
+    public List<Hackathon> findNearbyHackathons(Double latitude, Double longitude) {
+        return findNearbyHackathons(latitude, longitude, 100.0); // Default radius = 100 km
+    }
+
+    // Find all hackathons and use the haversine formula to find the nearby hackathons
+    public List<Hackathon> findNearbyHackathons(Double latitude, Double longitude, Double radiusKm) {
+
+        List<Hackathon> activeHackathons = this.getAllActiveHackathons();
+        return activeHackathons.stream()
+                .filter(h -> {
+                    if (h.getLatitude() == null || h.getLongitude() == null) return false;
+                    double distance = calculateDistance(latitude, longitude, h.getLatitude(), h.getLongitude());
+                    return distance <= radiusKm;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // Haversine formula
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371; // Radius of Earth in kilometers
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
 }

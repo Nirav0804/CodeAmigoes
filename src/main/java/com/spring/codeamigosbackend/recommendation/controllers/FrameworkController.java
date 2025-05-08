@@ -25,7 +25,7 @@ public class FrameworkController {
      * @return ResponseEntity containing an ApiResponse with a map of frameworks to their file counts
      */
     @PostMapping("/score")
-    public ResponseEntity<ApiResponse> getGithubScore(@RequestBody GithubScoreRequest request) {
+    public ResponseEntity<ApiResponse> setGithubScore(@RequestBody GithubScoreRequest request) {
         try {
             System.out.println(request);
             frameworkAnalysisService.analyseUserFrameworkStats(request);

@@ -6,6 +6,7 @@ import com.spring.codeamigosbackend.hackathon.model.Hackathon;
 import com.spring.codeamigosbackend.hackathon.service.HackathonService;
 import com.spring.codeamigosbackend.hackathon.service.MailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spring.codeamigosbackend.recommendation.utils.ApiResponse;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -91,5 +92,14 @@ public class HackathonController {
         } catch (MessagingException e) {
             return new ResponseEntity<>("Failed to send email: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/nearby-hackathons")
+    public ResponseEntity<List<Hackathon>> getNearbyHackathons(  @RequestParam(required = true) Double latitude,
+                                                                 @RequestParam(required = true) Double longitude,
+                                                                 @RequestParam(required = false)Double radius
+                                                                 ) {
+        List<Hackathon> activeHackathons =  this.hackathonService.findNearbyHackathons(latitude, longitude,radius);
+        return ResponseEntity.ok(activeHackathons);
     }
 }

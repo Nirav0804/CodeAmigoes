@@ -16,6 +16,7 @@ import java.util.Map;
 @Document(collection = "user_framework_stats")
 public class UserFrameworkStats {
     @Id
+    private String id;
     private String userId;
     Map<String,Integer> frameworkUsage;
     private LocalDateTime lastUpdated;

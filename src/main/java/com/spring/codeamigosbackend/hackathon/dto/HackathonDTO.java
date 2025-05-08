@@ -37,6 +37,8 @@ public class HackathonDTO {
 
     private TeamSize teamSize;
 
+    List<String> techStacks ;
+
     @NotNull(message = "Registration dates are required")
     private RegistrationDates registrationDates;
 

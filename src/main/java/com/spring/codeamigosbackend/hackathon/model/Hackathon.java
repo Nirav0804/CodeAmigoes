@@ -27,6 +27,9 @@ public class Hackathon {
     private String createdBy;
     private String createdById;
     private int currentTeamSize;
+    private List<String> techStacks;
+    private Double latitude;
+    private Double longitude;
 
     @Data
     public static class TeamSize {

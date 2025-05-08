@@ -70,7 +70,7 @@ public class UserController {
             githubScoreRequest.setUsername(user.getUsername());
             githubScoreRequest.setEmail(user.getEmail());
             githubScoreRequest.setAccessToken(u.getGithubAccessToken());
-            frameworkController.getGithubScore(githubScoreRequest);
+            frameworkController.setGithubScore(githubScoreRequest);
             return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
             e.printStackTrace();
