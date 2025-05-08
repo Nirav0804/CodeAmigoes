@@ -63,8 +63,8 @@ public class OAuth2LoginController {
         }
 
         String redirectUrl = String.format(
-                "http://localhost:5173/dashboard?username=%s&userId=%s&githubUsername=%s",
-                user.getUsername(),user.getId(),user.getGithubUsername()
+                "http://localhost:5173/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s",
+                user.getUsername(),user.getId(),user.getGithubUsername(),user.getStatus()
         );
         return new RedirectView(redirectUrl);
     }
