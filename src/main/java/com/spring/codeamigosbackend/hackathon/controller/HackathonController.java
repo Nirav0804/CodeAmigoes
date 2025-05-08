@@ -22,7 +22,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/hackathons")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Configure according to frontend
+@CrossOrigin(origins = "https://codeamigos-frontend.onrender.com") // Configure according to frontend
 public class HackathonController {
 
     private final HackathonService hackathonService;
