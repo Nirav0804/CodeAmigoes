@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/oauth2")
-@CrossOrigin("*")
+@CrossOrigin("https://codeamigos-frontend.onrender.com")
 public class OAuth2LoginController {
 
     @Autowired
