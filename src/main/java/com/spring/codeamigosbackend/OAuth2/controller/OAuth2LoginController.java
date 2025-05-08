@@ -4,6 +4,7 @@ package com.spring.codeamigosbackend.OAuth2.controller;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,9 @@ public class OAuth2LoginController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Value("${frontend.url}")
+    private String url;
 
     @GetMapping("/success")
     public RedirectView oauth2Success(OAuth2AuthenticationToken authentication) {
@@ -54,15 +58,15 @@ public class OAuth2LoginController {
 
             // redirect to frontend register form
             String redirectUrl = String.format(
-                    "http://localhost:5173/register?oauth=true&username=%s&id=%s",
+                    url+"/register?oauth=true&username=%s&id=%s",
                     githubUsername, user.getId()
             );
             return new RedirectView(redirectUrl);
-//            return new RedirectView("http://localhost:5173/register?oauth=true&userId=" + user.getId());
+//            return new RedirectView(url+"/register?oauth=true&userId=" + user.getId());
         }
 
         String redirectUrl = String.format(
-                "http://localhost:5173/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s",
+                url+"/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s",
                 user.getUsername(),user.getId(),user.getGithubUsername(),user.getStatus()
         );
         return new RedirectView(redirectUrl);

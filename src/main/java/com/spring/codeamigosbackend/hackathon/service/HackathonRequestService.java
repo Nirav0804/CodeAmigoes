@@ -8,6 +8,7 @@ import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class HackathonRequestService {
+
+    @Value("${frontend.url}")
+    private String url;
 
     final private HackathonRequestRepository hackathonRequestRepository;
     final private HackathonRepository hackathonRepository;
@@ -74,7 +78,7 @@ public class HackathonRequestService {
                     "<p><strong>⏳ Requested At:</strong> " + formattedDate + "</p>" +
                     "</div>" +
                     "<p style='text-align: center; margin-top: 20px;'>" +
-                    "🔗 <a href='http://localhost:5173/dashboard/hackathons/" + request.getHackathonId() +
+                    "🔗 <a href=url+'/dashboard/hackathons/" + request.getHackathonId() +
                     "' style='background-color: #1a73e8; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>Review Request & Manage Hackathon</a>" +
                     "</p>" +
                     "<br><p style='font-size: 16px; text-align: center;'>Best Regards,<br><strong>🚀 Elev8 Team</strong></p>" +
@@ -183,12 +187,12 @@ public class HackathonRequestService {
                     (isAccepted ?
                             "<p style='font-size: 16px;'>🎯 Get ready to innovate! Your request is accepted!!</p>" +
                                     "<p style='font-size: 16px;'>Access the hackathon details and connect with your team here:</p>" +
-                                    "<p style='text-align: center;'><a href=\"http://localhost:5173/dashboard/hackathons/" + request.getHackathonId() +
+                                    "<p style='text-align: center;'><a href=url+'/dashboard/hackathons/" + request.getHackathonId() +
                                     "\" style='background-color: #1a73e8; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>View Hackathon</a></p>"
                             :
                             "<p style='font-size: 16px;'>We appreciate your interest! Although this request wasn’t approved, keep an eye on upcoming hackathons. 🚀</p>" +
                                     "<p style='font-size: 16px;'>Find more opportunities to showcase your skills:</p>" +
-                                    "<p style='text-align: center;'><a href=\"http://localhost:5173/dashboard/hackathons\" style='background-color: #ff9800; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>Explore More Hackathons</a></p>") +
+                                    "<p style='text-align: center;'><a href=url+'/dashboard/hackathons\" style='background-color: #ff9800; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>Explore More Hackathons</a></p>") +
                     "<br><p style='font-size: 16px;'>Best Regards,<br><strong>🚀 Elev8 Team</strong></p>" +
                     "</div>";
 
