@@ -66,7 +66,7 @@ public class HackathonService {
         dates.setStart(request.getRegistrationDates().getStart());
         dates.setEnd(request.getRegistrationDates().getEnd());
         hackathon.setRegistrationDates(dates);
-
+        hackathon.setCurrentTeamSize(1);
         Hackathon.HackathonDates hackathonDates = new Hackathon.HackathonDates();
         hackathonDates.setStart(request.getHackathonDates().getStart());
         hackathonDates.setEnd(request.getHackathonDates().getEnd());
