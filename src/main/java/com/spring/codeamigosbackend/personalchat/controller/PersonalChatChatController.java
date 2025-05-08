@@ -29,7 +29,8 @@ public class PersonalChatChatController {
     public Message sendMessage(
             @DestinationVariable String member1Id,
             @DestinationVariable String member2Id,
-            @Payload MessageReqestPersonalChat messageRequest) {  // Extract payload correctly
+            @Payload
+            MessageReqestPersonalChat messageRequest) {  // Extract payload correctly
 
         System.out.println("Inside sendMessage");
         System.out.println("member1Id: " + member1Id);
