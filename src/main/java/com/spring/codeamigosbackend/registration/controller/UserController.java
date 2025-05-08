@@ -28,7 +28,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "https://codeamigos-frontend.onrender.com") // Adjust according to frontend URL
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;

@@ -20,7 +20,6 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin("https://codeamigos-frontend.onrender.com")
 public class PersonalChatChatController {
     private final PersonalChatRepository personalChatRepository;
 

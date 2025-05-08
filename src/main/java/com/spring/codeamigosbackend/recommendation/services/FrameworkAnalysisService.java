@@ -70,4 +70,9 @@ public class FrameworkAnalysisService {
         this.userFrameworkStatsRepository.save(userFrameworkStats);
         System.out.println(frameworkToFileCounts);
     }
+
+    public UserFrameworkStats getUserFrameworkStats(String username) {
+         User user = this.userRepository.findByUsername(username).get();
+         return this.userFrameworkStatsRepository.getUserFrameworkStatsByUserId(user.getId());
+    }
 }
