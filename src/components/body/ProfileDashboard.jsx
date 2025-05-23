@@ -13,6 +13,7 @@ import { SiLeetcode, SiCodechef } from "react-icons/si";
 import ProfileCard from "../profile/ProfileCard";
 import { FaGlobe, FaFileAlt, FaAward, FaCertificate } from "react-icons/fa";
 import { use } from "react";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const platformConfig = [
   {
@@ -111,7 +112,7 @@ const ProfileDashboard = () => {
   useEffect(() => {
     // Fetch user data
     axios
-      .get(`https://codeamigos-backend.onrender.com/api/users/${username}`)
+      .get(`${API_BASE}/api/users/${username}`)
       .then((response) => {
         console.log(response.data);
         setUserData(response.data);

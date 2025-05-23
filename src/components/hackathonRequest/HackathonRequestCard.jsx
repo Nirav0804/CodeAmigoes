@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import axios from "axios";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, requestedAt, status }) => {
   const [statusx, setStatusx] = useState(status);
@@ -55,7 +56,7 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
 
   const handleAccept = async () => {
     try {
-      await axios.put(`https://codeamigos-backend.onrender.com/request/${id}/accepted`);
+      await axios.put(`${API_BASE}/request/${id}/accepted`);
       setStatusx("accepted");
     } catch (error) {
       console.error("Error updating request status:", error);
@@ -64,7 +65,7 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
 
   const handleReject = async () => {
     try {
-      await axios.put(`https://codeamigos-backend.onrender.com/request/${id}/rejected`);
+      await axios.put(`${API_BASE}/request/${id}/rejected`);
       setStatusx("rejected");
     } catch (error) {
       console.error("Error updating request status:", error);

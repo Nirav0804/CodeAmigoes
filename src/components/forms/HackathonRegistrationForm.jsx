@@ -4,7 +4,7 @@ import Navigation from "../navigation/Navigation";
 import GradientBackground from "../background/GradientBackground";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const Input = ({ label, error, ...props }) => (
   <div className="w-full">
     {label && (
@@ -311,7 +311,7 @@ const HackathonRegistrationForm = () => {
       submitFormData.append("data", JSON.stringify(dataWithoutLogo));
 
       const response = await axios.post(
-        "https://codeamigos-backend.onrender.com/api/hackathons",
+        "${API_BASE}/api/hackathons",
         submitFormData,
         {
           headers: {

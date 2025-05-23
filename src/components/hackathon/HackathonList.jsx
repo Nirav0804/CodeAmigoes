@@ -1,6 +1,7 @@
 import React, { useState,useEffect } from "react";
 import HackathonCard from "./HackathonCard";
 import HackathonMap from "./HackathonMap";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const HackathonList = ({
   setHackathons,
@@ -21,7 +22,7 @@ const HackathonList = ({
     //   setFilteredHackathons(data);
     // }
     if (type === "past") {
-      const response = await fetch(`https://codeamigos-backend.onrender.com/api/hackathons/past`);
+      const response = await fetch(`${API_BASE}/api/hackathons/past`);
       const data = await response.json();
       console.log(response);
       setHackathons(data);
@@ -29,7 +30,7 @@ const HackathonList = ({
     }
     if (type === "ongoing") {
       const response = await fetch(
-        `https://codeamigos-backend.onrender.com/api/hackathons/ongoing`
+        `${API_BASE}/api/hackathons/ongoing`
       );
       const data = await response.json();
       setHackathons(data);
@@ -37,7 +38,7 @@ const HackathonList = ({
     }
     if (type === "upcoming") {
       const response = await fetch(
-        `https://codeamigos-backend.onrender.com/api/hackathons/upcoming`
+        `${API_BASE}/api/hackathons/upcoming`
       );
       const data = await response.json();
       setHackathons(data);
@@ -45,7 +46,7 @@ const HackathonList = ({
     }
     if ( type == "nearby" ){
       const response = await fetch(
-        `https://codeamigos-backend.onrender.com/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`
+        `${API_BASE}/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`
       );
       const data = await response.json();
       setHackathons(data);
@@ -55,7 +56,7 @@ const HackathonList = ({
       console.log("Hello");
       
       const response = await fetch(
-        `https://codeamigos-backend.onrender.com/api/hackathons/recommended-hackathons?username=${username}`
+        `${API_BASE}/api/hackathons/recommended-hackathons?username=${username}`
       );
       const data = await response.json();
       console.log(data);

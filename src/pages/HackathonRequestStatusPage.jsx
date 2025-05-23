@@ -4,7 +4,7 @@ import Navigation from "../components/navigation/Navigation";
 import HackathonRequestStatusCard from "../components/hackathonRequest/HackathonRequestStatusCard";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const HackathonRequestStatusPage = () => {
   const navigate = useNavigate();
   const [hackathonRequests, setHackathonRequests] = useState([]);
@@ -23,7 +23,7 @@ const HackathonRequestStatusPage = () => {
   const fetchHackathonRequests = async (username) => {
     try {
       const response = await axios.get(
-        `https://codeamigos-backend.onrender.com/requests/status/${username}`
+        `${API_BASE}/requests/status/${username}`
       );
       setHackathonRequests(response.data.reverse());
     } catch (error) {

@@ -29,7 +29,7 @@ const LandingHeader = () => {
 
 
   const handleGithubLogin = () => {
-    window.location.href = "https://codeamigos-backend.onrender.com/oauth2/authorization/github";
+    window.location.href = "http://localhost:8080/oauth2/authorization/github";
   };
 
 

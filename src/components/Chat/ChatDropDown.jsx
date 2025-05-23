@@ -7,7 +7,7 @@ import { FaSearch } from "react-icons/fa";
 import GradientBackground from "../background/GradientBackground";
 import { timeAgo } from "../../config/helper";
 import PersonalChatChat from "../PersonalChat/PersonalChatChat";
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 function ChatDropDown() {
     const [personalChats, setPersonalChats] = useState([]);
     const [filteredPersonalChats, setFilteredPersonalChats] = useState([]);
@@ -34,7 +34,7 @@ function ChatDropDown() {
             if (userId) {
                 try {
                     // Fetch personal chats
-                    const response = await axios.get(`https://codeamigos-backend.onrender.com/api/v1/personal_chat/all_personal_chats/${userId}`);
+                    const response = await axios.get(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`);
                     console.log(response.data);
                     
                     const sortedPersonalChat = response.data

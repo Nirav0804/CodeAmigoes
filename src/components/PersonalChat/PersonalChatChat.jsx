@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import { encrypt, decrypt } from "../../config/EncryptDecrypt";
-
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const PersonalChatChat = ({ memberId, memberName }) => {
     const [connected, setConnected] = useState(false);
     const [currentUserId, setCurrentUserId] = useState("");
@@ -54,7 +54,7 @@ const PersonalChatChat = ({ memberId, memberName }) => {
                 }
 
                 const response = await axios.get(
-                    `https://codeamigos-backend.onrender.com/api/v1/personal_chat/all_messages/${sortedChatId}`
+                    `${API_BASE}/api/v1/personal_chat/all_messages/${sortedChatId}`
                 );
 
                 console.log('API Response:', response.data); // Debugging

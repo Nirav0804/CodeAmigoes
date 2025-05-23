@@ -19,6 +19,7 @@ import Navigation from "../navigation/Navigation";
 import GradientBackground from "../background/GradientBackground";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // Reuse the Input component with icon support
 const Input = ({ label, error, icon: Icon, ...props }) => (
@@ -94,7 +95,7 @@ const ProfileEditForm = () => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(
-          `https://codeamigos-backend.onrender.com/api/users/${localStorage.getItem("username")}`
+          `${API_BASE}/api/users/${localStorage.getItem("username")}`
         );
         console.log(response.data);
 
@@ -167,7 +168,7 @@ const ProfileEditForm = () => {
 
     try {
       const response = await axios.put(
-        `https://codeamigos-backend.onrender.com/api/users/${localStorage.getItem("username")}`,
+        `${API_BASE}/api/users/${localStorage.getItem("username")}`,
         formData,
         {
           headers: {
