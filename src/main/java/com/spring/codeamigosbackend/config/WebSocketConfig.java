@@ -14,7 +14,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         //on /chat endpoint connection will be established
         registry.addEndpoint("/api/v1/chat")
-                .setAllowedOrigins("https://codeamigos-frontend.onrender.com")
+                .setAllowedOrigins("http://localhost:5173/")
                 .withSockJS();
     }
 
