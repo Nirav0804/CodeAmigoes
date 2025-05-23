@@ -7,6 +7,7 @@ import { FaSearch } from "react-icons/fa";
 import GradientBackground from "../background/GradientBackground";
 import { timeAgo } from "../../config/helper";
 import PersonalChatChat from "../PersonalChat/PersonalChatChat";
+import { LogIn } from "lucide-react";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 function ChatDropDown() {
     const [personalChats, setPersonalChats] = useState([]);
@@ -34,19 +35,20 @@ function ChatDropDown() {
             if (userId) {
                 try {
                     // Fetch personal chats
+
                     const response = await axios.get(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`);
                     console.log(response.data);
-                    
+
                     const sortedPersonalChat = response.data
-                    .sort((a, b) => {
-                        const latestA = a.messages?.length
-                            ? new Date(a.messages[a.messages.length - 1].timestamp).getTime()
-                            : 0;
-                        const latestB = b.messages?.length
-                            ? new Date(b.messages[b.messages.length - 1].timestamp).getTime()
-                            : 0;
-                        return latestB - latestA;
-                    });
+                        .sort((a, b) => {
+                            const latestA = a.messages?.length
+                                ? new Date(a.messages[a.messages.length - 1].timestamp).getTime()
+                                : 0;
+                            const latestB = b.messages?.length
+                                ? new Date(b.messages[b.messages.length - 1].timestamp).getTime()
+                                : 0;
+                            return latestB - latestA;
+                        });
                     setPersonalChats(sortedPersonalChat);
                     setFilteredPersonalChats(sortedPersonalChat);
 
