@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { MdAttachFile, MdSend, MdEmojiEmotions } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import SockJS from "sockjs-client/dist/sockjs";
 import { Stomp } from "@stomp/stompjs";
 import { baseURL } from "../../config/AxiosHelper";
 import { timeAgo } from "../../config/helper";
-import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import { encrypt, decrypt } from "../../config/EncryptDecrypt";
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const PersonalChatChat = ({ memberId, memberName }) => {
     const [connected, setConnected] = useState(false);
     const [currentUserId, setCurrentUserId] = useState("");
@@ -25,7 +26,7 @@ const PersonalChatChat = ({ memberId, memberName }) => {
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
 
-    +    useEffect(() => {
+    useEffect(() => {
         const userId = localStorage.getItem("userId");
         const user = localStorage.getItem("username");
         setCurrentUser(user || "");
@@ -57,38 +58,29 @@ const PersonalChatChat = ({ memberId, memberName }) => {
                     `${API_BASE}/api/v1/personal_chat/all_messages/${sortedChatId}`
                 );
 
-                console.log('API Response:', response.data); // Debugging
-
                 if (Array.isArray(response.data)) {
-                    // Decrypt all messages
                     const decryptedMessages = await Promise.all(
                         response.data.map(async (message) => {
                             try {
-                                // Check if content exists and is a string
                                 if (!message.content || typeof message.content !== 'string') {
-                                    console.warn(`Invalid content for message at ${message.timestamp}:`, message.content);
                                     return { ...message, content: '[Invalid Content]' };
                                 }
 
-                                // Assume content is base64-encoded encrypted data
                                 const decryptedContent = await decrypt(message.content, secretKey);
                                 return { ...message, content: decryptedContent };
                             } catch (decryptError) {
-                                console.error(`Failed to decrypt message at ${message.timestamp}:`, decryptError);
                                 return { ...message, content: '[Decryption Failed]' };
                             }
                         })
                     );
 
-                    console.log('Decrypted Messages:', decryptedMessages); // Debugging
                     setMessages(decryptedMessages);
                 } else {
-                    console.error('Expected an array, but got:', response.data);
-                    setMessages([]); // Fallback to empty array
+                    setMessages([]);
                 }
             } catch (error) {
                 console.error('Error loading messages:', error);
-                setMessages([]); // Fallback to empty array
+                setMessages([]);
             }
         };
 
@@ -121,17 +113,10 @@ const PersonalChatChat = ({ memberId, memberName }) => {
             setConnected(true);
             toast.success("Connected to chat");
 
-            console.log(`Subscribed to:/api/v1/topic/personal_chat/${sortedChatId}`);
-
             client.subscribe(`/api/v1/topic/personal_chat/${sortedChatId}`, async (message) => {
-
                 const newMessage = JSON.parse(message.body);
-
-                console.log("New message received:", newMessage.content);
                 const msg = newMessage.content;
                 const key = localStorage.getItem("key");
-                console.log(key);
-
                 const decryptMsg = await decrypt(msg, key);
                 newMessage.content = decryptMsg;
                 setMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -156,15 +141,12 @@ const PersonalChatChat = ({ memberId, memberName }) => {
     const sendMessage = async () => {
         if (stompClientRef.current && connected && input.trim()) {
             const key = localStorage.getItem("key");
-            console.log(key);
-
-            const simpleMessgae = input;
-            const EncryptMsg = await encrypt(simpleMessgae, key);
-            console.log("Encrypted Message:", EncryptMsg);
+            const simpleMessage = input;
+            const encryptedMsg = await encrypt(simpleMessage, key);
 
             const message = {
                 sender: currentUser,
-                content: EncryptMsg,
+                content: encryptedMsg,
                 timestamp: new Date().toISOString(),
             };
             const sortedChatId = [currentUserId, member2Id].sort().join("/");
@@ -178,7 +160,6 @@ const PersonalChatChat = ({ memberId, memberName }) => {
             setInput("");
         }
     };
-
 
     const addEmoji = (emojiObject) => {
         setInput((prevInput) => prevInput + emojiObject.emoji);
@@ -198,20 +179,32 @@ const PersonalChatChat = ({ memberId, memberName }) => {
                 <div className="flex flex-col gap-3">
                     {messages.map((message, index) => (
                         <div key={index} className={`flex ${message.sender === currentUser ? "justify-end" : "justify-start"}`}>
-                            <div className={`my-2 ${message.sender === currentUser ? "bg-green-800" : "bg-gray-800"} p-3 max-w-xs rounded-lg`}>
-                                <div className="flex flex-row gap-2">
-                                    <Link to={`/dashboard/profile/${message.sender}`}>
-                                        <img className="h-10 w-10 rounded-full" src={`https://github.com/${message.sender}.png`} alt="" />
-                                    </Link>
-                                    <div className="flex flex-col gap-1">
+                            <div className={`my-2 ${message.sender === currentUser ? "bg-green-800" : "bg-gray-800"} p-3 max-w-[75%] break-words rounded-lg`}>
+                                <div className="flex flex-col gap-2 items-start">
+
+                                    {/* Image + Username Row */}
+                                    <div className="flex items-center gap-2">
+                                        <Link to={`/dashboard/profile/${message.sender}`}>
+                                            <img
+                                                className="h-8 w-8 rounded-full"
+                                                src={`https://github.com/${message.sender}.png`}
+                                                alt=""
+                                            />
+                                        </Link>
                                         <p className="text-sm font-bold">{message.sender}</p>
-                                        <p>{message.content}</p>
-                                        <p className="text-xs text-gray-400">{timeAgo(message.timestamp)}</p>
                                     </div>
+
+                                    {/* Message Content */}
+                                    <p className="whitespace-pre-wrap break-words text-left">{message.content}</p>
+
+                                    {/* Timestamp */}
+                                    <p className="text-xs text-gray-400">{timeAgo(message.timestamp)}</p>
                                 </div>
                             </div>
                         </div>
                     ))}
+
+
                     <div ref={messagesEndRef} />
                 </div>
             </main>
