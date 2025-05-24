@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -155,7 +156,7 @@ public class HackathonRequestService {
             // Save the updated hackathon once after all changes
             Object cached = redisTemplate.opsForValue().get(hackathonRequest.getHackathonId());
             if (cached != null) {
-                redisTemplate.opsForValue().set(hackathonRequest.getHackathonId(), hackathon);
+                redisTemplate.opsForValue().set(hackathonRequest.getHackathonId(), hackathon,86400, TimeUnit.SECONDS);
             }
             hackathonRepository.save(hackathon);
         }

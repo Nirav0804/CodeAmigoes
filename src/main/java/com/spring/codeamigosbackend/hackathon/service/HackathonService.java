@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -122,7 +123,7 @@ public class HackathonService {
 
         Hackathon hackathon = hackathonRepository.findById(id).orElse(null);
         if (hackathon != null) {
-            redisTemplate.opsForValue().set(id, hackathon);
+            redisTemplate.opsForValue().set(id, hackathon,86400, TimeUnit.SECONDS);
             return hackathon;
         }
 
