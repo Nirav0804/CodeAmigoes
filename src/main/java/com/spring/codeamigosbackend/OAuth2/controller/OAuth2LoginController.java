@@ -4,6 +4,7 @@ package com.spring.codeamigosbackend.OAuth2.controller;
 import com.spring.codeamigosbackend.OAuth2.util.JwtUtil;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -26,7 +27,7 @@ public class OAuth2LoginController {
     private String url;
 
     @GetMapping("/success")
-    public RedirectView oauth2Success(OAuth2AuthenticationToken authentication) {
+    public RedirectView oauth2Success(OAuth2AuthenticationToken authentication, HttpServletResponse response) {
         System.out.println("==== /oauth2/success endpoint HIT ====");
         OAuth2User oAuth2User = authentication.getPrincipal();
 
@@ -75,6 +76,10 @@ public class OAuth2LoginController {
         );
     // Log JWT token to console
         System.out.println("Generated JWT Token: " + jwtToken);
+        String cookieValue = "jwtToken=" + jwtToken
+                + "; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400";
+        response.addHeader("Set-Cookie", cookieValue);
+
         String redirectUrl = String.format(
                 url+"/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s&jwtToken=%s",
                 user.getUsername(),user.getId(),user.getGithubUsername(),user.getStatus(),jwtToken
