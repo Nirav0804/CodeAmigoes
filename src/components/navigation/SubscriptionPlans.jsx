@@ -35,7 +35,10 @@ const SubscriptionPlans = () => {
             description: "Demo Payment",
             order_id: response.id,
             handler: function (response) {
-              updatePaymentOnServer(response.razorpay_payment_id, response.razorpay_order_id, username, "paid");
+              // updatePaymentOnServer(response.razorpay_payment_id, response.razorpay_order_id, username, "paid");
+              setShowPaymentSuccessCard(true);
+  localStorage.setItem('paymentJustMade', Date.now());
+  window.dispatchEvent(new CustomEvent("paymentSuccess"));
             },
             prefill: { name: "", email: "", contact: "" },
             notes: { address: "Demo Razorpay Payment" },
@@ -53,30 +56,30 @@ const SubscriptionPlans = () => {
     });
   };
 
-  const updatePaymentOnServer = (payment_id, order_id, username, status) => {
-    const API_URL = `${API_BASE}/api/users/update_order`;
-    const userId = localStorage.getItem("userId");
+  // const updatePaymentOnServer = (payment_id, order_id, username, status) => {
+  //   const API_URL = `${API_BASE}/api/users/update_order`;
+  //   const userId = localStorage.getItem("userId");
 
 
-    $.ajax({
-      url: API_URL,
-      data: JSON.stringify({ payment_id, order_id, username, userId, status }),
-      contentType: 'application/json',
-      type: 'POST',
-      dataType: 'json',
-      success: function () {
-        setShowPaymentSuccessCard(true);
-        localStorage.setItem('paymentJustMade', Date.now());
-        localStorage.setItem('status', response.status) // Update status in local storage
-        window.localStorage.setItem("paymentJustMade", Date.now()); // Optional for other tabs
-        window.dispatchEvent(new CustomEvent("paymentSuccess")); // For current tab
+  //   $.ajax({
+  //     url: API_URL,
+  //     data: JSON.stringify({ payment_id, order_id, username, userId, status }),
+  //     contentType: 'application/json',
+  //     type: 'POST',
+  //     dataType: 'json',
+  //     success: function () {
+  //       setShowPaymentSuccessCard(true);
+  //       localStorage.setItem('paymentJustMade', Date.now());
+  //       localStorage.setItem('status', response.status || 'paid'); // Update status in local storage
+  //       window.localStorage.setItem("paymentJustMade", Date.now()); // Optional for other tabs
+  //       window.dispatchEvent(new CustomEvent("paymentSuccess")); // For current tab
 
-      },
-      error: function () {
-        alert("Failed! Payment was successful but not updated on server.");
-      }
-    });
-  };
+  //     },
+  //     error: function () {
+  //       alert("Failed! Payment was successful but not updated on server.");
+  //     }
+  //   });
+  // };
 
 
   return (
