@@ -12,18 +12,24 @@ import com.spring.codeamigosbackend.subscription.repository.PaymentOrderReposito
 import com.razorpay.Order;
 import com.razorpay.RazorpayException;
 import com.razorpay.RazorpayClient;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.codec.binary.Hex;
 import org.json.JSONObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -35,6 +41,16 @@ public class UserController {
     private final PaymentOrderRepository paymentOrderRepository;
 
     private final UserRepository userRepository;
+
+    @Value("${razorpay.webhook.secret}")
+    private String webhookSecret;
+
+    @Value("${razorpay.key_id}")
+    private String key_id;
+
+    @Value("${razorpay.key_secret}")
+    private String key_secret;
+
 
     // Register endpoint
     @PostMapping("/register")
@@ -125,7 +141,7 @@ public class UserController {
         System.out.println( "Order created successfully");
 
         int amt = Integer.parseInt(data.get("amount").toString());
-        var client = new RazorpayClient("rzp_test_LADJfV2vRiNrkZ","ESUWr3U8EwK99fD1afKYIA6z");
+        var client = new RazorpayClient(key_id,key_secret);
         //RazorpayClient("Key_id","key_secret");
 
         JSONObject ob = new JSONObject();
@@ -157,28 +173,99 @@ public class UserController {
 
     }
 
-    @PostMapping("/update_order")
-    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data) throws RazorpayException {
-
-        PaymentOrder paymentOrder =  paymentOrderRepository.findByOrderId(data.get("order_id").toString());
-        paymentOrder.setPaymentId(data.get("payment_id").toString());
-        paymentOrder.setStatus(data.get("status").toString());
-        Optional<User> user = userRepository.findById(data.get("userId").toString());
-        if(user.isPresent()) {
-            user.get().setStatus("paid");
-            userRepository.save(user.get());
-        }
-        paymentOrder.setUserId(data.get("userId").toString());
-        paymentOrderRepository.save(paymentOrder);
-
-        System.out.println(data);
-        return ResponseEntity.ok(Map.of("msg","updated status successfully"));
-    }
+//    @PostMapping("/update_order")
+//    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data) throws RazorpayException {
+//
+//        PaymentOrder paymentOrder =  paymentOrderRepository.findByOrderId(data.get("order_id").toString());
+//        paymentOrder.setPaymentId(data.get("payment_id").toString());
+//        paymentOrder.setStatus(data.get("status").toString());
+//        Optional<User> user = userRepository.findById(data.get("userId").toString());
+//        if(user.isPresent()) {
+//            user.get().setStatus("paid");
+//            userRepository.save(user.get());
+//        }
+//        paymentOrder.setUserId(data.get("userId").toString());
+//        paymentOrderRepository.save(paymentOrder);
+//
+//        System.out.println(data);
+//        return ResponseEntity.ok(Map.of("msg","updated status successfully"));
+//    }
 
     @GetMapping("/get_status/{username}")
     public ResponseEntity<?> getUserStatus(@PathVariable String username) {
         User user = userService.getUserByUsername(username);
         return ResponseEntity.ok(Map.of("status", user.getStatus()));
+    }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<String> handleWebhook(HttpServletRequest request) {
+        try {
+            String payload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+            String signature = request.getHeader("X-Razorpay-Signature");
+
+            if (!verifySignature(payload, signature, webhookSecret)) {
+                return ResponseEntity.status(400).body("Invalid signature");
+            }
+
+            // Process webhook asynchronously in a new thread
+            new Thread(() -> processWebhookPayload(payload)).start();
+
+            // Return 200 OK immediately
+            return ResponseEntity.ok("Webhook received");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Webhook error: " + e.getMessage());
+        }
+    }
+
+    private void processWebhookPayload(String payload) {
+        try {
+            JSONObject webhookPayload = new JSONObject(payload);
+            String paymentId = webhookPayload.getJSONObject("payload")
+                    .getJSONObject("payment")
+                    .getJSONObject("entity")
+                    .getString("id");
+
+            String orderId = webhookPayload.getJSONObject("payload")
+                    .getJSONObject("payment")
+                    .getJSONObject("entity")
+                    .getString("order_id");
+
+            PaymentOrder paymentOrder = paymentOrderRepository.findByOrderId(orderId);
+
+            // Avoid duplicate update if already paid
+            if (paymentOrder != null && !"paid".equalsIgnoreCase(paymentOrder.getStatus())) {
+                paymentOrder.setPaymentId(paymentId);
+                paymentOrder.setStatus("paid");
+                paymentOrderRepository.save(paymentOrder);
+
+                Optional<User> user = userRepository.findById(paymentOrder.getUserId());
+                user.ifPresent(u -> {
+                    u.setStatus("paid");
+                    userRepository.save(u);
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean verifySignature(String payload, String actualSignature, String secret) {
+        try {
+            String computedSignature = hmacSHA256(payload, secret);
+            return computedSignature.equals(actualSignature);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private String hmacSHA256(String data, String secret) throws Exception {
+        SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(secretKey);
+        byte[] hash = mac.doFinal(data.getBytes());
+        return new String(Hex.encodeHex(hash));
     }
 
 }
