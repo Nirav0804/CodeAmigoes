@@ -11,6 +11,7 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -93,6 +94,7 @@ public class HackathonController {
         }
     }
 
+    @PreAuthorize("hasAuthority('paid')")
     @GetMapping("/nearby-hackathons")
     public ResponseEntity<List<Hackathon>> getNearbyHackathons(  @RequestParam(required = true) Double latitude,
                                                                  @RequestParam(required = true) Double longitude,
@@ -101,6 +103,7 @@ public class HackathonController {
         List<Hackathon> activeHackathons =  this.hackathonService.findNearbyHackathons(latitude, longitude,radius);
         return ResponseEntity.ok(activeHackathons);
     }
+    @PreAuthorize("hasAuthority('paid')")
     @GetMapping("/recommended-hackathons")
     public ResponseEntity<List<HackathonService.ScoredHackathon>> recommendHackathonsToUser(@RequestParam(required = true) String username) {
         return ResponseEntity.ok(this.hackathonService.recommendHackathons(username));
