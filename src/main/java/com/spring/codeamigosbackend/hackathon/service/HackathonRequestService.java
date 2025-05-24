@@ -1,4 +1,5 @@
 package com.spring.codeamigosbackend.hackathon.service;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.codeamigosbackend.hackathon.dto.HackathonRequestDTO;
 import com.spring.codeamigosbackend.hackathon.model.Hackathon;
 import com.spring.codeamigosbackend.hackathon.model.HackathonRequest;
@@ -8,7 +9,9 @@ import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +23,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class HackathonRequestService {
+
+    @Autowired
+    public RedisTemplate redisTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Value("${frontend.url}")
     private String url;
@@ -110,6 +119,7 @@ public class HackathonRequestService {
         // Retrieve the associated hackathon (if exists)
         Optional<Hackathon> hackathonOpt = hackathonRepository.findById(hackathonRequest.getHackathonId());
 
+
         // Update the hackathon request status and save it
         hackathonRequest.setStatus(status);
         hackathonRequestRepository.save(hackathonRequest);
@@ -143,6 +153,10 @@ public class HackathonRequestService {
             }
 
             // Save the updated hackathon once after all changes
+            Object cached = redisTemplate.opsForValue().get(hackathonRequest.getHackathonId());
+            if (cached != null) {
+                redisTemplate.opsForValue().set(hackathonRequest.getHackathonId(), hackathon);
+            }
             hackathonRepository.save(hackathon);
         }
 

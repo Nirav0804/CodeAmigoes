@@ -15,6 +15,6 @@ public interface HackathonRepository extends MongoRepository<Hackathon, String> 
     List<Hackathon> findByRegistrationDates_StartBeforeAndRegistrationDates_EndAfterOrderByRegistrationDates_StartAsc(LocalDateTime now, LocalDateTime now1);
     List<Hackathon> findByRegistrationDates_StartAfterOrderByRegistrationDates_StartAsc(LocalDateTime now);
     List<Hackathon> findByRegistrationDates_EndBeforeOrderByRegistrationDates_EndDesc(LocalDateTime now);
-
+ 
 
 }

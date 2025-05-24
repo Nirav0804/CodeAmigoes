@@ -1,6 +1,7 @@
 package com.spring.codeamigosbackend.hackathon.service;
 
 import com.cloudinary.Cloudinary;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.codeamigosbackend.geolocation.services.GeolocationService;
 import com.spring.codeamigosbackend.hackathon.dto.HackathonDTO;
 
@@ -15,9 +16,12 @@ import com.spring.codeamigosbackend.recommendation.utils.ApiException;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.net.SocketWrapperBase;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -37,6 +41,14 @@ public class HackathonService {
     private  GeolocationService  geolocationService;
     private final UserService userService;
     private final FrameworkAnalysisService frameworkAnalysisService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private RestTemplate restTemplate;
+    @Autowired
+    private RedisTemplate<Object, Object> redisTemplate;
 
     @Transactional
     public Hackathon createHackathon(HackathonDTO request) throws IOException {
@@ -75,33 +87,23 @@ public class HackathonService {
         hackathon.setUpdatedAt(LocalDateTime.now());
         hackathon.setCreatedBy(request.getCreatedBy());
         hackathon.setCreatedById(request.getCreatedById());
-
         return hackathonRepository.save(hackathon);
     }
 
     public List<Hackathon> getAllActiveHackathons() {
-        return hackathonRepository.findByRegistrationDates_EndAfterOrderByRegistrationDates_StartAsc(
-                LocalDateTime.now()
-        );
+        return hackathonRepository.findByRegistrationDates_EndAfterOrderByRegistrationDates_StartAsc(LocalDateTime.now());
     }
 
     public List<Hackathon> getPastHackathons() {
-        return hackathonRepository.findByRegistrationDates_EndBeforeOrderByRegistrationDates_EndDesc(
-                LocalDateTime.now()
-        );
+        return hackathonRepository.findByRegistrationDates_EndBeforeOrderByRegistrationDates_EndDesc(LocalDateTime.now());
     }
-
     public List<Hackathon> getUpcomingHackathons() {
-        return hackathonRepository.findByRegistrationDates_StartAfterOrderByRegistrationDates_StartAsc(
-                LocalDateTime.now()
-        );
+        return hackathonRepository.findByRegistrationDates_StartAfterOrderByRegistrationDates_StartAsc(LocalDateTime.now());
     }
 
     public List<Hackathon> getOngoingHackathons() {
         LocalDateTime now = LocalDateTime.now();
-        return hackathonRepository.findByRegistrationDates_StartBeforeAndRegistrationDates_EndAfterOrderByRegistrationDates_StartAsc(
-                now, now
-        );
+        return hackathonRepository.findByRegistrationDates_StartBeforeAndRegistrationDates_EndAfterOrderByRegistrationDates_StartAsc(now, now);
     }
 
     private void validateRequest(HackathonDTO request) {
@@ -110,10 +112,23 @@ public class HackathonService {
         }
     }
 
+
     public Hackathon getHackathonById(String id) {
-        return hackathonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Hackathon not found with id: " + id));
+        Object cached = redisTemplate.opsForValue().get(id);
+        if (cached != null) {
+             Hackathon hackathon = objectMapper.convertValue(cached, Hackathon.class);
+             return hackathon;
+        }
+
+        Hackathon hackathon = hackathonRepository.findById(id).orElse(null);
+        if (hackathon != null) {
+            redisTemplate.opsForValue().set(id, hackathon);
+            return hackathon;
+        }
+
+        throw new RuntimeException("Hackathon not found with id: " + id);
     }
+
 
     //for testing
     public Map uploadImage(MultipartFile file) {
