@@ -36,9 +36,12 @@ const HackathonDetailsPage = () => {
   useEffect(() => {
     const fetchHackathonData = async () => {
       try {
+        const start = Date.now();
         const response = await axios.get(
           `${API_BASE}/api/hackathons/${id}`
         );
+        const end = Date.now();
+        console.log("API call took " + (end - start) + " milliseconds");
         setHackathonData(response.data);
         setRequestObject({
           hackathonId: response.data.id,
@@ -82,7 +85,7 @@ const HackathonDetailsPage = () => {
     try {
       const currentUserId = localStorage.getItem("userId");
       const member2Id = hackathonData.createdById;
-      const leader = hackathonData.createdBy;   
+      const leader = hackathonData.createdBy;
       console.log(member2Id);
       const response = await axios.post(
         `${API_BASE}/api/v1/personal_chat/create_or_get_personal_chat/${currentUserId}/${member2Id}`
@@ -97,7 +100,7 @@ const HackathonDetailsPage = () => {
   };
   const handleJoin = async () => {
     try {
-      await axios.post("${API_BASE}/request", requestObject, {
+      await axios.post(`${API_BASE}/request`, requestObject, {
         headers: { "Content-Type": "application/json" },
       });
       toast.success("Request sent successfully!", {

@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import HackathonCard from "./HackathonCard";
 import HackathonMap from "./HackathonMap";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -11,9 +11,9 @@ const HackathonList = ({
   joinable,
 }) => {
   const username = localStorage.getItem("username");
-  const [latitude,setLatitude] = useState(localStorage.getItem("latitude"));
-  const [longitude,setLongitude] = useState(localStorage.getItem("longitude"));
-  const radius= 600
+  const [latitude, setLatitude] = useState(localStorage.getItem("latitude"));
+  const [longitude, setLongitude] = useState(localStorage.getItem("longitude"));
+  const radius = 600
   const fetchHackathons = async () => {
     // if (type === "active") {
     //   const response = await fetch("https://codeamigos-backend.onrender.com/api/hackathons");
@@ -44,7 +44,7 @@ const HackathonList = ({
       setHackathons(data);
       setFilteredHackathons(data);
     }
-    if ( type == "nearby" ){
+    if (type == "nearby") {
       const response = await fetch(
         `${API_BASE}/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`
       );
@@ -52,18 +52,18 @@ const HackathonList = ({
       setHackathons(data);
       setFilteredHackathons(data);
     }
-    if(type == "recommended"){
+    if (type == "recommended") {
       console.log("Hello");
-      
+
       const response = await fetch(
         `${API_BASE}/api/hackathons/recommended-hackathons?username=${username}`
       );
       const data = await response.json();
       console.log(data);
-      
-      if(data.length==0){
+
+      if (data.length == 0) {
         setHackathons(["No recommended Hacathons found"])
-      }else{
+      } else {
         const hackathons = data.map(item => item.hackathon)
         setHackathons(hackathons);
         setFilteredHackathons(hackathons);
@@ -75,18 +75,18 @@ const HackathonList = ({
     setFilteredHackathons([]);
     fetchHackathons();
   }, [type, latitude, longitude]);
-  
+
   return (
     <>
       {
         type == "nearby" && <HackathonMap latitude={latitude} longitude={longitude} radius={radius} hackathons={filteredHackathons} />
       }
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-transparent">
-      {Array.isArray(filteredHackathons) &&
-        filteredHackathons.map((hackathon, index) => (
-          <HackathonCard key={index} {...hackathon} joinable={joinable} type={type} />
-        ))}
-    </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-transparent">
+        {Array.isArray(filteredHackathons) &&
+          filteredHackathons.map((hackathon, index) => (
+            <HackathonCard key={index} {...hackathon} joinable={joinable} type={type} />
+          ))}
+      </div>
     </>
   );
 };

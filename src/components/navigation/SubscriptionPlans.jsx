@@ -14,7 +14,7 @@ const SubscriptionPlans = () => {
 
   const paymentOrder = () => {
     const amount = 479;
-    const API_URL = "${API_BASE}/api/users/create_order";
+    const API_URL = `${API_BASE}/api/users/create_order`;
     const username = localStorage.getItem("username");
     const userId = localStorage.getItem("userId");
 
@@ -53,7 +53,7 @@ const SubscriptionPlans = () => {
   };
 
   const updatePaymentOnServer = (payment_id, order_id, username, status) => {
-    const API_URL = "${API_BASE}/api/users/update_order";
+    const API_URL = `${API_BASE}/api/users/update_order`;
     const userId = localStorage.getItem("userId");
 
 
