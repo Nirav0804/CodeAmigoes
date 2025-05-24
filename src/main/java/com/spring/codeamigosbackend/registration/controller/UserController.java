@@ -1,5 +1,6 @@
 package com.spring.codeamigosbackend.registration.controller;
 
+import com.spring.codeamigosbackend.OAuth2.util.JwtUtil;
 import com.spring.codeamigosbackend.recommendation.controllers.FrameworkController;
 import com.spring.codeamigosbackend.recommendation.dtos.GithubScoreRequest;
 import com.spring.codeamigosbackend.registration.model.User;
@@ -19,6 +20,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -26,10 +29,19 @@ import org.springframework.web.bind.annotation.*;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Principal;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import jakarta.servlet.http.HttpServletResponse;  // For HttpServletResponse parameter
+import jakarta.servlet.http.Cookie;                   // For creating and manipulating cookies
+import org.springframework.http.ResponseEntity;     // For ResponseEntity return type
+import org.springframework.web.bind.annotation.PostMapping;  // For @PostMapping annotation
+import org.springframework.web.bind.annotation.RequestBody;  // For @RequestBody annotation
+import jakarta.validation.Valid;                     // For @Valid annotation
+
+// Also import your User class and jwtUtil as per your project structure
 
 
 @RestController
@@ -39,7 +51,7 @@ public class UserController {
     private final UserService userService;
     private final FrameworkController frameworkController;
     private final PaymentOrderRepository paymentOrderRepository;
-
+    private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
     @Value("${razorpay.webhook.secret}")
@@ -54,39 +66,47 @@ public class UserController {
 
     // Register endpoint
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody User user, HttpServletResponse response) {
         try {
-            System.out.println("Received user: " + user);
-            String id = user.getId();
-//            System.out.println("GitHub Username: " + githubUsername);
-            Optional<User> existingUser = userRepository.findById(id);
-            System.out.println("User from DB: " + existingUser);
-
+            // Your existing user save/update logic
+            Optional<User> existingUser = userRepository.findById(user.getId());
             User savedUser;
-
-            User u = null;
             if (existingUser.isPresent()) {
-                System.out.println("User already exists. Updating...");
-
-                u = existingUser.get();
+                User u = existingUser.get();
                 u.setUsername(user.getUsername());
                 u.setPassword(user.getPassword());
                 u.setDisplayName(user.getDisplayName());
                 u.setEmail(user.getEmail());
                 u.setLeetcodeUsername(user.getLeetcodeUsername());
                 u.setCodechefUsername(user.getCodechefUsername());
-
-                savedUser = userRepository.save(u); // update
+                savedUser = userRepository.save(u);
             } else {
-                System.out.println("New user. Saving...");
-                savedUser = userRepository.save(user); // register
+                savedUser = userRepository.save(user);
             }
-            GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
-            githubScoreRequest.setUsername(user.getUsername());
-            githubScoreRequest.setEmail(user.getEmail());
-            githubScoreRequest.setAccessToken(u.getGithubAccessToken());
-            frameworkController.setGithubScore(githubScoreRequest);
+
+            // Generate JWT token
+            String token = jwtUtil.generateToken(
+                    savedUser.getId(),
+                    savedUser.getUsername(),
+                    savedUser.getEmail(),
+                    savedUser.getStatus()
+            );
+            // Log JWT token to console
+            System.out.println("Generated JWT Token: " + token);
+            // Set JWT token as HttpOnly, Secure cookie with SameSite=Strict
+            ResponseCookie cookie = ResponseCookie.from("jwtToken", token)
+                    .httpOnly(true)
+                    .secure(false) // Change to true only when you're on HTTPS
+                    .sameSite("Strict")
+                    .path("/")
+                    .maxAge(Duration.ofDays(1))
+                    .build();
+
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+            // Return user info (without token in body)
             return ResponseEntity.ok(savedUser);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Server Error: " + e.getMessage());
