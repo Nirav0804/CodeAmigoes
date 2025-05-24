@@ -173,23 +173,23 @@ public class UserController {
 
     }
 
-//    @PostMapping("/update_order")
-//    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data) throws RazorpayException {
-//
-//        PaymentOrder paymentOrder =  paymentOrderRepository.findByOrderId(data.get("order_id").toString());
-//        paymentOrder.setPaymentId(data.get("payment_id").toString());
-//        paymentOrder.setStatus(data.get("status").toString());
-//        Optional<User> user = userRepository.findById(data.get("userId").toString());
-//        if(user.isPresent()) {
-//            user.get().setStatus("paid");
-//            userRepository.save(user.get());
-//        }
-//        paymentOrder.setUserId(data.get("userId").toString());
-//        paymentOrderRepository.save(paymentOrder);
-//
-//        System.out.println(data);
-//        return ResponseEntity.ok(Map.of("msg","updated status successfully"));
-//    }
+    @PostMapping("/update_order")
+    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data) throws RazorpayException {
+
+        PaymentOrder paymentOrder =  paymentOrderRepository.findByOrderId(data.get("order_id").toString());
+        paymentOrder.setPaymentId(data.get("payment_id").toString());
+        paymentOrder.setStatus(data.get("status").toString());
+        Optional<User> user = userRepository.findById(data.get("userId").toString());
+        if(user.isPresent()) {
+            user.get().setStatus("paid");
+            userRepository.save(user.get());
+        }
+        paymentOrder.setUserId(data.get("userId").toString());
+        paymentOrderRepository.save(paymentOrder);
+
+        System.out.println(data);
+        return ResponseEntity.ok(Map.of("msg","updated status successfully"));
+    }
 
     @GetMapping("/get_status/{username}")
     public ResponseEntity<?> getUserStatus(@PathVariable String username) {
