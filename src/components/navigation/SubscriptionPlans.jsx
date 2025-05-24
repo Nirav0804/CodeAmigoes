@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import $ from "jquery";
 import PaymentSuccessCard from "./PaymentSuccess";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const SubscriptionPlans = () => {
   const navigate = useNavigate();

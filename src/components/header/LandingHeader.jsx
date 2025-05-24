@@ -79,7 +79,7 @@ const LandingHeader = () => {
           <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
               {/* Logo */}
   <motion.img
-    src="src\logoN.png"  // Replace with the actual path to your logo
+    src="src/logoN.png"  // Replace with the actual path to your logo
     alt="logot"
     className="mb-15 w-80 h-75"  // Adjust the width and height as needed
     initial={{ opacity: 0, y: -20 }}
