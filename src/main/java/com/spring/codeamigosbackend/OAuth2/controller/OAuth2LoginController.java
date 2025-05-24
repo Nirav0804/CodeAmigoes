@@ -1,6 +1,7 @@
 package com.spring.codeamigosbackend.OAuth2.controller;
 
 
+import com.spring.codeamigosbackend.OAuth2.util.JwtUtil;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,7 @@ public class OAuth2LoginController {
         }
         System.out.println("Authentication Token: " + authentication);
         System.out.println("OAuth2 User: " + oAuth2User.getAttributes());
-
+        System.out.println("Username: " + user.getUsername());
         user.evaluateProfileCompletion();
 
         if (!user.isProfileComplete()) {
@@ -65,9 +66,18 @@ public class OAuth2LoginController {
 //            return new RedirectView(url+"/register?oauth=true&userId=" + user.getId());
         }
 
+// Profile is complete: generate JWT
+        String jwtToken = JwtUtil.generateToken(
+                user.getId().toString(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getStatus()// Make sure User has a getRole() method
+        );
+    // Log JWT token to console
+        System.out.println("Generated JWT Token: " + jwtToken);
         String redirectUrl = String.format(
-                url+"/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s",
-                user.getUsername(),user.getId(),user.getGithubUsername(),user.getStatus()
+                url+"/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s&jwtToken=%s",
+                user.getUsername(),user.getId(),user.getGithubUsername(),user.getStatus(),jwtToken
         );
         return new RedirectView(redirectUrl);
     }
