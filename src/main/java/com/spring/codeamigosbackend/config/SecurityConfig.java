@@ -1,12 +1,17 @@
 package com.spring.codeamigosbackend.config;
 
+import com.spring.codeamigosbackend.OAuth2.filter.JwtAuthenticationFilter;
 import com.spring.codeamigosbackend.OAuth2.service.CustomOAuth2UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -18,18 +23,37 @@ public class SecurityConfig {
     }
 
     @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter();
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CustomCorsConfiguration corsConfig) throws Exception {
         http
                 .cors(c -> c.configurationSource(corsConfig))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register/", "/oauth2/","/api/**","/request/**","/requests/**").permitAll()
+                        .requestMatchers(
+                                "/", "/login", "/register/", "/oauth2/", "/oauth2/**", "/request/**", "/requests/**","/api/users/register"
+                        ).permitAll()
+                        .requestMatchers("/api/hackathons/recommended-hackathons", "/api/hackathons/nearby-hackathons")
+                        .hasAuthority("paid")
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exception -> exception
+                        // Return 403 Forbidden instead of redirecting to login page for unauthenticated requests
+                        .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+                        // Return 403 Forbidden with message when access is denied (authorization failure)
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                        })
+                )
                 .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))  // Use CustomOAuth2UserService
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .defaultSuccessUrl("/oauth2/success", true)
-                );
+                )
+                // Add your JWT filter BEFORE UsernamePasswordAuthenticationFilter
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
