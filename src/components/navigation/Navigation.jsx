@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaUser, FaSignOutAlt, FaUsers, FaComments, FaCode } from "react-icons/fa";
 import Username from "./Username";
 import NavItem from "./NavItem";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const Navigation = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -10,14 +11,25 @@ const Navigation = () => {
   const [showPaymentSuccessCard, setShowPaymentSuccessCard] = useState(false);
 
   const [status, setStatus] = useState("");
-  const handleLogout = () => {
-    localStorage.removeItem("username");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("college");
-    localStorage.removeItem("githubUsername");
-    localStorage.removeItem("status");
-    navigate("/");
-  };
+const handleLogout = async () => {
+  try {
+    await fetch(`${API_BASE}/api/users/logout`, {
+      method: 'POST',
+      credentials: 'include', // Ensures cookies are sent!
+    });
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+  // Clear localStorage
+  localStorage.removeItem("username");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("college");
+  localStorage.removeItem("githubUsername");
+  localStorage.removeItem("status");
+  // Redirect to homepage or login
+  navigate("/");
+};
+
 
   const handleRedirect = () => {
     const status = localStorage.getItem("status");
