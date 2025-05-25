@@ -6,6 +6,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -28,22 +29,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        String token = null;
         final String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            token = header.substring(7);
+        }
+        if (token == null && request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwtToken".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
 
-        if (header == null || !header.startsWith("Bearer ")) {
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String token = header.substring(7);
-
         try {
             Claims claims = JwtUtil.validateToken(token);
             String userId = claims.getSubject();
-            String status = (String) claims.get("status"); // e.g., "paid" or "not paid"
+            String status = (String) claims.get("status");
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userId, // principal is userId string
+                    userId,
                     null,
                     Collections.singletonList(new SimpleGrantedAuthority(status))
             );
