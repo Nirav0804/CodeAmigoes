@@ -49,6 +49,7 @@ const LoginForm = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials: true, // <-- This line enables cookies!
         body: JSON.stringify(formData),
       });
 

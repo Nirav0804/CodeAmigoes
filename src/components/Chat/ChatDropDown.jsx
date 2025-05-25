@@ -36,7 +36,9 @@ function ChatDropDown() {
                 try {
                     // Fetch personal chats
 
-                    const response = await axios.get(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`);
+                    const response = await axios.get(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`,{
+      withCredentials: true, // <-- This sends cookies!
+    });
                     console.log(response.data);
 
                     const sortedPersonalChat = response.data

@@ -4,6 +4,7 @@ import { Typewriter } from "react-simple-typewriter";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from 'react-router-dom';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const RegistrationForm = () => {
   const features = [
     "Real-time Group Chats",
@@ -78,6 +79,7 @@ const RegistrationForm = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials: true, // <-- This line enables cookies!
         body: JSON.stringify(formData),
       });
 

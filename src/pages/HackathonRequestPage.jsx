@@ -24,7 +24,9 @@ const HackathonRequestPage = () => {
   const fetchHackathonRequests = async (username) => {
     try {
       const response = await axios.get(
-        `${API_BASE}/requests/${username}`
+        `${API_BASE}/requests/${username}`, {
+      withCredentials: true, // <-- This sends cookies!
+    }
       );
       setHackathonRequests(response.data.reverse());
     } catch (error) {

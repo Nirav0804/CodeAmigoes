@@ -22,7 +22,9 @@ const HackathonList = ({
     //   setFilteredHackathons(data);
     // }
     if (type === "past") {
-      const response = await fetch(`${API_BASE}/api/hackathons/past`);
+      const response = await fetch(`${API_BASE}/api/hackathons/past`,{
+  credentials: 'include',
+});
       const data = await response.json();
       console.log(response);
       setHackathons(data);
@@ -30,7 +32,9 @@ const HackathonList = ({
     }
     if (type === "ongoing") {
       const response = await fetch(
-        `${API_BASE}/api/hackathons/ongoing`
+        `${API_BASE}/api/hackathons/ongoing`,{
+  credentials: 'include',
+}
       );
       const data = await response.json();
       setHackathons(data);
@@ -38,7 +42,9 @@ const HackathonList = ({
     }
     if (type === "upcoming") {
       const response = await fetch(
-        `${API_BASE}/api/hackathons/upcoming`
+        `${API_BASE}/api/hackathons/upcoming`,{
+  credentials: 'include',
+}
       );
       const data = await response.json();
       setHackathons(data);
@@ -46,7 +52,9 @@ const HackathonList = ({
     }
     if (type == "nearby") {
       const response = await fetch(
-        `${API_BASE}/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`
+        `${API_BASE}/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`,{
+  credentials: 'include',
+}
       );
       const data = await response.json();
       setHackathons(data);
@@ -56,7 +64,9 @@ const HackathonList = ({
       console.log("Hello");
 
       const response = await fetch(
-        `${API_BASE}/api/hackathons/recommended-hackathons?username=${username}`
+        `${API_BASE}/api/hackathons/recommended-hackathons?username=${username}`,{
+  credentials: 'include',
+}
       );
       const data = await response.json();
       console.log(data);

@@ -55,7 +55,9 @@ const PersonalChatChat = ({ memberId, memberName }) => {
                 }
 
                 const response = await axios.get(
-                    `${API_BASE}/api/v1/personal_chat/all_messages/${sortedChatId}`
+                    `${API_BASE}/api/v1/personal_chat/all_messages/${sortedChatId}`,{
+      withCredentials: true, // <-- This sends cookies!
+    }
                 );
 
                 if (Array.isArray(response.data)) {

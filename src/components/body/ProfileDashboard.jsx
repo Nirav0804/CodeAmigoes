@@ -112,7 +112,9 @@ const ProfileDashboard = () => {
   useEffect(() => {
     // Fetch user data
     axios
-      .get(`${API_BASE}/api/users/${username}`)
+      .get(`${API_BASE}/api/users/${username}`,{
+      withCredentials: true, // <-- This sends cookies!
+    })
       .then((response) => {
         console.log(response.data);
         setUserData(response.data);

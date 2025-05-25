@@ -95,7 +95,9 @@ const ProfileEditForm = () => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE}/api/users/${localStorage.getItem("username")}`
+          `${API_BASE}/api/users/${localStorage.getItem("username"),{
+      withCredentials: true, // <-- This sends cookies!
+    }}`
         );
         console.log(response.data);
 
@@ -168,7 +170,9 @@ const ProfileEditForm = () => {
 
     try {
       const response = await axios.put(
-        `${API_BASE}/api/users/${localStorage.getItem("username")}`,
+        `${API_BASE}/api/users/${localStorage.getItem("username"),{
+      withCredentials: true, // <-- This sends cookies!
+    }}`,
         formData,
         {
           headers: {

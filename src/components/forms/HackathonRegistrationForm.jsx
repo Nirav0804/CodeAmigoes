@@ -317,6 +317,7 @@ const HackathonRegistrationForm = () => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
+            withCredentials: true, // <-- This line enables cookies!
         }
       );
 

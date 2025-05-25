@@ -38,7 +38,9 @@ const HackathonDetailsPage = () => {
       try {
         const start = Date.now();
         const response = await axios.get(
-          `${API_BASE}/api/hackathons/${id}`
+          `${API_BASE}/api/hackathons/${id}`, {
+      withCredentials: true, // <-- This sends cookies!
+    }
         );
         const end = Date.now();
         console.log("API call took " + (end - start) + " milliseconds");
@@ -87,9 +89,13 @@ const HackathonDetailsPage = () => {
       const member2Id = hackathonData.createdById;
       const leader = hackathonData.createdBy;
       console.log(member2Id);
-      const response = await axios.post(
-        `${API_BASE}/api/v1/personal_chat/create_or_get_personal_chat/${currentUserId}/${member2Id}`
-      );
+     const response = await axios.post(
+  `${API_BASE}/api/v1/personal_chat/create_or_get_personal_chat/${currentUserId}/${member2Id}`,
+  {}, // or your data
+  {
+    withCredentials: true,
+  }
+);
       navigate('/dashboard/chat?leader=' + leader);
       console.log(response);
     }
@@ -102,6 +108,7 @@ const HackathonDetailsPage = () => {
     try {
       await axios.post(`${API_BASE}/request`, requestObject, {
         headers: { "Content-Type": "application/json" },
+         withCredentials: true, // <-- This line enables cookies!
       });
       toast.success("Request sent successfully!", {
         position: "top-center",
