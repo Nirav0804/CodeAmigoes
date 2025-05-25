@@ -200,15 +200,30 @@ public class UserController {
     }
 
     @PostMapping("/update_order")
-    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data) throws RazorpayException {
+    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data,HttpServletResponse response) throws RazorpayException {
 
         PaymentOrder paymentOrder =  paymentOrderRepository.findByOrderId(data.get("order_id").toString());
         paymentOrder.setPaymentId(data.get("payment_id").toString());
         paymentOrder.setStatus(data.get("status").toString());
         Optional<User> user = userRepository.findById(data.get("userId").toString());
-        if(user.isPresent()) {
-            user.get().setStatus("paid");
-            userRepository.save(user.get());
+        if (user.isPresent()) {
+            User updatedUser = user.get();
+            updatedUser.setStatus("paid");
+            userRepository.save(updatedUser);
+
+            // Generate new JWT token with updated status
+            String newToken = jwtUtil.generateToken(
+                    updatedUser.getId(),
+                    updatedUser.getUsername(),
+                    updatedUser.getEmail(),
+                    updatedUser.getStatus() // now "paid"
+            );
+            // Log JWT token to console
+            System.out.println("updated JWT Token: " + newToken);
+            // Set the new JWT token as a cookie
+            String cookieValue = "jwtToken=" + newToken
+                    + "; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400";
+            response.addHeader("Set-Cookie", cookieValue);
         }
         paymentOrder.setUserId(data.get("userId").toString());
         paymentOrderRepository.save(paymentOrder);
