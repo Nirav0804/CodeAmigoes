@@ -138,10 +138,28 @@ const HackathonRegistrationForm = () => {
   const [formErrors, setFormErrors] = useState({});
 
   const allTechStackOptions = [
-    { value: "", label: "Select Technology" },
-    { value: "Spring Boot", label: "Spring Boot" },
-    { value: "React", label: "React" },
-    { value: "Express", label: "Express" },
+{ value: "", label: "Select Technology" },
+{ value: "Spring Boot", label: "Spring Boot" },
+{ value: "React", label: "React" },
+{ value: "Express", label: "Express" },
+{ value: "Next.js", label: "Next.js" },
+{ value: "Vue.js", label: "Vue.js" },
+{ value: "Nuxt.js", label: "Nuxt.js" },
+{ value: "NestJS", label: "NestJS" },
+{ value: "Angular", label: "Angular" },
+{ value: "Svelte", label: "Svelte" },
+{ value: "Remix", label: "Remix" },
+{ value: "Flask", label: "Flask" },
+{ value: "Django", label: "Django" },
+{ value: "FastAPI", label: "FastAPI" },
+{ value: "Laravel", label: "Laravel" },
+{ value: "Ruby on Rails", label: "Ruby on Rails" },
+{ value: "Gin", label: "Gin" },
+{ value: "Actix Web", label: "Actix Web" },
+{ value: "Rocket", label: "Rocket" },
+{ value: "Vapor", label: "Vapor" },
+{ value: "Flutter", label: "Flutter" },
+{ value: "ASP.NET Core", label: "ASP.NET Core" },
   ];
 
   const getAvailableOptions = (currentIndex) => {
