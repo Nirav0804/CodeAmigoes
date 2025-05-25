@@ -139,8 +139,8 @@ const HackathonRegistrationForm = () => {
 
   const allTechStackOptions = [
     { value: "", label: "Select Technology" },
-    { value: "springboot", label: "Spring Boot" },
-    { value: "react", label: "React" },
+    { value: "Spring Boot", label: "Spring Boot" },
+    { value: "React", label: "React" },
     { value: "Express", label: "Express" },
   ];
 
