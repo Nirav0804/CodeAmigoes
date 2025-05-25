@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/personal_chat")
-@CrossOrigin(origins = "http://localhost:5173/", allowedHeaders = "*")
+@CrossOrigin(origins = "http://localhost:5173/", allowedHeaders = "*",allowCredentials = "true")
 public class PersonalChatController {
     private final PersonalChatService personalChatService;
 
