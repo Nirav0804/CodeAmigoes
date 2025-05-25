@@ -126,7 +126,13 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        // Expire the JWT cookie
+        String expiredCookie = "jwtToken=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0";
+        response.addHeader("Set-Cookie", expiredCookie);
+        return ResponseEntity.ok("Logged out successfully");
+    }
     // Get user details
     @GetMapping("/{username}")
     public ResponseEntity<?> getUserDetails(@PathVariable java.lang.String username) {
