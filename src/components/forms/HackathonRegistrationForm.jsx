@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { Calendar, Upload, Globe, Plus, Trash2 } from "lucide-react";
 import Navigation from "../navigation/Navigation";
 import GradientBackground from "../background/GradientBackground";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const Input = ({ label, error, ...props }) => (
   <div className="w-full">
@@ -94,8 +95,8 @@ const StepIndicator = ({ currentStep, totalSteps }) => (
       <React.Fragment key={index}>
         <span
           className={`h-8 w-8 rounded-full flex items-center justify-center ${index + 1 <= currentStep
-              ? "bg-blue-500 text-white"
-              : "bg-gray-700 text-gray-300"
+            ? "bg-blue-500 text-white"
+            : "bg-gray-700 text-gray-300"
             }`}
         >
           {index + 1}
@@ -107,6 +108,7 @@ const StepIndicator = ({ currentStep, totalSteps }) => (
 );
 
 const HackathonRegistrationForm = () => {
+  const { userId, username } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -131,35 +133,35 @@ const HackathonRegistrationForm = () => {
       end: "",
     },
     techStacks: [],
-    createdBy: localStorage.getItem("username"),
-    createdById: localStorage.getItem("userId"),
+    createdBy: username,
+    createdById: userId,
   });
 
   const [formErrors, setFormErrors] = useState({});
 
   const allTechStackOptions = [
-{ value: "", label: "Select Technology" },
-{ value: "Spring Boot", label: "Spring Boot" },
-{ value: "React", label: "React" },
-{ value: "Express", label: "Express" },
-{ value: "Next.js", label: "Next.js" },
-{ value: "Vue.js", label: "Vue.js" },
-{ value: "Nuxt.js", label: "Nuxt.js" },
-{ value: "NestJS", label: "NestJS" },
-{ value: "Angular", label: "Angular" },
-{ value: "Svelte", label: "Svelte" },
-{ value: "Remix", label: "Remix" },
-{ value: "Flask", label: "Flask" },
-{ value: "Django", label: "Django" },
-{ value: "FastAPI", label: "FastAPI" },
-{ value: "Laravel", label: "Laravel" },
-{ value: "Ruby on Rails", label: "Ruby on Rails" },
-{ value: "Gin", label: "Gin" },
-{ value: "Actix Web", label: "Actix Web" },
-{ value: "Rocket", label: "Rocket" },
-{ value: "Vapor", label: "Vapor" },
-{ value: "Flutter", label: "Flutter" },
-{ value: "ASP.NET Core", label: "ASP.NET Core" },
+    { value: "", label: "Select Technology" },
+    { value: "Spring Boot", label: "Spring Boot" },
+    { value: "React", label: "React" },
+    { value: "Express", label: "Express" },
+    { value: "Next.js", label: "Next.js" },
+    { value: "Vue.js", label: "Vue.js" },
+    { value: "Nuxt.js", label: "Nuxt.js" },
+    { value: "NestJS", label: "NestJS" },
+    { value: "Angular", label: "Angular" },
+    { value: "Svelte", label: "Svelte" },
+    { value: "Remix", label: "Remix" },
+    { value: "Flask", label: "Flask" },
+    { value: "Django", label: "Django" },
+    { value: "FastAPI", label: "FastAPI" },
+    { value: "Laravel", label: "Laravel" },
+    { value: "Ruby on Rails", label: "Ruby on Rails" },
+    { value: "Gin", label: "Gin" },
+    { value: "Actix Web", label: "Actix Web" },
+    { value: "Rocket", label: "Rocket" },
+    { value: "Vapor", label: "Vapor" },
+    { value: "Flutter", label: "Flutter" },
+    { value: "ASP.NET Core", label: "ASP.NET Core" },
   ];
 
   const getAvailableOptions = (currentIndex) => {
@@ -335,7 +337,7 @@ const HackathonRegistrationForm = () => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-            withCredentials: true, // <-- This line enables cookies!
+          withCredentials: true, // <-- This line enables cookies!
         }
       );
 
@@ -395,7 +397,7 @@ const HackathonRegistrationForm = () => {
             <div className="p-6 border-b border-gray-800">
               <StepIndicator currentStep={step} totalSteps={2} />
               <h2 className="text-2xl font-bold text-white">
-                {step  === 1 ? "Basic Details" : "Registration Details"}
+                {step === 1 ? "Basic Details" : "Registration Details"}
               </h2>
               <p className="mt-1 text-gray-400">
                 {step === 1
@@ -604,7 +606,7 @@ const HackathonRegistrationForm = () => {
                           error={formErrors.teamSizeMin}
                         />
                         <label className="text-sm font-medium text-gray-200">
-                        Team size(max)
+                          Team size(max)
                         </label>
                         <Input
                           type="number"

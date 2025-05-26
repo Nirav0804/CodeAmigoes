@@ -5,18 +5,18 @@ import GradientBackground from "../components/background/GradientBackground";
 import Navigation from "../components/navigation/Navigation";
 import { useState, useEffect } from "react";
 import VerticalNavBar from "../components/navigation/VerticalNavBar";
+import { useAuth } from "../context/AuthContext";
 
 const HackathonPage = () => {
   const navigate = useNavigate();
   const [hackathons, setHackathons] = useState([]);
   const [filteredHackathons, setFilteredHackathons] = useState([]);
-
   useEffect(() => {
-    const username = localStorage.getItem("username");
-    if (!username) {
-      navigate("/");
-      return;
-    }
+    // const username = localStorage.getItem("username");
+    // if (!username) {
+    //   navigate("/");
+    //   return;
+    // }
   
     // Get user's location and store it in localStorage
     if (navigator.geolocation) {

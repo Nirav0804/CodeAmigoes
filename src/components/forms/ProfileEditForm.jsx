@@ -36,11 +36,9 @@ const Input = ({ label, error, icon: Icon, ...props }) => (
         </div>
       )}
       <input
-        className={`w-full ${
-          Icon ? "pl-10" : "pl-3"
-        } py-2 bg-gray-900/50 border ${
-          error ? "border-red-500" : "border-gray-700"
-        } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400`}
+        className={`w-full ${Icon ? "pl-10" : "pl-3"
+          } py-2 bg-gray-900/50 border ${error ? "border-red-500" : "border-gray-700"
+          } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400`}
         {...props}
       />
     </div>
@@ -56,9 +54,8 @@ const Textarea = ({ label, error, ...props }) => (
       </label>
     )}
     <textarea
-      className={`w-full px-3 py-2 bg-gray-900/50 border ${
-        error ? "border-red-500" : "border-gray-700"
-      } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400`}
+      className={`w-full px-3 py-2 bg-gray-900/50 border ${error ? "border-red-500" : "border-gray-700"
+        } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400`}
       {...props}
     />
     {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
@@ -66,6 +63,7 @@ const Textarea = ({ label, error, ...props }) => (
 );
 
 const ProfileEditForm = () => {
+  const { username } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -95,10 +93,9 @@ const ProfileEditForm = () => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE}/api/users/${localStorage.getItem("username"),{
-      withCredentials: true, // <-- This sends cookies!
-    }}`
-        );
+          `${API_BASE}/api/users/${username}`, {
+          withCredentials: true, // <-- This sends cookies!
+        });
         console.log(response.data);
 
         const profile = response.data;
@@ -170,9 +167,9 @@ const ProfileEditForm = () => {
 
     try {
       const response = await axios.put(
-        `${API_BASE}/api/users/${localStorage.getItem("username"),{
-      withCredentials: true, // <-- This sends cookies!
-    }}`,
+        `${API_BASE}/api/users/${username}`, {
+        withCredentials: true, // <-- This sends cookies!
+      },
         formData,
         {
           headers: {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import { MdAttachFile, MdSend, MdEmojiEmotions } from "react-icons/md";
 import { useNavigate, Link } from "react-router-dom";
 import SockJS from "sockjs-client/dist/sockjs";
@@ -9,10 +9,12 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import { encrypt, decrypt } from "../../config/EncryptDecrypt";
+import { useAuth } from "../../context/AuthContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const PersonalChatChat = ({ memberId, memberName }) => {
+    const { username, userId } = useAuth();
     const [connected, setConnected] = useState(false);
     const [currentUserId, setCurrentUserId] = useState("");
     const [currentUser, setCurrentUser] = useState("");
@@ -27,9 +29,9 @@ const PersonalChatChat = ({ memberId, memberName }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const userId = localStorage.getItem("userId");
-        const user = localStorage.getItem("username");
-        setCurrentUser(user || "");
+        // const userId = localStorage.getItem("userId");
+        // const username = localStorage.getItem("username");
+        setCurrentUser(username || "");
         setCurrentUserId(userId || "");
         setMember2Id(memberId || "");
         setConnected(!!memberId);
@@ -55,9 +57,9 @@ const PersonalChatChat = ({ memberId, memberName }) => {
                 }
 
                 const response = await axios.get(
-                    `${API_BASE}/api/v1/personal_chat/all_messages/${sortedChatId}`,{
-      withCredentials: true, // <-- This sends cookies!
-    }
+                    `${API_BASE}/api/v1/personal_chat/all_messages/${sortedChatId}`, {
+                    withCredentials: true, // <-- This sends cookies!
+                }
                 );
 
                 if (Array.isArray(response.data)) {

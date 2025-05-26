@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import HackathonCard from "./HackathonCard";
 import HackathonMap from "./HackathonMap";
+import { useAuth } from "../../context/AuthContext";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const HackathonList = ({
@@ -10,21 +11,16 @@ const HackathonList = ({
   type,
   joinable,
 }) => {
-  const username = localStorage.getItem("username");
+  const { username, status } = useAuth();
   const [latitude, setLatitude] = useState(localStorage.getItem("latitude"));
   const [longitude, setLongitude] = useState(localStorage.getItem("longitude"));
   const radius = 600
   const fetchHackathons = async () => {
-    // if (type === "active") {
-    //   const response = await fetch("https://codeamigos-backend.onrender.com/api/hackathons");
-    //   const data = await response.json();
-    //   setHackathons(data);
-    //   setFilteredHackathons(data);
-    // }
     if (type === "past") {
-      const response = await fetch(`${API_BASE}/api/hackathons/past`,{
-  credentials: 'include',
-});
+      const response = await fetch(`${API_BASE}/api/hackathons/past`, {
+        credentials: 'include',
+      });
+
       const data = await response.json();
       console.log(response);
       setHackathons(data);
@@ -32,9 +28,9 @@ const HackathonList = ({
     }
     if (type === "ongoing") {
       const response = await fetch(
-        `${API_BASE}/api/hackathons/ongoing`,{
-  credentials: 'include',
-}
+        `${API_BASE}/api/hackathons/ongoing`, {
+        credentials: 'include',
+      }
       );
       const data = await response.json();
       setHackathons(data);
@@ -42,31 +38,31 @@ const HackathonList = ({
     }
     if (type === "upcoming") {
       const response = await fetch(
-        `${API_BASE}/api/hackathons/upcoming`,{
-  credentials: 'include',
-}
+        `${API_BASE}/api/hackathons/upcoming`, {
+        credentials: 'include',
+      }
       );
       const data = await response.json();
       setHackathons(data);
       setFilteredHackathons(data);
     }
-    if (type == "nearby") {
+    if (type == "nearby" && status == "paid") {
       const response = await fetch(
-        `${API_BASE}/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`,{
-  credentials: 'include',
-}
+        `${API_BASE}/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`, {
+        credentials: 'include',
+      }
       );
       const data = await response.json();
       setHackathons(data);
       setFilteredHackathons(data);
     }
-    if (type == "recommended") {
+    if (type == "recommended" && status == "paid") {
       console.log("Hello");
 
       const response = await fetch(
-        `${API_BASE}/api/hackathons/recommended-hackathons?username=${username}`,{
-  credentials: 'include',
-}
+        `${API_BASE}/api/hackathons/recommended-hackathons?username=${username}`, {
+        credentials: 'include',
+      }
       );
       const data = await response.json();
       console.log(data);

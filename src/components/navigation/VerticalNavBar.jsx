@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
 import HackathonList from "../hackathon/HackathonList";
+import { useAuth } from "../../context/AuthContext";
 
-export default function VerticalNavBar({
+const VerticalNavBar = ({
   setHackathons,
   setFilteredHackathons,
   filteredHackathons,
-}) {
+}) => {
+  const { status } = useAuth();
   const [activeTab, setActiveTab] = useState("upcoming");
-  const [status, setStatus] = useState("unpaid");
+  // const [status, setStatus] = useState("unpaid");
 
-  useEffect(() => {
-    const localStatus = localStorage.getItem("status") || "unpaid";
-    setStatus(localStatus);
-  }, []);
+  // useEffect(() => {
+  //   const localStatus = localStorage.getItem("status") || "unpaid";
+  //   setStatus(localStatus);
+  // }, []);
 
   const tabs = [
     { key: "upcoming", label: "Upcoming Hackathons", joinable: true, locked: false },
@@ -36,9 +38,8 @@ export default function VerticalNavBar({
         {tabs.map(({ key, label, locked }) => (
           <button
             key={key}
-            className={`p-3 rounded-lg text-left font-medium flex justify-between items-center transition ${
-              activeTab === key ? "bg-gray-700" : "hover:bg-gray-800"
-            } ${locked ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`p-3 rounded-lg text-left font-medium flex justify-between items-center transition ${activeTab === key ? "bg-gray-700" : "hover:bg-gray-800"
+              } ${locked ? "opacity-50 cursor-not-allowed" : ""}`}
             onClick={() => handleTabChange(key, locked)}
             disabled={locked}
           >
@@ -63,3 +64,4 @@ export default function VerticalNavBar({
     </div>
   );
 }
+export default VerticalNavBar;

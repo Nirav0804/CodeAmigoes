@@ -3,44 +3,46 @@ import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaUser, FaSignOutAlt, FaUsers, FaComments, FaCode } from "react-icons/fa";
 import Username from "./Username";
 import NavItem from "./NavItem";
+import { useAuth } from "../../context/AuthContext";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const Navigation = () => {
+  const { username, status } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const username = localStorage.getItem("username");
+  // const username = localStorage.getItem("username");
   const [showPaymentSuccessCard, setShowPaymentSuccessCard] = useState(false);
-
-  const [status, setStatus] = useState("");
-const handleLogout = async () => {
-  try {
-    await fetch(`${API_BASE}/api/users/logout`, {
-      method: 'POST',
-      credentials: 'include', // Ensures cookies are sent!
-    });
-  } catch (error) {
-    console.error('Logout failed:', error);
-  }
-  // Clear localStorage
-  localStorage.removeItem("username");
-  localStorage.removeItem("userId");
-  localStorage.removeItem("college");
-  localStorage.removeItem("githubUsername");
-  localStorage.removeItem("status");
-  // Redirect to homepage or login
-  navigate("/");
-};
+  // const [status, setStatus] = useState("");
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE}/api/users/logout`, {
+        method: 'POST',
+        credentials: 'include', // Ensures cookies are sent!
+      });
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+    // Clear localStorage
+    // localStorage.removeItem("username");
+    // localStorage.removeItem("userId");
+    // localStorage.removeItem("college");
+    // localStorage.removeItem("githubUsername");
+    // localStorage.removeItem("status");
+    // Redirect to homepage or login
+    navigate("/");
+  };
 
 
   const handleRedirect = () => {
-    const status = localStorage.getItem("status");
-    const userId = localStorage.getItem("userId");
-    navigate(`/dashboard?username=${username}&status=${status}&userId=${userId}&githubUsername=${username}`);
+    // const status = localStorage.getItem("status");
+    // const userId = localStorage.getItem("userId");
+    // navigate(`/dashboard?username=${username}&status=${status}&userId=${userId}&githubUsername=${username}`);
+    navigate(`/dashboard`);
   }
 
-  useEffect(() => {
-    const s = localStorage.getItem("status");
-    setStatus(s);
-  }, []);
+  // useEffect(() => {
+  //   const s = localStorage.getItem("status");
+  //   setStatus(s);
+  // }, []);
 
   return (
     <nav className="bg-gray-900/80 backdrop-blur-lg text-white shadow-lg fixed w-full z-50">

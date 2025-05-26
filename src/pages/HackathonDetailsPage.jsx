@@ -12,16 +12,16 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const HackathonDetailsPage = () => {
   const navigate = useNavigate();
+  const { username, userId } = useAuth();
+  // useEffect(() => {
+  //   // Get the username from localStorage or from a global state if stored after login
+  //   // const username = localStorage.getItem("username"); // or from context or redux
 
-  useEffect(() => {
-    // Get the username from localStorage or from a global state if stored after login
-    const username = localStorage.getItem("username"); // or from context or redux
-
-    if (!username) {
-      // If no username found in localStorage, redirect to login
-      navigate("/login");
-    }
-  }, [navigate]);
+  //   if (!username) {
+  //     // If no username found in localStorage, redirect to login
+  //     navigate("/login");
+  //   }
+  // }, [navigate]);
 
   const { id } = useParams();
   const [hackathonData, setHackathonData] = useState(null);
@@ -30,7 +30,7 @@ const HackathonDetailsPage = () => {
   const [requestObject, setRequestObject] = useState({});
   const [text, setText] = useState("");
   const [visible, setVisible] = useState(true);
-  const username = localStorage.getItem("username");
+  // const username = localStorage.getItem("username");
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
@@ -39,8 +39,8 @@ const HackathonDetailsPage = () => {
         const start = Date.now();
         const response = await axios.get(
           `${API_BASE}/api/hackathons/${id}`, {
-      withCredentials: true, // <-- This sends cookies!
-    }
+          withCredentials: true, // <-- This sends cookies!
+        }
         );
         const end = Date.now();
         console.log("API call took " + (end - start) + " milliseconds");
@@ -85,17 +85,17 @@ const HackathonDetailsPage = () => {
 
   const handleChatNow = async () => {
     try {
-      const currentUserId = localStorage.getItem("userId");
+      // const currentUserId = localStorage.getItem("userId");
       const member2Id = hackathonData.createdById;
       const leader = hackathonData.createdBy;
       console.log(member2Id);
-     const response = await axios.post(
-  `${API_BASE}/api/v1/personal_chat/create_or_get_personal_chat/${currentUserId}/${member2Id}`,
-  {}, // or your data
-  {
-    withCredentials: true,
-  }
-);
+      const response = await axios.post(
+        `${API_BASE}/api/v1/personal_chat/create_or_get_personal_chat/${userId}/${member2Id}`,
+        {}, // or your data
+        {
+          withCredentials: true,
+        }
+      );
       navigate('/dashboard/chat?leader=' + leader);
       console.log(response);
     }
@@ -108,7 +108,7 @@ const HackathonDetailsPage = () => {
     try {
       await axios.post(`${API_BASE}/request`, requestObject, {
         headers: { "Content-Type": "application/json" },
-         withCredentials: true, // <-- This line enables cookies!
+        withCredentials: true, // <-- This line enables cookies!
       });
       toast.success("Request sent successfully!", {
         position: "top-center",

@@ -1,32 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import GradientBackground from "../components/background/GradientBackground";
 import Navigation from "../components/navigation/Navigation";
 import HackathonRequestCard from "../components/hackathonRequest/HackathonRequestCard";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const HackathonRequestPage = () => {
   const navigate = useNavigate();
   const [hackathonRequests, setHackathonRequests] = useState([]);
   const [activeTab, setActiveTab] = useState("pending");
-
+  const { username } = useAuth();
   useEffect(() => {
-    const username = localStorage.getItem("username");
+    // const username = localStorage.getItem("username");
 
-    if (!username) {
-      navigate("/login");
-    } else {
-      fetchHackathonRequests(username);
-    }
+    // if (!username) {
+    //   navigate("/login");
+    // } else {
+    fetchHackathonRequests(username);
+    // }
   }, [navigate]);
 
   const fetchHackathonRequests = async (username) => {
     try {
       const response = await axios.get(
         `${API_BASE}/requests/${username}`, {
-      withCredentials: true, // <-- This sends cookies!
-    }
+        withCredentials: true, // <-- This sends cookies!
+      }
       );
       setHackathonRequests(response.data.reverse());
     } catch (error) {
@@ -51,9 +52,8 @@ const HackathonRequestPage = () => {
           {["pending", "accepted", "rejected"].map((tab) => (
             <button
               key={tab}
-              className={`p-3 rounded-lg text-lg font-semibold ${
-                activeTab === tab ? "bg-gray-700" : "hover:bg-gray-800"
-              }`}
+              className={`p-3 rounded-lg text-lg font-semibold ${activeTab === tab ? "bg-gray-700" : "hover:bg-gray-800"
+                }`}
               onClick={() => setActiveTab(tab)}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)} Requests

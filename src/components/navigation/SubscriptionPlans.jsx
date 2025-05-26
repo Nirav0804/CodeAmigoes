@@ -1,15 +1,17 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useActionData, useNavigate } from "react-router-dom";
 import axios from "axios";
 import PaymentSuccessCard from "./PaymentSuccess";
+import { useAuth } from "../../context/AuthContext";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const SubscriptionPlans = () => {
   const navigate = useNavigate();
-  const username = localStorage.getItem("username");
-  const githubUserName = localStorage.getItem("githubUsername");
-  const userId = localStorage.getItem("userId");
-  const status = localStorage.getItem("status");
+  const { username, userId, status } = useAuth();
+  // const username = localStorage.getItem("username");
+  // const githubUserName = localStorage.getItem("githubUsername");
+  // const userId = localStorage.getItem("userId");
+  // const status = localStorage.getItem("status");
   const [showPaymentSuccessCard, setShowPaymentSuccessCard] = useState(false);
 
   // Create order for payment
@@ -78,7 +80,7 @@ const SubscriptionPlans = () => {
       );
       setShowPaymentSuccessCard(true);
       localStorage.setItem("paymentJustMade", Date.now());
-      localStorage.setItem("status", response.data.status || "paid");
+      // localStorage.setItem("status", response.data.status || "paid");
       window.localStorage.setItem("paymentJustMade", Date.now());
       window.dispatchEvent(new CustomEvent("paymentSuccess"));
     } catch (error) {
@@ -99,9 +101,10 @@ const SubscriptionPlans = () => {
           </ul>
           <button
             onClick={() =>
-              navigate(
-                `/dashboard?username=${username}&userId=${userId}&githubUsername=${githubUserName}&status=${status}`
-              )
+              // navigate(
+              //   `/dashboard?username=${username}&userId=${userId}&githubUsername=${githubUserName}&status=${status}`
+              // )
+              navigate("/dashboard")
             }
             className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg w-full"
           >

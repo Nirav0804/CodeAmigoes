@@ -5,28 +5,6 @@ import { FaSun, FaMoon } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const LandingHeader = () => {
-  // const [theme, setTheme] = useState("dark");
-  // const [isVisible, setIsVisible] = useState(false);
-
-  // useEffect(() => {
-  //   setIsVisible(true);
-  //   const savedTheme = localStorage.getItem("theme");
-  //   if (savedTheme) {
-  //     setTheme(savedTheme);
-  //     document.documentElement.classList.add(savedTheme);
-  //   } else {
-  //     document.documentElement.classList.add("dark");
-  //   }
-  // }, []);
-
-  // const toggleTheme = () => {
-  //   const newTheme = theme === "light" ? "dark" : "light";
-  //   setTheme(newTheme);
-  //   localStorage.setItem("theme", newTheme);
-  //   document.documentElement.classList.remove("dark", "light");
-  //   document.documentElement.classList.add(newTheme);
-  // };
-
 
   const handleGithubLogin = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/github";
@@ -77,15 +55,15 @@ const LandingHeader = () => {
           </motion.div>
 
           <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
-              {/* Logo */}
-  <motion.img
-    src="src/logoN.png"  // Replace with the actual path to your logo
-    alt="logot"
-    className="mb-15 w-80 h-75"  // Adjust the width and height as needed
-    initial={{ opacity: 0, y: -20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.8, delay: 0.2 }}
-  />
+            {/* Logo */}
+            <motion.img
+              src="src/logoN.png"  // Replace with the actual path to your logo
+              alt="logot"
+              className="mb-15 w-80 h-75"  // Adjust the width and height as needed
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            />
             <motion.h1
               className="text-7xl font-extrabold mb-8 text-white"
               initial={{ opacity: 0, y: 20 }}
@@ -95,7 +73,7 @@ const LandingHeader = () => {
               <span className="text-10xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
                 Connect, Collaborate, Conquer
               </span>{" "}
-              
+
             </motion.h1>
             <motion.p
               className="text-xl mb-12 max-w-3xl text-gray-300 leading-relaxed"

@@ -8,15 +8,15 @@ import { useNavigate } from "react-router-dom";
 const ProfilePage = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Get the username from localStorage or from a global state if stored after login
-    const username = localStorage.getItem("username"); // or from context or redux
+  // useEffect(() => {
+  //   // Get the username from localStorage or from a global state if stored after login
+  //   const username = localStorage.getItem("username"); // or from context or redux
 
-    if (!username) {
-      // If no username found in localStorage, redirect to login
-      navigate("/login");
-    }
-  }, [navigate]);
+  //   if (!username) {
+  //     // If no username found in localStorage, redirect to login
+  //     navigate("/login");
+  //   }
+  // }, [navigate]);
 
   return (
     <GradientBackground className="min-h-screen">

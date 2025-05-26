@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, use } from "react";
 import Navigation from "../navigation/Navigation";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -8,6 +8,7 @@ import GradientBackground from "../background/GradientBackground";
 import { timeAgo } from "../../config/helper";
 import PersonalChatChat from "../PersonalChat/PersonalChatChat";
 import { LogIn } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 function ChatDropDown() {
     const [personalChats, setPersonalChats] = useState([]);
@@ -21,24 +22,26 @@ function ChatDropDown() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const { userId, username } = useAuth();
     // Initialize user and fetch chats
     useEffect(() => {
         const initialize = async () => {
-            const userId = localStorage.getItem("userId");
-            const username = localStorage.getItem("username");
             if (!username) {
-                navigate("/login");
+                navigate("/");
                 return;
             }
             setCurrentUserId(userId);
 
             if (userId) {
                 try {
-                    // Fetch personal chats
 
-                    const response = await axios.get(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`,{
-      withCredentials: true, // <-- This sends cookies!
-    });
+                    console.log(userId);
+
+                    console.log(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`);
+
+                    const response = await axios.get(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`, {
+                        withCredentials: true, // <-- This sends cookies!
+                    });
                     console.log(response.data);
 
                     const sortedPersonalChat = response.data

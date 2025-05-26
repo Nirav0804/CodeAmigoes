@@ -6,7 +6,8 @@ import {
   FaCalendarAlt,
   FaUser,
 } from "react-icons/fa";
-import React from "react";
+import React, { use } from "react";
+import { useAuth } from "../../context/AuthContext";
 const HackathonCard = ({
   id,
   title,
@@ -26,7 +27,8 @@ const HackathonCard = ({
   rejectedUsers,
   techStacks
 }) => {
-  const username = localStorage.getItem("username");
+  const { username } = useAuth();
+  // const username = localStorage.getItem("username");
   const hasRequested = requestsToJoin.includes(username);
   const isCreatedByUser = createdBy === username;
   const isRequestAccepted = acceptedUsers.includes(username);
@@ -90,7 +92,7 @@ const HackathonCard = ({
             <FaLaptopCode className="mr-2 text-green-400" />{" "}
             <span className="font-semibold">Theme: {theme}</span>
           </p>
- 
+
           {/* <p className="flex items-center">
             <FaCalendarAlt className="mr-2 text-yellow-400" />
             Registration Starts:{" "}
@@ -145,20 +147,20 @@ const HackathonCard = ({
           </p>
         </div>
         {techStacks && techStacks.length > 0 && (
-  <div className="mt-4">
-    <p className="font-semibold mb-2">Tech Stacks:</p>
-    <div className="flex flex-wrap gap-2">
-      {techStacks.map((tech, index) => (
-        <span
-          key={index}
-          className="bg-white/10 border border-white/20 px-3 py-1 text-sm rounded-full"
-        >
-          {tech}
-        </span>
-      ))}
-    </div>
-  </div>
-)}
+          <div className="mt-4">
+            <p className="font-semibold mb-2">Tech Stacks:</p>
+            <div className="flex flex-wrap gap-2">
+              {techStacks.map((tech, index) => (
+                <span
+                  key={index}
+                  className="bg-white/10 border border-white/20 px-3 py-1 text-sm rounded-full"
+                >
+                  {tech}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         {/* Join Now Button */}
         <div className="mt-6">
           <Link to={linkTo}>

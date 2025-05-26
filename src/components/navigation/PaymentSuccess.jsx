@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 const PaymentSuccessCard = () => {
 
   const handlePremium = () => {
-    const username = localStorage.getItem("username");
-    const githubUserName = localStorage.getItem("githubUsername");
-    const usaerId = localStorage.getItem("userId");
-    localStorage.setItem("status", "paid");
-    const status = localStorage.getItem("status");
-    navigate("/dashboard?username=" + username + "&userId=" + usaerId + "&githubUsername=" + githubUserName + "&status=" + status);
+    // const username = localStorage.getItem("username");
+    // const githubUserName = localStorage.getItem("githubUsername");
+    // const usaerId = localStorage.getItem("userId");
+    // localStorage.setItem("status", "paid");
+    // const status = localStorage.getItem("status");
+    // navigate("/dashboard?username=" + username + "&userId=" + usaerId + "&githubUsername=" + githubUserName + "&status=" + status);
+    navigate("/dashboard");
   }
 
   const navigate = useNavigate();

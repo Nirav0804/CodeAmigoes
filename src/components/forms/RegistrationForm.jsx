@@ -4,8 +4,10 @@ import { Typewriter } from "react-simple-typewriter";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from "../../context/AuthContext";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const RegistrationForm = () => {
+  const { username, userId } = useAuth();
   const features = [
     "Real-time Group Chats",
     "Hackathon Team Formation",
@@ -95,10 +97,11 @@ const RegistrationForm = () => {
       console.log(data.id);
       console.log(data.githubUsername);
 
-      localStorage.setItem("username", "hello");
-      localStorage.setItem("userId", data.id);
-      localStorage.setItem("githubUsername", data.githubUsername);
-      setTimeout(() => navigate(`/dashboard?username=${data.username}&userId=${data.id}&githubUsername=${data.githubUsername}`), 1000);
+      // localStorage.setItem("username", "hello");
+      // localStorage.setItem("userId", data.id);
+      // localStorage.setItem("githubUsername", data.githubUsername);
+      navigate("/dashboard");
+      // setTimeout(() => navigate(`/dashboard?username=${data.username}&userId=${data.id}&githubUsername=${data.githubUsername}`), 1000);
       // debugger;
     } catch (err) {
       setError(err.message);

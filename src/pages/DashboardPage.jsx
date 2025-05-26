@@ -6,38 +6,40 @@ import Footer from "../components/footer/Footer";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [user, setUser] = useState("");
-  useEffect(() => {
-    const username = searchParams.get("username");
-    const id = searchParams.get("userId");
-    const githubUsername = searchParams.get("githubUsername");
-    const status = searchParams.get("status");
-    localStorage.setItem("username", username);
-    localStorage.setItem("userId", id);
-    localStorage.setItem("githubUsername", githubUsername);
-    localStorage.setItem("status", status);
-    setUser(username);
-  }, [searchParams]);
+  // const [user, setUser] = useState("");
+  const { username, userId, status } = useAuth();
+  // useEffect(() => {
+  //   const username = searchParams.get("username");
+  //   const id = searchParams.get("userId");
+  //   const githubUsername = searchParams.get("githubUsername");
+  //   const status = searchParams.get("status");
+  //   localStorage.setItem("username", username);
+  //   localStorage.setItem("userId", id);
+  //   localStorage.setItem("githubUsername", githubUsername);
+  //   localStorage.setItem("status", status);
+  //   setUser(username);
+  // }, [searchParams]);
 
 
 
-  useEffect(() => {
-    // Get the username from localStorage or from a global state if stored after login
-    const username = localStorage.getItem("username"); // or from context or redux
+  // useEffect(() => {
+  //   // Get the username from localStorage or from a global state if stored after login
+  //   // const username = localStorage.getItem("username"); // or from context or redux
 
-    if (!username) {
-      // If no username found in localStorage, redirect to login
-      navigate("/landingPage");
-    }
-  }, [navigate]);
+  //   if (!username) {
+  //     // If no username found in localStorage, redirect to login
+  //     navigate("/landingPage");
+  //   }
+  // }, [navigate]);
 
   return (
     <GradientBackground className="min-h-screen">
       <Navigation />
-      <Welcome text={user} />
+      <Welcome text={username} />
       <Footer />
     </GradientBackground>
   );

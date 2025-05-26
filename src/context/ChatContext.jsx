@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "./AuthContext";
 
 const ChatContext = createContext();
 
@@ -7,18 +8,10 @@ export const ChatProvider = ({ children }) => {
   const [roomId, setRoomId] = useState(null);
   const [currentUser, setCurrentUser] = useState("");
   const [connected, setConnected] = useState(false);
-  useEffect(() => {
-    const clg = localStorage.getItem("college");
-    const user = localStorage.getItem("username")
-
-    clg ? setRoomId(clg) : setRoomId(null)
-    console.log(roomId);
-    clg ? setConnected(true) : setConnected(false)
-    console.log(connected);
-    user ? setCurrentUser(user) : setCurrentUser(null)
-    console.log(currentUser);
-
-  }, [])
+  const { username } = useAuth();
+  // useEffect(() => {
+  //   const user = localStorage.getItem("username")
+  // }, [])
   return (
     <ChatContext.Provider
       value={{
