@@ -1,5 +1,6 @@
 package com.spring.codeamigosbackend.registration.controller;
 
+import com.spring.codeamigosbackend.rabbitmq.producer.RabbitMqProducer;
 import com.spring.codeamigosbackend.OAuth2.util.JwtUtil;
 import com.spring.codeamigosbackend.recommendation.controllers.FrameworkController;
 import com.spring.codeamigosbackend.recommendation.dtos.GithubScoreRequest;
@@ -53,6 +54,8 @@ public class UserController {
     private final FrameworkController frameworkController;
     private final PaymentOrderRepository paymentOrderRepository;
     private final JwtUtil jwtUtil;
+    private final RabbitMqProducer rabbitMqProducer;
+
     private final UserRepository userRepository;
 
     @Value("${razorpay.webhook.secret}")
@@ -114,8 +117,9 @@ public class UserController {
             // Your existing user save/update logic
             Optional<User> existingUser = userRepository.findById(user.getId());
             User savedUser;
+            User u = null;
             if (existingUser.isPresent()) {
-                User u = existingUser.get();
+                u = existingUser.get();
                 u.setUsername(user.getUsername());
                 u.setPassword(user.getPassword());
                 u.setDisplayName(user.getDisplayName());
@@ -148,6 +152,11 @@ public class UserController {
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
             // Return user info (without token in body)
+            GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
+            githubScoreRequest.setUsername(user.getUsername());
+            githubScoreRequest.setEmail(user.getEmail());
+            githubScoreRequest.setAccessToken(u.getGithubAccessToken());
+            rabbitMqProducer.sendUserToQueue(githubScoreRequest);
             return ResponseEntity.ok(savedUser);
 
         } catch (Exception e) {
@@ -157,7 +166,7 @@ public class UserController {
     }
 
 
-    // Login endpoint
+    // Login endpoint .... No longer required
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody User loginRequest) {
         try {

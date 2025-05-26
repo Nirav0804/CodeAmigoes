@@ -2,8 +2,12 @@ package com.spring.codeamigosbackend.OAuth2.controller;
 
 import com.spring.codeamigosbackend.OAuth2.util.JwtUtil;
 import com.spring.codeamigosbackend.registration.model.User;
+import com.spring.codeamigosbackend.rabbitmq.producer.RabbitMqProducer;
+import com.spring.codeamigosbackend.recommendation.dtos.GithubScoreRequest;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +24,11 @@ public class OAuth2LoginController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RabbitMqProducer rabbitMqProducer;
+
+    private static Logger logger = LoggerFactory.getLogger(OAuth2LoginController.class);
 
     @Value("${frontend.url}")
     private String url;
@@ -52,6 +61,8 @@ public class OAuth2LoginController {
         user.evaluateProfileCompletion();
 
         if (!user.isProfileComplete()) {
+
+            // redirect to frontend register form
             String redirectUrl = String.format(
                     url + "/register?oauth=true&username=%s&id=%s",
                     githubUsername, user.getId()
@@ -78,7 +89,16 @@ public class OAuth2LoginController {
         cookie.setMaxAge(86400);
         response.addCookie(cookie);
 
-        System.out.println("OAuth2 User Attributes: " + oAuth2User.getAttributes());
+        logger.info("OAuth2 User Attributes: " + oAuth2User.getAttributes());
+        GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
+        githubScoreRequest.setEmail(user.getEmail());
+        githubScoreRequest.setAccessToken(user.getGithubAccessToken());
+        githubScoreRequest.setUsername(user.getGithubUsername());
+        System.out.println(githubScoreRequest);
+        logger.info("Github Framework: " + githubScoreRequest);
+        rabbitMqProducer.sendUserToQueue(githubScoreRequest);
+
+
         String redirectUrl = String.format(
                 url + "/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s",
                 user.getUsername(), user.getId(), user.getGithubUsername(), user.getStatus()

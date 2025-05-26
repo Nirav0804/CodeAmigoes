@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.codeamigosbackend.recommendation.dtos.RepositoryInfo;
 import com.spring.codeamigosbackend.recommendation.utils.Mappings;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,13 +20,14 @@ public class GithubApiService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private static final String GITHUB_GRAPHQL_URL = "https://api.github.com/graphql";
+    private static Logger logger = LoggerFactory.getLogger(GithubApiService.class);
 
     public List<RepositoryInfo> getTopRepositories(String username, String email, String accessToken) {
         String query = buildGraphQLQuery(username, email);
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
-
+        logger.info("Access token: " + accessToken);
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("query", query);
 
@@ -32,6 +35,7 @@ public class GithubApiService {
         ResponseEntity<JsonNode> response = restTemplate.postForEntity(GITHUB_GRAPHQL_URL, request, JsonNode.class);
 
         JsonNode data = response.getBody().get("data");
+        logger.info("Github API response: " + data.toString());
         if (data == null) {
             System.out.println("No data found in response");
             return new ArrayList<>();
@@ -130,6 +134,7 @@ public class GithubApiService {
         Map<RepositoryInfo, List<String>> repoToFrameworks = new ConcurrentHashMap<>();
         List<Future<Void>> frameworkFutures = new ArrayList<>();
 
+        // THis part executed concurrently
         for (RepositoryInfo repo : repositories) {
             Callable<Void> task = () -> {
                 try {
@@ -144,6 +149,8 @@ public class GithubApiService {
             frameworkFutures.add(frameworkExecutor.submit(task));
         }
 
+        // This waiting logic is serializable
+        // Once main thread gets the output from the first thread then only does it go for the second one
         for (Future<Void> future : frameworkFutures) {
             try {
                 future.get(30, TimeUnit.SECONDS); // Timeout after 30 seconds per task
@@ -154,16 +161,16 @@ public class GithubApiService {
             }
         }
 
-        frameworkExecutor.shutdown();
+        frameworkExecutor.shutdown(); // This is just a advisory method .
         try {
-            if (!frameworkExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
-                frameworkExecutor.shutdownNow();
+            if (!frameworkExecutor.awaitTermination(60, TimeUnit.SECONDS)) { // If this returns false then shut down immediately meaning if the task not completed in the given time then just simply shutdown
+                frameworkExecutor.shutdownNow();  // This shuts down the frameworkExecutor service then and there
             }
         } catch (InterruptedException e) {
+//          // If error then also shut down the frameworkExecutor service then and there .
             frameworkExecutor.shutdownNow();
-            Thread.currentThread().interrupt();
+//            Thread.currentThread().interrupt();
         }
-
         return repoToFrameworks;
     }
 
@@ -261,12 +268,12 @@ public class GithubApiService {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-
+        // Got data of all the files
         ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, entity, JsonNode.class);
         JsonNode tree = response.getBody().get("tree");
 
         List<String> configFilesToLookFor = new ArrayList<>();
-        for (RepositoryInfo.Language lang : repo.getTopLanguages()) {
+        for (RepositoryInfo.Language lang : repo.getTopLanguages()) { // Loop max twice only as 2 languages at max
             String languageName = lang.getName();
             if (Mappings.LANGUAGE_TO_CONFIG.containsKey(languageName)) {
                 configFilesToLookFor.addAll(Mappings.LANGUAGE_TO_CONFIG.get(languageName));
@@ -274,10 +281,10 @@ public class GithubApiService {
         }
 
         List<String> configFilePaths = new ArrayList<>();
-        for (JsonNode item : tree) {
+        for (JsonNode item : tree) { // For each file ...
             if (item.get("type").asText().equals("blob")) {
                 String filePath = item.get("path").asText();
-                for (String configFile : configFilesToLookFor) {
+                for (String configFile : configFilesToLookFor) {  // Check if it matches one of the config files we are looking for
                     if (filePath.endsWith(configFile)) {
                         configFilePaths.add(filePath);
                         break;

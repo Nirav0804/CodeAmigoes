@@ -15,8 +15,11 @@ import com.spring.codeamigosbackend.recommendation.services.FrameworkAnalysisSer
 import com.spring.codeamigosbackend.recommendation.utils.ApiException;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.service.UserService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.net.SocketWrapperBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -26,10 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -42,6 +42,8 @@ public class HackathonService {
     private  GeolocationService  geolocationService;
     private final UserService userService;
     private final FrameworkAnalysisService frameworkAnalysisService;
+
+    private static Logger logger = LoggerFactory.getLogger("HackathonService.class");
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -172,9 +174,9 @@ public class HackathonService {
     }
 
     public List<ScoredHackathon> recommendHackathons(String username) {
-        System.out.println("Hello");
         // Step 1: Get the user's framework stats
         UserFrameworkStats stats = this.frameworkAnalysisService.getUserFrameworkStats(username);
+
         if (stats == null || stats.getFrameworkUsage() == null || stats.getFrameworkUsage().isEmpty()) {
             System.out.println("No framework stats found for user:"+ username);
             return Collections.emptyList();
@@ -211,7 +213,8 @@ public class HackathonService {
                     return Double.compare(h2.getProficiencyScore(), h1.getProficiencyScore());
                 })
                 .collect(Collectors.toList());
-        return scoredHackathons.stream().filter(scoredHackathon -> scoredHackathon.getMatchCount() > 0).collect(Collectors.toList());
+        logger.info("Decending order of recommended hackathons: " + scoredHackathons);
+        return scoredHackathons.stream().filter(scoredHackathon -> scoredHackathon.getProficiencyScore() > 0).collect(Collectors.toList());
     }
 
     /**
@@ -242,28 +245,46 @@ public class HackathonService {
      * @return Average proficiency score for matched frameworks
      */
     private double calculateProficiencyScore(Hackathon hackathon, Map<String, Integer> frameworkUsage) {
+        logger.info(frameworkUsage.toString());
         List<String> techStack = hackathon.getTechStacks();
         if (techStack == null || techStack.isEmpty()) {
             return 0.0;
         }
+        logger.info(" Hackathon Tech stacks: " + techStack);
 
+        // Normalize tech stack and keys for case-insensitive match
+        Set<String> userFrameworksLower = frameworkUsage.keySet().stream()
+                .map(String::toLowerCase)
+                .map(String::trim)
+                .map(x->x.replaceAll(" ", ""))
+                .collect(Collectors.toSet());
+        logger.info(" User Framework Usage: " + userFrameworksLower);
         double totalScore = 0.0;
-        int matchedFrameworks = 0;
 
         for (String framework : techStack) {
-            if (frameworkUsage.containsKey(framework)) {
-                totalScore += frameworkUsage.get(framework);
-                matchedFrameworks++;
+            logger.info(" Framework: " + framework);
+
+            String lowerFramework = framework.toLowerCase().trim().replaceAll(" ", "");
+            logger.info(" LowerFramework: " + lowerFramework);
+            for (String userFramework : userFrameworksLower) {
+                if (userFramework.equals(lowerFramework)) {
+                    // Case-insensitive match
+                    logger.info(" Framework Matches: " + frameworkUsage.get(framework));
+                    totalScore += frameworkUsage.getOrDefault(framework, 0);
+                    logger.info(" Matched framework " + userFramework );
+                    break;
+                }
             }
+            logger.info("Matched score"+ totalScore );
         }
 
-        // Normalize the score by the number of matched frameworks
-        return matchedFrameworks > 0 ? totalScore / matchedFrameworks : 0.0;
+        return totalScore;
     }
 
     /**
      * Helper class to hold a hackathon, its match count, and proficiency score for ranking.
      */
+    @Data
     public static class ScoredHackathon {
         private  Hackathon hackathon;
         private  int matchCount;

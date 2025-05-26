@@ -6,6 +6,9 @@ import com.spring.codeamigosbackend.recommendation.utils.ApiException;
 import com.spring.codeamigosbackend.recommendation.utils.ApiResponse;
 import lombok.RequiredArgsConstructor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,25 +21,22 @@ import org.springframework.web.bind.annotation.RestController;
 public class FrameworkController {
 
     private final FrameworkAnalysisService frameworkAnalysisService;
+    private static Logger logger = LoggerFactory.getLogger(FrameworkController.class);
 
     /**
      * Endpoint to fetch GitHub repositories, detect frameworks, and count associated files for scoring.
      * @param request Request body containing GitHub username, email, and access token
      * @return ResponseEntity containing an ApiResponse with a map of frameworks to their file counts
      */
-    @PostMapping("/score")
-    public ResponseEntity<ApiResponse> setGithubScore(@RequestBody GithubScoreRequest request) {
+    @RabbitListener(queues = {"${RABBITMQ_QUEUE}"})
+    public void setGithubScore(@RequestBody GithubScoreRequest request) {
         try {
-            System.out.println(request);
+            System.out.println(request.getUsername());
             frameworkAnalysisService.analyseUserFrameworkStats(request);
-            return ResponseEntity.status(200)
-                    .body(new ApiResponse(200, null, "Top repositories fetched successfully"));
         } catch (ApiException e) {
-            return ResponseEntity.status(e.getStatusCode())
-                    .body(new ApiResponse(e.getStatusCode(), null, e.getMessage()));
+            logger.error(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(new ApiResponse(500, null, "Error: " + e.getMessage()));
+            logger.error(e.getMessage());
         }
     }
 }

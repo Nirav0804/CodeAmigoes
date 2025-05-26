@@ -7,6 +7,9 @@ import com.spring.codeamigosbackend.recommendation.utils.ApiException;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -20,14 +23,12 @@ public class FrameworkAnalysisService {
     private final GithubApiService githubApiService;
     private final UserFrameworkStatsRepository userFrameworkStatsRepository;
     private final UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(FrameworkAnalysisService.class);
 
-    public UserFrameworkStats getStats(String username) {
-        return null;
-    }
-    @Async
     public void analyseUserFrameworkStats(GithubScoreRequest request) {
         // Validate request
-        System.out.println("Analyzing user framework stats");
+        System.out.println(request);
+        logger.info("Analysing user framework stats"+request);
         if (request.getUsername() == null || request.getAccessToken() == null) {
             throw new ApiException(400, "Username and access token are required");
         }
@@ -63,10 +64,23 @@ public class FrameworkAnalysisService {
         }else{
             throw new ApiException(404, "No user found for user: " + request.getUsername());
         }
+        // If framework stats already present then delete them
+        if (this.userFrameworkStatsRepository.getUserFrameworkStatsByUserId(user1.getId()) != null) {
+            this.userFrameworkStatsRepository.delete(this.userFrameworkStatsRepository.getUserFrameworkStatsByUserId(user1.getId()));
+        }
         UserFrameworkStats userFrameworkStats = new UserFrameworkStats();
+
         userFrameworkStats.setUserId(user1.getId());
         userFrameworkStats.setFrameworkUsage(frameworkToFileCounts);
         userFrameworkStats.setLastUpdated(LocalDateTime.now());
+        Optional<User> optionalUser2 = this.userRepository.findByUsername(request.getUsername());
+//        if(optionalUser2.isPresent()){
+//            User user2 = optionalUser2.get();
+//            UserFrameworkStats userFrameworkStats2 = this.userFrameworkStatsRepository.findByUserId(user2.getId());
+//            userFrameworkStats2.setFrameworkUsage(frameworkToFileCounts);
+//            userFrameworkStats2.setLastUpdated(LocalDateTime.now());
+//            return ;
+//        }
         this.userFrameworkStatsRepository.save(userFrameworkStats);
         System.out.println(frameworkToFileCounts);
     }
