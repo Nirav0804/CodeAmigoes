@@ -8,9 +8,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+
 @EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
@@ -34,10 +37,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/", "/login", "/register/", "/oauth2/", "/oauth2/**", "/request/**", "/requests/**","/api/users/register"
+                                "/", "/api/users/login", "/register/", "/oauth2/authorization/**", "/login/oauth2/code/**", "/request/**", "/requests/**","/api/users/register"
                         ).permitAll()
+                        .requestMatchers("/oauth2/success").authenticated()
                         .requestMatchers("/api/hackathons/recommended-hackathons", "/api/hackathons/nearby-hackathons")
-                        .hasAuthority("paid")
+                        .hasAuthority("PAID")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
@@ -51,6 +55,24 @@ public class SecurityConfig {
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .defaultSuccessUrl("/oauth2/success", true)
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write("Logged out successfully");
+                        })
+                        .addLogoutHandler(new SecurityContextLogoutHandler())
+                        .invalidateHttpSession(true)
+                        .deleteCookies("jwtToken")
+                        .permitAll()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .maximumSessions(1)
+                        .expiredUrl("/login?expired")
+                        .and()
+                        .invalidSessionUrl("/login?invalid")
                 )
                 // Add your JWT filter BEFORE UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

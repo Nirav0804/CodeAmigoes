@@ -14,6 +14,7 @@ import com.razorpay.Order;
 import com.razorpay.RazorpayException;
 import com.razorpay.RazorpayClient;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.apache.commons.codec.binary.Hex;
 import org.json.JSONObject;
 import jakarta.validation.Valid;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
@@ -88,7 +90,7 @@ public class UserController {
             String token = jwtUtil.generateToken(
                     savedUser.getId(),
                     savedUser.getUsername(),
-                    savedUser.getEmail(),
+//                    savedUser.getEmail(),
                     savedUser.getStatus()
             );
             // Log JWT token to console
@@ -127,12 +129,23 @@ public class UserController {
         }
     }
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        // Clear SecurityContext
+        SecurityContextHolder.clearContext();
+
+        // Invalidate HTTP session if it exists
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
         // Expire the JWT cookie
         String expiredCookie = "jwtToken=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0";
         response.addHeader("Set-Cookie", expiredCookie);
+
         return ResponseEntity.ok("Logged out successfully");
     }
+
     // Get user details
     @GetMapping("/{username}")
     public ResponseEntity<?> getUserDetails(@PathVariable java.lang.String username) {
@@ -215,7 +228,7 @@ public class UserController {
             String newToken = jwtUtil.generateToken(
                     updatedUser.getId(),
                     updatedUser.getUsername(),
-                    updatedUser.getEmail(),
+//                    updatedUser.getEmail(),
                     updatedUser.getStatus() // now "paid"
             );
             // Log JWT token to console

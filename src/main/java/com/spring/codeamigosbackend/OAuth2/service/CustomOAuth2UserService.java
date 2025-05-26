@@ -26,12 +26,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
+        System.out.println("custom user detail service: " + oAuth2User);
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         int githubId = (int) attributes.get("id");
         String githubLogin = (String) attributes.get("login");
         String avatarUrl = (String) attributes.get("avatar_url");
-        String email = (String) attributes.get("email"); // May be null if not public
+//        String email = (String) attributes.get("email"); // May be null if not public
 
         String accessToken = userRequest.getAccessToken().getTokenValue();
 
