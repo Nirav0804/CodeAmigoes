@@ -5,4 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface UserFrameworkStatsRepository extends MongoRepository<UserFrameworkStats,String> {
     UserFrameworkStats getUserFrameworkStatsByUserId(String userId);
+
+    UserFrameworkStats findByUserId(String userId);
 }

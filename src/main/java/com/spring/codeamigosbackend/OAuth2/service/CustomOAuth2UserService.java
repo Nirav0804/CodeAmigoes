@@ -47,10 +47,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user.setGithubId(githubId);
             user.setGithubUsername(githubLogin);
             user.setGithubAvatarUrl(avatarUrl);
-            user.setGithubAccessToken(accessToken);
-            user.setEmail(email != null ? email : githubLogin + "@github.com");
+//            user.setEmail(email != null ? email : githubLogin + "@github.com");
             user.setProfileComplete(false); // Mark incomplete so frontend shows registration form
         }
+        user.setGithubAccessToken(accessToken);
 
         // Save any updates (token, avatar, etc.)
         userRepository.save(user);
