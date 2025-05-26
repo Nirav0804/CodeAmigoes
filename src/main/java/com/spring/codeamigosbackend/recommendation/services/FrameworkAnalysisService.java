@@ -74,13 +74,16 @@ public class FrameworkAnalysisService {
         userFrameworkStats.setFrameworkUsage(frameworkToFileCounts);
         userFrameworkStats.setLastUpdated(LocalDateTime.now());
         Optional<User> optionalUser2 = this.userRepository.findByUsername(request.getUsername());
-//        if(optionalUser2.isPresent()){
-//            User user2 = optionalUser2.get();
-//            UserFrameworkStats userFrameworkStats2 = this.userFrameworkStatsRepository.findByUserId(user2.getId());
-//            userFrameworkStats2.setFrameworkUsage(frameworkToFileCounts);
-//            userFrameworkStats2.setLastUpdated(LocalDateTime.now());
-//            return ;
-//        }
+        if(optionalUser2.isPresent()){
+            User user2 = optionalUser2.get();
+              Optional<UserFrameworkStats> optionalUserFrameworkStats = this.userFrameworkStatsRepository.findById(user1.getId());
+              if(optionalUserFrameworkStats.isPresent()){
+                  UserFrameworkStats userFrameworkStats2 = optionalUserFrameworkStats.get();
+                  userFrameworkStats2.setFrameworkUsage(frameworkToFileCounts);
+                  userFrameworkStats2.setLastUpdated(LocalDateTime.now());
+                  return;
+              }
+        }
         this.userFrameworkStatsRepository.save(userFrameworkStats);
         System.out.println(frameworkToFileCounts);
     }
