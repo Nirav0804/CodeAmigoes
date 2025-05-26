@@ -13,6 +13,7 @@ import com.spring.codeamigosbackend.subscription.repository.PaymentOrderReposito
 import com.razorpay.Order;
 import com.razorpay.RazorpayException;
 import com.razorpay.RazorpayClient;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.codec.binary.Hex;
@@ -21,9 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +65,48 @@ public class UserController {
     private String key_secret;
 
 
+    private String secret_key = "e905db59b4ed608f3df6625b18b22e497e22e0b02ea89f9f55edb8b2b88ab5221d4bb31f9035d521920225b39b55178abd444ee05d8aac8c86810bda17eb3efebce9ca439f4afad1925a6f8ca58e99291f2955ed142426022b795ca792559aff9b4a3fc45a37aeb299d7a2425dd6760ead76f72b7372b623c6ff9f80e871e6a20b05a8f60ed56230365a6a909bdbfd84546a7fa256112092366b45b426d89e830195adb442260db07a1b40d4d279da95b2506de0b69c56ec9a6a402d06d69b0e2c1b16fa4504211b0154ed93345593cc1fcb01ff4c05afe9da225423dfa857417716d559a93ff8227fc0a45f8bd95b9b09244d68b256697abb5678cee3ce612e"; // Store in env variable
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getUsersDetailsFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        System.out.println(cookies);
+        String token = null;
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                System.out.println("Name : " + cookie.getName());
+                System.out.println("Value : " + cookie.getValue());
+                if (cookie.getName().equals("jwtToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try{
+            Claims claims = jwtUtil.validateToken(token);
+
+            System.out.println(claims.get("username",String.class));
+            String id = claims.get("id",String.class);
+            String email = claims.get("email", String.class);
+            String username = claims.get("username", String.class);
+            String status = claims.get("status", String.class);
+
+            Map<String, String> user = Map.of(
+                    "id",id,
+                    "email", email,
+                    "username", username,
+                    "status", status
+            );
+
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+    }
+
     // Register endpoint
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody User user, HttpServletResponse response) {
@@ -90,7 +131,7 @@ public class UserController {
             String token = jwtUtil.generateToken(
                     savedUser.getId(),
                     savedUser.getUsername(),
-//                    savedUser.getEmail(),
+                    savedUser.getEmail(),
                     savedUser.getStatus()
             );
             // Log JWT token to console
@@ -228,7 +269,7 @@ public class UserController {
             String newToken = jwtUtil.generateToken(
                     updatedUser.getId(),
                     updatedUser.getUsername(),
-//                    updatedUser.getEmail(),
+                    updatedUser.getEmail(),
                     updatedUser.getStatus() // now "paid"
             );
             // Log JWT token to console

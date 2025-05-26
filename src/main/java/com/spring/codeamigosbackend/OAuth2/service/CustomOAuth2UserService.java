@@ -32,7 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         int githubId = (int) attributes.get("id");
         String githubLogin = (String) attributes.get("login");
         String avatarUrl = (String) attributes.get("avatar_url");
-//        String email = (String) attributes.get("email"); // May be null if not public
+        String email = (String) attributes.get("email"); // May be null if not public
 
         String accessToken = userRequest.getAccessToken().getTokenValue();
 
@@ -48,7 +48,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user.setGithubUsername(githubLogin);
             user.setGithubAvatarUrl(avatarUrl);
             user.setGithubAccessToken(accessToken);
-//            user.setEmail(email != null ? email : githubLogin + "@github.com");
+            user.setEmail(email != null ? email : githubLogin + "@github.com");
             user.setProfileComplete(false); // Mark incomplete so frontend shows registration form
         }
 
