@@ -16,11 +16,11 @@ public class JwtUtil {
     private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 hour
 
-    public static String generateToken(String id, String username, String email, String Status) {
+    public static String generateToken(String id, String username, String status) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", username);
-        claims.put("email", email);
-        claims.put("status",Status);
+//        claims.put("email", email);
+        claims.put("status",status);
 
         return Jwts.builder()
                 .setSubject(id)

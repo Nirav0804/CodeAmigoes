@@ -94,7 +94,7 @@ public class HackathonController {
         }
     }
 
-    @PreAuthorize("hasAuthority('paid')")
+    @PreAuthorize("hasAuthority('PAID')")
     @GetMapping("/nearby-hackathons")
     public ResponseEntity<List<Hackathon>> getNearbyHackathons(  @RequestParam(required = true) Double latitude,
                                                                  @RequestParam(required = true) Double longitude,
@@ -103,7 +103,7 @@ public class HackathonController {
         List<Hackathon> activeHackathons =  this.hackathonService.findNearbyHackathons(latitude, longitude,radius);
         return ResponseEntity.ok(activeHackathons);
     }
-    @PreAuthorize("hasAuthority('paid')")
+    @PreAuthorize("hasAuthority('PAID')")
     @GetMapping("/recommended-hackathons")
     public ResponseEntity<List<HackathonService.ScoredHackathon>> recommendHackathonsToUser(@RequestParam(required = true) String username) {
         return ResponseEntity.ok(this.hackathonService.recommendHackathons(username));
