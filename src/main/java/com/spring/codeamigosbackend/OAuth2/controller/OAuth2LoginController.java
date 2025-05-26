@@ -99,10 +99,11 @@ public class OAuth2LoginController {
         rabbitMqProducer.sendUserToQueue(githubScoreRequest);
 
 
-        String redirectUrl = String.format(
-                url + "/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s",
-                user.getUsername(), user.getId(), user.getGithubUsername(), user.getStatus()
-        );
+//        String redirectUrl = String.format(
+//                url + "/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s",
+//                user.getUsername(), user.getId(), user.getGithubUsername(), user.getStatus()
+//        );
+        String redirectUrl = String.format(url+"/dashboard");
 
         RedirectView redirectView = new RedirectView(redirectUrl);
         redirectView.setExposeModelAttributes(false);
