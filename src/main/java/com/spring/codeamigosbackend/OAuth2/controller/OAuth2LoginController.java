@@ -3,6 +3,7 @@ package com.spring.codeamigosbackend.OAuth2.controller;
 import com.spring.codeamigosbackend.OAuth2.util.JwtUtil;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,15 +65,19 @@ public class OAuth2LoginController {
         String jwtToken = JwtUtil.generateToken(
                 user.getId().toString(),
                 user.getUsername(),
-//                user.getEmail(),
+                user.getEmail(),
                 user.getStatus() // keep status
         );
 
         System.out.println("Generated JWT Token: " + jwtToken);
 
-        String cookieValue = "jwtToken=" + jwtToken
-                + "; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400";
-        response.addHeader("Set-Cookie", cookieValue);
+        Cookie cookie = new Cookie("jwtToken", jwtToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);  // only if HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge(86400);
+        response.addCookie(cookie);
+
         System.out.println("OAuth2 User Attributes: " + oAuth2User.getAttributes());
         String redirectUrl = String.format(
                 url + "/dashboard?username=%s&userId=%s&githubUsername=%s&status=%s",
