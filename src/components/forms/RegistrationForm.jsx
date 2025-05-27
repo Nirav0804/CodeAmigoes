@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Typewriter } from "react-simple-typewriter";
@@ -5,7 +6,8 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
-import { includes } from "lodash";
+import { exportKeyAsPem } from "../../config/pemUtils";
+import { log } from "sockjs-client/dist/sockjs";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const RegistrationForm = () => {
   const { username, userId } = useAuth();
@@ -70,46 +72,61 @@ const RegistrationForm = () => {
     setError(null);
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-    try {
-      const response = await fetch(`${API_BASE}/api/users/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: 'include', // <-- This line enables cookies!
-        body: JSON.stringify(formData),
-      });
+ try {
+  // 1. Generate RSA key pair
+  const keyPair = await window.crypto.subtle.generateKey(
+    {
+      name: "RSA-OAEP",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256",
+    },
+    true,
+    ["encrypt", "decrypt"]
+  );
 
-      const data = await response.json();
+  // 2. Export keys as PEM
+  const publicPem = await exportKeyAsPem(keyPair.publicKey, "PUBLIC");
+  const privatePem = await exportKeyAsPem(keyPair.privateKey, "PRIVATE");
 
-      if (!response.ok) {
-        throw new Error(typeof data === "string" ? data : JSON.stringify(data));
-      }
+  // 3. Store PEM keys in localStorage
+  localStorage.setItem("rsaPublicKey", publicPem);
+  localStorage.setItem("rsaPrivateKey", privatePem);
 
-      setSuccess(true);
-      console.log(data);
-      console.log(data.username);
-      console.log(data.id);
-      console.log(data.githubUsername);
-
-      // localStorage.setItem("username", "hello");
-      // localStorage.setItem("userId", data.id);
-      // localStorage.setItem("githubUsername", data.githubUsername);
-      navigate("/dashboard");
-      // setTimeout(() => navigate(`/dashboard?username=${data.username}&userId=${data.id}&githubUsername=${data.githubUsername}`), 1000);
-      // debugger;
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  // 4. Add public PEM key to formData before sending
+  const registrationData = {
+    ...formData,
+    publicKey: publicPem, // Add public key PEM here
   };
+
+  // 5. Send registration request
+  const response = await fetch(`${API_BASE}/api/users/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(registrationData),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(typeof data === "string" ? data : JSON.stringify(data));
+  }
+
+  setSuccess(true);
+  navigate("/dashboard");
+} catch (err) {
+  setError(err.message);
+} finally {
+  setLoading(false);
+}};
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-black to-gray-800 overflow-y-auto relative">
@@ -180,12 +197,14 @@ const RegistrationForm = () => {
                 name: "leetcodeUsername",
                 type: "text",
                 placeholder: "e.g., khushi703",
+                required: true,
               },
               {
                 label: "CodeChef Username",
                 name: "codechefUsername",
                 type: "text",
                 placeholder: "e.g., nirav0804",
+                required: true,
               },
               {
                 label: "GitHub email",

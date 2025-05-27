@@ -89,12 +89,27 @@ function ChatDropDown() {
         }
     }, [member2Id, member2Name]);
 
-    const handlePersonalChatClick = (member2Name, id) => {
-        localStorage.setItem("key", "W05eZAlBso9GxmeNkXOYf5whKff883TkQ/hsUn3QaBE7s3fJIxBLPz+9ETkypxOz")
-        setMember2Id(id);
-        setMember2Name(member2Name);
-    };
+   const handlePersonalChatClick = async (member2Name, id) => {
+    setMember2Id(id);
+    setMember2Name(member2Name);
 
+    try {
+        // Fetch the public key from backend
+        const res = await axios.get(`${API_BASE}/api/users/public_key/${member2Name}`, {
+  withCredentials: true  
+});
+        const publicKeyPem = res.data; // This should be the PEM string
+
+        // Store it in state, context, or pass to your chat component
+        localStorage.setItem(`publicKey:${member2Name}`, publicKeyPem);
+        // Or: setPublicKey(publicKeyPem); if you want to use React state
+
+        // Now you can use this publicKeyPem for RSA encryption when sending messages
+    } catch (err) {
+        console.error("Could not fetch public key for", member2Name, err);
+        // Handle error (show message to user, etc)
+    }
+};
     const debouncedSearch = useCallback(
         debounce((query) => {
             const filteredChats = personalChats.filter((chat) =>
