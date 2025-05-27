@@ -14,14 +14,22 @@ import HackathonRequestStatusPage from '../pages/HackathonRequestStatusPage';
 import ProfileEditForm from '../components/forms/ProfileEditForm';
 import ChatDropDown from '../components/Chat/ChatDropDown';
 import ProtectedRoute from '../context/ProtectedRoutes';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
+import UserFetcherOnRouteChange from '../context/UserFetchOnRouteChange';
 function AppRoutes() {
+    const { userId } = useAuth();
     return (
+
         <Router>
+            <UserFetcherOnRouteChange />
             <Routes>
-                <Route path="/" element={<App />} />
+                <Route
+                    path="/"
+                    element={
+                        userId ? <Navigate to="/dashboard" replace /> : <App />
+                    }
+                />
                 <Route path="/register" element={<RegistrationForm />} />
-                <Route path="/login" element={<LoginForm />} />
                 <Route
                     path="/subscription"
                     element={
