@@ -1,6 +1,7 @@
 package com.spring.codeamigosbackend.recommendation.controllers;
 
 import com.spring.codeamigosbackend.recommendation.dtos.GithubScoreRequest;
+import com.spring.codeamigosbackend.recommendation.models.UserFrameworkStats;
 import com.spring.codeamigosbackend.recommendation.services.FrameworkAnalysisService;
 import com.spring.codeamigosbackend.recommendation.utils.ApiException;
 import com.spring.codeamigosbackend.recommendation.utils.ApiResponse;
@@ -10,10 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/frameworks")
@@ -39,4 +38,18 @@ public class FrameworkController {
             logger.error(e.getMessage());
         }
     }
+        @GetMapping("/users")
+        @PreAuthorize("hasAnyAuthority('PAID')")
+        public ResponseEntity<ApiResponse> getUsers(@RequestParam(required = true) String username) {
+            try{
+                UserFrameworkStats userFrameworkStats = this.frameworkAnalysisService.getUserFrameworkStats(username);
+                if(userFrameworkStats == null){
+                    throw  new ApiException(400,"No frameworks found for the user");
+                }
+                return ResponseEntity.status(200).body(new ApiResponse(200,userFrameworkStats,"Successfully retrieved the user-frameworks"));
+            }catch (ApiException e){
+                logger.error(e.getMessage());
+                return ResponseEntity.status(e.getStatusCode()).body(new ApiResponse(e.getStatusCode(),null,e.getMessage()));
+            }
+        }
 }
