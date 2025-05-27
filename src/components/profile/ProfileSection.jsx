@@ -1,4 +1,5 @@
 import React from "react";
+import FrameworksStatsCard from "./FrameworksStatsCard";
 
 const ProfileSection = ({
   imageUrl,
@@ -45,6 +46,7 @@ const ProfileSection = ({
         <h2 className="text-xl text-gray-400">@{username}</h2>
         <p className="text-gray-300 max-w-xs">{bio}</p>
       </div>
+      <FrameworksStatsCard />
     </div>
   );
 };
