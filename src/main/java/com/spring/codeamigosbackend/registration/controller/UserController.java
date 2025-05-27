@@ -118,6 +118,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody User user, HttpServletResponse response) {
         try {
+            System.out.println("In registerUser method");
             // Your existing user save/update logic
             Optional<User> existingUser = userRepository.findById(user.getId());
             User savedUser;
@@ -145,22 +146,19 @@ public class UserController {
             // Log JWT token to console
             System.out.println("Generated JWT Token: " + token);
             // Set JWT token as HttpOnly, Secure cookie with SameSite=Strict
-            ResponseCookie cookie = ResponseCookie.from("jwtToken", token)
-                    .httpOnly(true)
-                    .secure(false) // Change to true only when you're on HTTPS
-                    .sameSite("Strict")
-                    .path("/")
-                    .maxAge(Duration.ofDays(1))
-                    .build();
-
-            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
+            Cookie cookie = new Cookie("jwtToken", token);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);  // only if HTTPS
+            cookie.setPath("/");
+            cookie.setMaxAge(86400);
+            response.addCookie(cookie);
+            System.out.println("Hello"+response.getHeader("Set-Cookie"));
             // Return user info (without token in body)
             GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
             githubScoreRequest.setUsername(user.getUsername());
             githubScoreRequest.setEmail(user.getEmail());
             // Decrypt token when needed
-            String decryptedToken = EncryptionUtil.decrypt(user.getGithubAccessToken(), SECRET_KEY);
+            String decryptedToken = EncryptionUtil.decrypt(u.getGithubAccessToken(), SECRET_KEY);
             githubScoreRequest.setAccessToken(decryptedToken);
             System.out.println("decrepted github access token"+decryptedToken);
             rabbitMqProducer.sendUserToQueue(githubScoreRequest);
