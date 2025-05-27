@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import HackathonCard from "./HackathonCard";
 import HackathonMap from "./HackathonMap";
 import { useAuth } from "../../context/AuthContext";
+import { Navigate, useNavigate } from "react-router-dom";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const HackathonList = ({
@@ -11,6 +12,7 @@ const HackathonList = ({
   type,
   joinable,
 }) => {
+  const navigate = useNavigate();
   const { username, status } = useAuth();
   const [latitude, setLatitude] = useState(localStorage.getItem("latitude"));
   const [longitude, setLongitude] = useState(localStorage.getItem("longitude"));
@@ -46,33 +48,44 @@ const HackathonList = ({
       setHackathons(data);
       setFilteredHackathons(data);
     }
-    if (type == "nearby" && status == "paid") {
-      const response = await fetch(
-        `${API_BASE}/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`, {
-        credentials: 'include',
+    if (type == "nearby") {
+      if (status !== "paid") {
+        navigate("/dashboard");
       }
-      );
-      const data = await response.json();
-      setHackathons(data);
-      setFilteredHackathons(data);
+      else {
+        const response = await fetch(
+          `${API_BASE}/api/hackathons/nearby-hackathons?latitude=${latitude}&longitude=${longitude}&radius=600`, {
+          credentials: 'include',
+        }
+        );
+        const data = await response.json();
+        setHackathons(data);
+        setFilteredHackathons(data);
+      }
     }
-    if (type == "recommended" && status == "paid") {
-      console.log("Hello");
-
-      const response = await fetch(
-        `${API_BASE}/api/hackathons/recommended-hackathons?username=${username}`, {
-        credentials: 'include',
+    if (type == "recommended") {
+      if (status !== "paid") {
+        navigate("/dashboard");
       }
-      );
-      const data = await response.json();
-      console.log(data);
+      else {
+        console.log("Hello");
 
-      if (data.length == 0) {
-        setHackathons(["No recommended Hacathons found"])
-      } else {
-        const hackathons = data.map(item => item.hackathon)
-        setHackathons(hackathons);
-        setFilteredHackathons(hackathons);
+        const response = await fetch(
+          `${API_BASE}/api/hackathons/recommended-hackathons?username=${username}`, {
+          credentials: 'include',
+        }
+        );
+        const data = await response.json();
+        console.log(data);
+
+        if (data.length == 0) {
+          setHackathons(["No recommended Hacathons found"])
+
+        } else {
+          const hackathons = data.map(item => item.hackathon)
+          setHackathons(hackathons);
+          setFilteredHackathons(hackathons);
+        }
       }
     }
   };

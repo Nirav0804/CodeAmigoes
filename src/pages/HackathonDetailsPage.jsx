@@ -57,6 +57,9 @@ const HackathonDetailsPage = () => {
         setSuccess(true);
       } catch (err) {
         setError(err.message);
+        console.log("Error fetching hackathon data:", err);
+
+        navigate("/dashboard");
         setLoading(false);
       }
     };

@@ -9,16 +9,18 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const fetchUser = useCallback(() => {
+    const fetchUser = () => {
         setLoading(true);
-        axios.get(`${API_BASE}/api/users/me`, { withCredentials: true })
+        axios.get(`${API_BASE}/api/users/me`, {
+            withCredentials: true
+        })
             .then((res) => setUser(res.data))
             .catch(() => setUser(null))
             .finally(() => setLoading(false));
-    }, []);
+    };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, loading ,fetchUser}}>
+        <AuthContext.Provider value={{ user, setUser, loading, fetchUser }}>
             {children}
         </AuthContext.Provider>
     );

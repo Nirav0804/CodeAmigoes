@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
+import { includes } from "lodash";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const RegistrationForm = () => {
   const { username, userId } = useAuth();
@@ -81,7 +82,7 @@ const RegistrationForm = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, // <-- This line enables cookies!
+        credentials: 'include', // <-- This line enables cookies!
         body: JSON.stringify(formData),
       });
 
