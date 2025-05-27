@@ -15,6 +15,6 @@ public class PersonalChat {
     private String id;
     private String member1Id;
     private String member2Id;
-    private List<Message> messages = new ArrayList<>()  ;
+    private String secretKey; // Encrypted with the receiver's public key
+    private List<Message> messages = new ArrayList<>();
 }
-

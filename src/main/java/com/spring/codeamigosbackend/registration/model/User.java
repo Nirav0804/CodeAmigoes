@@ -1,6 +1,7 @@
 package com.spring.codeamigosbackend.registration.model;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -57,6 +58,9 @@ public class User {
     private boolean isProfileComplete = false;
 
     private String status = "not paid";
+
+    @JsonProperty("publicKey")  // matches frontend JSON property name
+    private String rsaPublicKey; // store PEM string here
 
      // evaluate false
         public void evaluateProfileCompletion() {

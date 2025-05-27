@@ -131,6 +131,9 @@ public class UserController {
                 u.setEmail(user.getEmail());
                 u.setLeetcodeUsername(user.getLeetcodeUsername());
                 u.setCodechefUsername(user.getCodechefUsername());
+                // Save the public key from request
+                System.out.println(user.getRsaPublicKey());
+                u.setRsaPublicKey(user.getRsaPublicKey());
                 savedUser = userRepository.save(u);
             } else {
                 savedUser = userRepository.save(user);
@@ -375,6 +378,16 @@ public class UserController {
         mac.init(secretKey);
         byte[] hash = mac.doFinal(data.getBytes());
         return new String(Hex.encodeHex(hash));
+    }
+
+    @GetMapping("/public_key/{githubUserName}")
+    public ResponseEntity<?> getPublicKey(@PathVariable String githubUserName) {
+        Optional<User> userOpt = userRepository.findByGithubUsername(githubUserName);
+        if (userOpt.isPresent()) {
+            return ResponseEntity.ok(userOpt.get().getRsaPublicKey());
+        } else {
+            return ResponseEntity.status(404).body("User not found");
+        }
     }
 
 }
