@@ -1,10 +1,12 @@
 package com.spring.codeamigosbackend.OAuth2.controller;
 
+import com.spring.codeamigosbackend.OAuth2.util.EncryptionUtil;
 import com.spring.codeamigosbackend.OAuth2.util.JwtUtil;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.rabbitmq.producer.RabbitMqProducer;
 import com.spring.codeamigosbackend.recommendation.dtos.GithubScoreRequest;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,8 @@ import java.util.Optional;
 @RequestMapping("/oauth2")
 public class OAuth2LoginController {
 
+    private static Dotenv dotenv = Dotenv.load();
+    private static final String SECRET_KEY = dotenv.get("JWT_SECRET_KEY"); // Store in env variable
     @Autowired
     private UserRepository userRepository;
 
@@ -92,8 +96,11 @@ public class OAuth2LoginController {
         logger.info("OAuth2 User Attributes: " + oAuth2User.getAttributes());
         GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
         githubScoreRequest.setEmail(user.getEmail());
-        githubScoreRequest.setAccessToken(user.getGithubAccessToken());
+        // Decrypt token when needed
+        String decryptedToken = EncryptionUtil.decrypt(user.getGithubAccessToken(), SECRET_KEY);
+        githubScoreRequest.setAccessToken(decryptedToken);
         githubScoreRequest.setUsername(user.getGithubUsername());
+        System.out.println("decrepted github access token"+decryptedToken);
         System.out.println(githubScoreRequest);
         logger.info("Github Framework: " + githubScoreRequest);
         rabbitMqProducer.sendUserToQueue(githubScoreRequest);

@@ -1,5 +1,6 @@
 package com.spring.codeamigosbackend.registration.controller;
 
+import com.spring.codeamigosbackend.OAuth2.util.EncryptionUtil;
 import com.spring.codeamigosbackend.rabbitmq.producer.RabbitMqProducer;
 import com.spring.codeamigosbackend.OAuth2.util.JwtUtil;
 import com.spring.codeamigosbackend.recommendation.controllers.FrameworkController;
@@ -14,6 +15,7 @@ import com.spring.codeamigosbackend.subscription.repository.PaymentOrderReposito
 import com.razorpay.Order;
 import com.razorpay.RazorpayException;
 import com.razorpay.RazorpayClient;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -50,6 +52,8 @@ import jakarta.validation.Valid;                     // For @Valid annotation
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
+    private static Dotenv dotenv = Dotenv.load();
+    private static final String SECRET_KEY = dotenv.get("JWT_SECRET_KEY"); // Store in env variable
     private final UserService userService;
     private final FrameworkController frameworkController;
     private final PaymentOrderRepository paymentOrderRepository;
@@ -155,7 +159,10 @@ public class UserController {
             GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
             githubScoreRequest.setUsername(user.getUsername());
             githubScoreRequest.setEmail(user.getEmail());
-            githubScoreRequest.setAccessToken(u.getGithubAccessToken());
+            // Decrypt token when needed
+            String decryptedToken = EncryptionUtil.decrypt(user.getGithubAccessToken(), SECRET_KEY);
+            githubScoreRequest.setAccessToken(decryptedToken);
+            System.out.println("decrepted github access token"+decryptedToken);
             rabbitMqProducer.sendUserToQueue(githubScoreRequest);
             return ResponseEntity.ok(savedUser);
 
