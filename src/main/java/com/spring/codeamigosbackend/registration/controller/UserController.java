@@ -8,7 +8,6 @@ import com.spring.codeamigosbackend.recommendation.dtos.GithubScoreRequest;
 import com.spring.codeamigosbackend.registration.model.User;
 import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import com.spring.codeamigosbackend.registration.service.UserService;
-import com.spring.codeamigosbackend.registration.exception.UserAlreadyExistsException;
 import com.spring.codeamigosbackend.registration.exception.InvalidCredentialsException;
 import com.spring.codeamigosbackend.subscription.model.PaymentOrder;
 import com.spring.codeamigosbackend.subscription.repository.PaymentOrderRepository;
@@ -23,17 +22,13 @@ import org.apache.commons.codec.binary.Hex;
 import org.json.JSONObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.Principal;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,7 +38,7 @@ import jakarta.servlet.http.Cookie;                   // For creating and manipu
 import org.springframework.http.ResponseEntity;     // For ResponseEntity return type
 import org.springframework.web.bind.annotation.PostMapping;  // For @PostMapping annotation
 import org.springframework.web.bind.annotation.RequestBody;  // For @RequestBody annotation
-import jakarta.validation.Valid;                     // For @Valid annotation
+
 
 // Also import your User class and jwtUtil as per your project structure
 
@@ -390,4 +385,8 @@ public class UserController {
         }
     }
 
+    @GetMapping
+    public String getCurrentUserId() {
+        return this.userService.getCurrentUserId();
+    }
 }

@@ -6,12 +6,16 @@ import com.spring.codeamigosbackend.registration.repository.UserRepository;
 import com.spring.codeamigosbackend.registration.exception.UserAlreadyExistsException;
 import com.spring.codeamigosbackend.registration.exception.InvalidCredentialsException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserService {
@@ -128,6 +132,11 @@ public class UserService {
     }
     public Optional<User> getUserById(java.lang.String id) {
         return userRepository.findById(id);
+    }
+    public String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Current user id: {}", authentication.getPrincipal());
+        return (String) authentication.getPrincipal(); // This is the userId set in the filter
     }
 }
 

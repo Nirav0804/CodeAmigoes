@@ -18,6 +18,8 @@ public class PersonalChat {
     private String member1Id;
     @JsonProperty("userId")
     private String member2Id;
-    private String secretKey; // Encrypted with the receiver's public key
+    private String secretKey;  // Encrypted with the receiver's public key
+    private String secretKey1; // Encrypted with own sender's public key
+//    Stored as userID:chatSecretId
     private List<Message> messages = new ArrayList<>();
 }
