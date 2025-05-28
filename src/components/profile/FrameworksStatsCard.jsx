@@ -11,17 +11,23 @@ const COLORS = [
 
 const FrameworksStatsCard = () => {
   const { username } = useParams();
-  const [frameworks, setFrameworks] = useState([]);
+  const [frameworks, setFrameworks] = useState([]); 
 
   useEffect(() => {
     async function load() {
       if (!username) return;
       const data = await getUserFrameworks(username);
-      if (data && typeof data === 'object') {
+      console.log(data);
+      if(data?.error){
+          console.log(data.error);
+          
+      }else{
+        if (data && typeof data === 'object') {
         const arr = Object.entries(data)
           .map(([name, val]) => ({ name, value: val }))
           .sort((a, b) => b.value - a.value); // ← sort descending
         setFrameworks(arr);
+      }
       }
     }
     load();
