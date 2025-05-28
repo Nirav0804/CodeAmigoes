@@ -1,6 +1,8 @@
 export function stringToArrayBuffer(str) {
     // Assuming str is a hex-encoded string (64 characters for 32 bytes)
+    
     const bytes = new Uint8Array(str.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    console.log(bytes.length);
     if (bytes.length !== 32) {
         throw new Error('Key must decode to exactly 32 bytes for 256-bit AES');
     }
@@ -35,6 +37,8 @@ export async function encrypt(data, secretKey) {
 
 
         const keyMaterial = stringToArrayBuffer(secretKey); // Now decodes hex to 32 bytes
+        console.log("Key Material : ",keyMaterial);
+        
         const key = await crypto.subtle.importKey(
             'raw',
             keyMaterial,

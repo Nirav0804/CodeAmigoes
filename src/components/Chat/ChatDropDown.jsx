@@ -10,9 +10,14 @@ import PersonalChatChat from "../PersonalChat/PersonalChatChat";
 import { LogIn } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { generateBase64AesKey } from "../../config/secretKeyGenerator";
-import { set as idbSet, get as idbGet } from 'idb-keyval';
+import { set as idbSet, get as idbGet , createStore } from 'idb-keyval';
+import { storeSecretChatKeyInIdb } from "../../config/IndexDb";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+// Create a dedicated IndexedDB store for public keys
+const publicKeyStore = createStore('public-key', 'documents');
+const chatSecretKeyStore = createStore('chat-secret-key-store', 'chat-secret-key');
 
 function ChatDropDown() {
     const [personalChats, setPersonalChats] = useState([]);
@@ -22,7 +27,8 @@ function ChatDropDown() {
     const [searchTerm, setSearchTerm] = useState("");
     const [personalChatOpen, setPersonalChatOpen] = useState(false);
     const [currentUserId, setCurrentUserId] = useState("");
-
+    const [partnerPublicKey, setPartnerPublicKey] = useState("") // 
+    const [partnerChatSecretKey, setPartnerChatSecretKey] = useState("") // 
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -96,20 +102,42 @@ function ChatDropDown() {
     const handlePersonalChatClick = async (partnerName, chatId) => {
         setMember2Id(chatId);
         setMember2Name(partnerName);
-        console.log("handle chatid: " + chatId);
+        console.log("handle member2Id: " + chatId);
         console.log("handle userId: " + userId);
 
         try {
-            // 1) Fetch their public key PEM (optional here)
-            const pkResp = await axios.get(
+             // 1) Try to get public key from IndexedDB
+            let publicKeyPem = await idbGet(partnerName, publicKeyStore);
+            let pkResp;
+            if(publicKeyPem){
+                console.log("PublicKeyHi");
+                console.log(publicKeyPem);
+                setPartnerPublicKey(publicKeyPem)
+            }else{
+                // 1) Fetch their public key PEM (optional here)
+                pkResp = await axios.get(
                 `${API_BASE}/api/users/public_key/${partnerName}`,
                 { withCredentials: true }
             );
-            localStorage.setItem(`publicKey:${partnerName}`, pkResp.data);
+            
+            // localStorage.setItem(`publicKey:${partnerName}`, pkResp.data); // local storage 
 
+             // Store in IndexedDB public-key store
+            await idbSet(partnerName, pkResp.data, publicKeyStore);
+            setPartnerPublicKey(pkResp.data)
+            console.log("set partner Public Key in setPartner"+partnerPublicKey);
+            
+            }
+            
+            
             // 2) Try to GET an existing chat-secret from your backend
             let secretB64;
-            const getRes = await axios.get(
+            let chatSecretKey = await idbGet(partnerName, chatSecretKeyStore);
+            if(chatSecretKey){
+                setPartnerChatSecretKey(chatSecretKey);
+                console.log("FoundChatSecretKey",partnerChatSecretKey);
+            }else{
+                const getRes = await axios.get(
                 `${API_BASE}/api/secret_key/${chatId}/${userId}/`,
                 {
                     withCredentials: true,
@@ -122,8 +150,14 @@ function ChatDropDown() {
                 secretB64 = getRes.data;
                 console.log("Reusing existing chat key");
                 // Store the secret key in localStorage
-                localStorage.setItem(`secretKey:${partnerName}`, secretB64);
-                console.log(`Stored secretKey:${partnerName} in localStorage`);
+
+                // localStorage.setItem(`secretKey:${partnerName}`, secretB64);
+                
+                // Set Chat Secret Key in IDB
+                
+                await storeSecretChatKeyInIdb(partnerName,secretB64,publicKeyPem,chatSecretKeyStore)
+                setPartnerChatSecretKey(secretB64);
+                console.log(`Stored secretKey:${partnerName} : ${partnerChatSecretKey} in IndexDb`);
             } else {
                 // Generate + persist
                 console.log("Generating new chat key");
@@ -136,17 +170,14 @@ function ChatDropDown() {
                         withCredentials: true,
                     }
                 );
-
-                // Store the newly generated secret key in localStorage
-                localStorage.setItem(`secretKey:${partnerName}`, secretB64);
-                console.log(`Stored secretKey:${partnerName} in localStorage`);
-
-                // 3) Persist the Base64 secret in IndexedDB too
-                try {
-                    await idbSet(`chatKey:${chatId}`, secretB64);
-                    console.log(`🔒 Stored chatKey:${chatId} in IndexedDB`);
-                } catch (e) {
-                    console.warn("Failed to write chat key to IndexedDB", e);
+                // Store the newly generated secret key in IndexDb
+                // localStorage.setItem(`secretKey:${partnerName}`, secretB64);
+                 // Generateed and  Set Chat Secret Key in IDB a
+                // await idbSet(partnerName, chatSecretKey, chatSecretKeyStore);
+                await storeSecretChatKeyInIdb(partnerName,secretB64,publicKeyPem,chatSecretKeyStore)
+                
+                setPartnerChatSecretKey(secretB64);
+                console.log(`Generated and Stored secretKey:${partnerName}:${partnerChatSecretKey} in indexDb`);
                 }
             }
 
@@ -249,5 +280,5 @@ function ChatDropDown() {
         </GradientBackground>
     );
 }
-
+export{publicKeyStore,chatSecretKeyStore}
 export default ChatDropDown;

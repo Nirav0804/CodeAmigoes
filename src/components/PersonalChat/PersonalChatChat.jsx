@@ -9,342 +9,261 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import { useAuth } from "../../context/AuthContext";
+import { getChatKeyFromIdb } from "../../config/IndexDb";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-// Helper functions for AES encryption/decryption
+// AES helpers
 const importAESKey = async (base64Key) => {
-  try {
-    const rawKey = Uint8Array.from(atob(base64Key), (c) => c.charCodeAt(0));
-    return await window.crypto.subtle.importKey(
-      "raw",
-      rawKey.buffer,
-      { name: "AES-GCM" },
-      true,
-      ["encrypt", "decrypt"]
-    );
-  } catch (error) {
-    console.error("Error importing AES key:", error);
-    throw error;
-  }
+  const rawKey = Uint8Array.from(atob(base64Key), (c) => c.charCodeAt(0));
+  return window.crypto.subtle.importKey(
+    "raw",
+    rawKey.buffer,
+    { name: "AES-GCM" },
+    true,
+    ["encrypt", "decrypt"]
+  );
 };
 
 const encryptAES = async (message, base64Key) => {
-  try {
-    const key = await importAESKey(base64Key);
-    const iv = window.crypto.getRandomValues(new Uint8Array(12)); // Generate a random IV
-    const encodedMessage = new TextEncoder().encode(message);
-
-    const encrypted = await window.crypto.subtle.encrypt(
-      { name: "AES-GCM", iv: iv },
-      key,
-      encodedMessage
-    );
-
-    // Combine IV and encrypted data, then encode as Base64
-    const ivAndEncrypted = new Uint8Array([...iv, ...new Uint8Array(encrypted)]);
-    return btoa(String.fromCharCode(...ivAndEncrypted));
-  } catch (error) {
-    console.error("AES encryption error:", error);
-    throw error;
-  }
+  const key = await importAESKey(base64Key);
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(message);
+  const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+  const combined = new Uint8Array([...iv, ...new Uint8Array(encrypted)]);
+  return btoa(String.fromCharCode(...combined));
 };
 
 const decryptAES = async (encryptedBase64, base64Key) => {
-  try {
-    const key = await importAESKey(base64Key);
-    const ivAndEncrypted = Uint8Array.from(atob(encryptedBase64), (c) => c.charCodeAt(0));
-
-    // Extract IV (first 12 bytes) and encrypted data (remaining bytes)
-    const iv = ivAndEncrypted.slice(0, 12);
-    const encryptedData = ivAndEncrypted.slice(12);
-
-    const decrypted = await window.crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: iv },
-      key,
-      encryptedData
-    );
-
-    return new TextDecoder().decode(decrypted);
-  } catch (error) {
-    console.error("AES decryption error:", error);
-    throw error;
-  }
+  const key = await importAESKey(base64Key);
+  const data = Uint8Array.from(atob(encryptedBase64), (c) => c.charCodeAt(0));
+  const iv = data.slice(0, 12);
+  const ciphertext = data.slice(12);
+  const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+  return new TextDecoder().decode(decrypted);
 };
 
 const PersonalChatChat = ({ memberId, memberName }) => {
   const { username, userId } = useAuth();
-  const [connected, setConnected] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const [currentUser, setCurrentUser] = useState("");
   const [member2Id, setMember2Id] = useState("");
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const chatBoxRef = useRef(null);
-  const stompClientRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  const stompClientRef = useRef(null);
   const navigate = useNavigate();
 
+  // Initialize user and member IDs
   useEffect(() => {
-    setCurrentUser(username || "");
-    setCurrentUserId(userId || "");
-    setMember2Id(memberId || "");
-    setConnected(!!memberId);
+    setCurrentUser(username);
+    setCurrentUserId(userId);
+    setMember2Id(memberId);
   }, [memberId, username, userId]);
 
+  // Redirect if no chat target
   useEffect(() => {
-    if (!member2Id) {
-      navigate("/dashboard/chat");
-    }
+    if (!member2Id) navigate("/dashboard/chat");
   }, [member2Id, navigate]);
 
+  // Fetch and decrypt past messages
   useEffect(() => {
-    const loadMessages = async () => {
+    let isMounted = true;
+    const sortedChatId = [currentUserId, member2Id].sort().join("/");
+
+    const fetchMessages = async () => {
       if (!currentUserId || !member2Id) return;
-      const sortedChatId = [currentUserId, member2Id].sort().join("/");
-
+      setLoading(true);
       try {
-        const secretKey = localStorage.getItem(`secretKey:${memberName}`);
-        if (!secretKey) {
-          console.error("No secret key found in localStorage for", memberName);
-          setMessages([]);
-          toast.error("Cannot load messages: Secret key not found");
-          return;
-        }
+        const secretKey = await getChatKeyFromIdb(memberName);
+        if (!secretKey) throw new Error("Secret key missing");
 
-        const response = await axios.get(
+        const { data } = await axios.get(
           `${API_BASE}/api/v1/personal_chat/all_messages/${sortedChatId}`,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
 
-        if (Array.isArray(response.data)) {
-          const decryptedMessages = await Promise.all(
-            response.data.map(async (message) => {
+        if (Array.isArray(data)) {
+          const decrypted = await Promise.all(
+            data.map(async (msg) => {
+              if (typeof msg.content !== 'string') return { ...msg, content: '[Invalid]' };
               try {
-                if (!message.content || typeof message.content !== "string") {
-                  return { ...message, content: "[Invalid Content]" };
-                }
-
-                const decryptedContent = await decryptAES(message.content, secretKey);
-                return { ...message, content: decryptedContent };
-              } catch (decryptError) {
-                console.error("Decryption error:", decryptError);
-                return { ...message, content: "[Decryption Failed]" };
+                const text = await decryptAES(msg.content, secretKey);
+                return { ...msg, content: text };
+              } catch {
+                return { ...msg, content: '[Decryption Failed]' };
               }
             })
           );
-
-          setMessages(decryptedMessages);
+          isMounted && setMessages(decrypted);
         } else {
-          setMessages([]);
+          isMounted && setMessages([]);
         }
-      } catch (error) {
-        console.error("Error loading messages:", error);
-        setMessages([]);
+      } catch (err) {
+        console.error(err);
+        isMounted && setMessages([]);
+        toast.error('Failed to load messages');
+      } finally {
+        isMounted && setLoading(false);
       }
     };
 
-    if (connected) {
-      loadMessages();
-    }
-  }, [currentUserId, member2Id, connected, memberName]);
+    fetchMessages();
+    return () => { isMounted = false; };
+  }, [currentUserId, member2Id, memberName]);
 
+  // Scroll to bottom on new messages
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Setup WebSocket for live messages
   useEffect(() => {
     if (!currentUserId || !member2Id) return;
-
+    let isMounted = true;
     const sortedChatId = [currentUserId, member2Id].sort().join("/");
-
-    if (stompClientRef.current) {
-      stompClientRef.current.disconnect();
-      stompClientRef.current = null;
-    }
-
     const socket = new SockJS(`${baseURL}/chat`);
     const client = Stomp.over(socket);
 
     client.connect({}, () => {
       stompClientRef.current = client;
-      setConnected(true);
-      toast.success("Connected to chat");
-
-      client.subscribe(`/api/v1/topic/personal_chat/${sortedChatId}`, async (message) => {
-        const newMessage = JSON.parse(message.body);
-        const secretKey = localStorage.getItem(`secretKey:${memberName}`);
-        try {
-          if (!secretKey) {
-            throw new Error("Secret key not found in localStorage");
+      client.subscribe(
+        `/api/v1/topic/personal_chat/${sortedChatId}`,
+        async (frame) => {
+          if (!isMounted) return;
+          const newMsg = JSON.parse(frame.body);
+          try {
+            const key = await getChatKeyFromIdb(memberName);
+            newMsg.content = await decryptAES(newMsg.content, key);
+          } catch {
+            newMsg.content = '[Decryption Failed]';
           }
-          const decryptedMsg = await decryptAES(newMessage.content, secretKey);
-          newMessage.content = decryptedMsg;
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
-
-          setTimeout(() => {
-            if (messagesEndRef.current) {
-              messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-            }
-          }, 100);
-        } catch (error) {
-          console.error("Decryption error:", error);
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            { ...message, content: "[Decryption Failed]" },
-          ]);
+          setMessages((prev) => [...prev, newMsg]);
         }
-      });
+      );
     });
 
     return () => {
-      if (stompClientRef.current) {
-        stompClientRef.current.disconnect();
-        stompClientRef.current = null;
-        setConnected(false);
-      }
+      isMounted = false;
+      stompClientRef.current?.disconnect();
+      stompClientRef.current = null;
     };
   }, [currentUserId, member2Id, memberName]);
 
+  // Send a message
   const sendMessage = async () => {
-    if (stompClientRef.current && connected && input.trim()) {
-      const secretKey = localStorage.getItem(`secretKey:${memberName}`);
-      if (!secretKey) {
-        console.error("No secret key found for recipient", memberName);
-        toast.error("Cannot send message: Secret key not found");
-        return;
-      }
-
-      try {
-        const encryptedMsg = await encryptAES(input, secretKey);
-        console.log("Original message:", input);
-        console.log("Encrypted message (Base64):", encryptedMsg); // Log encrypted output
-        const message = {
-          sender: currentUser,
-          content: encryptedMsg,
-          timestamp: new Date().toISOString(),
-        };
-        const sortedChatId = [currentUserId, member2Id].sort().join("/");
-
-        stompClientRef.current.send(
-          `/app/personal_chat/send_message/${sortedChatId}`,
-          {},
-          JSON.stringify(message)
-        );
-
-        setInput("");
-      } catch (error) {
-        console.error("Encryption error:", error);
-        toast.error("Failed to encrypt message");
-      }
+    if (!stompClientRef.current || !input.trim()) return;
+    try {
+      const key = await getChatKeyFromIdb(memberName);
+      if (!key) throw new Error('Secret key missing');
+      const encrypted = await encryptAES(input, key);
+      const msg = { sender: currentUser, content: encrypted, timestamp: new Date().toISOString() };
+      const sortedChatId = [currentUserId, member2Id].sort().join("/");
+      stompClientRef.current.send(
+        `/app/personal_chat/send_message/${sortedChatId}`,
+        {},
+        JSON.stringify(msg)
+      );
+      setInput('');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to send');
     }
-  };
-
-  const addEmoji = (emojiObject) => {
-    setInput((prevInput) => prevInput + emojiObject.emoji);
   };
 
   return (
     <div className="flex flex-col h-full">
-      <header className="dark:border-gray-700 py-5 shadow flex justify-center items-center dark:bg-gray-900 pt-8">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-gray-900 py-4 shadow">
         <Link to={`/dashboard/profile/${memberName}`}>
-          <h1 className="text-2xl font-extrabold tracking-wide text-blue-400">
-            {memberName}
-          </h1>
+          <h1 className="text-center text-2xl font-bold text-blue-400">{memberName}</h1>
         </Link>
       </header>
 
+      {/* Messages container */}
       <main
-        ref={chatBoxRef}
-        className="flex-1 px-10 py-4 dark:bg-slate-600 overflow-y-auto h-full max-h-[calc(100vh-160px)]"
+        ref={chatContainerRef}
+        className="flex-1 overflow-auto p-4 bg-slate-600"
       >
-        <div className="flex flex-col gap-3">
-          {messages.map((message, index) => (
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-white"></div>
+          </div>
+        ) : messages.length === 0 ? (
+          <p className="text-center text-gray-300">No messages yet</p>
+        ) : (
+          messages.map((msg, idx) => (
             <div
-              key={index}
-              className={`flex ${
-                message.sender === currentUser ? "justify-end" : "justify-start"
-              }`}
+              key={idx}
+              className={`flex mb-3 ${msg.sender === currentUser ? 'justify-end' : 'justify-start'}`}
             >
-              <div
-                className={`my-2 ${
-                  message.sender === currentUser ? "bg-green-800" : "bg-gray-800"
-                } p-3 max-w-[75%] break-words rounded-lg`}
-              >
-                <div className="flex flex-col gap-2 items-start">
-                  {/* Image + Username Row */}
-                  <div className="flex items-center gap-2">
-                    <Link to={`/dashboard/profile/${message.sender}`}>
-                      <img
-                        className="h-8 w-8 rounded-full"
-                        src={`https://github.com/${message.sender}.png`}
-                        alt=""
-                      />
-                    </Link>
-                    <p className="text-sm font-bold">{message.sender}</p>
-                  </div>
-
-                  {/* Message Content */}
-                  <p className="whitespace-pre-wrap break-words text-left">
-                    {message.content}
-                  </p>
-
-                  {/* Timestamp */}
-                  <p className="text-xs text-gray-400">
-                    {timeAgo(message.timestamp)}
-                  </p>
+              <div className={`max-w-[75%] p-4 rounded-2xl ${msg.sender === currentUser ? 'bg-green-700 text-white' : 'bg-gray-800 text-gray-100'}`}
+                   >
+                <div className="flex items-center mb-2">
+                  <Link to={`/dashboard/profile/${msg.sender}`}>
+                    <img
+                      className="h-8 w-8 rounded-full mr-2"
+                      src={`https://github.com/${msg.sender}.png`}
+                      alt={`${msg.sender}`}
+                    />
+                  </Link>
+                  <span className="font-semibold">{msg.sender}</span>
                 </div>
+                <p className="break-words whitespace-pre-wrap text-left">{msg.content}</p>
+                <p className="mt-2 text-xs text-gray-400 text-right">
+                  {timeAgo(msg.timestamp)}
+                </p>
               </div>
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
       </main>
 
-      <div className="w-full px-10 py-4 bg-gray-900 relative">
-        {showEmojiPicker && (
-          <div className="absolute bottom-16 left-10 bg-gray-800 shadow-lg rounded-lg p-2">
-            <EmojiPicker theme="dark" onEmojiClick={addEmoji} />
-          </div>
-        )}
-
-        <div className="flex items-center gap-4 w-full mx-auto max-w-2xl bg-gray-800 p-3 rounded-full relative">
+      {/* Input area */}
+      <div className="sticky bottom-0 bg-gray-900 p-4">
+        <div className="relative max-w-2xl mx-auto flex items-center space-x-3">
           <button
-            onClick={() => setShowEmojiPicker((prev) => !prev)}
-            className="dark:bg-yellow-600 h-10 w-10 flex justify-center items-center rounded-full"
+            onClick={() => setShowEmojiPicker((v) => !v)}
+            className="p-2 rounded-full bg-yellow-500"
           >
             <MdEmojiEmotions size={24} />
           </button>
-
           <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            className="flex-1 px-4 py-2 rounded-full bg-gray-800 text-white outline-none"
             type="text"
-            placeholder="Type your message here..."
-            className="w-full bg-transparent text-white px-4 py-2 outline-none"
+            value={input}
+            placeholder="Type a message..."
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
           />
-
-          <button className="dark:bg-purple-600 h-10 w-10 flex justify-center items-center rounded-full">
+          <button className="p-2 rounded-full bg-purple-600">
             <MdAttachFile size={20} />
           </button>
-
           <button
             onClick={sendMessage}
-            className="dark:bg-green-600 h-10 w-10 flex justify-center items-center rounded-full"
+            className="p-2 rounded-full bg-green-600"
           >
             <MdSend size={20} />
           </button>
+
+          {showEmojiPicker && (
+            <div className="absolute bottom-14 left-0 z-20">
+              <EmojiPicker
+                theme="dark"
+                onEmojiClick={(_, emoji) => setInput((i) => i + emoji.emoji)}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
+export { encryptAES, decryptAES };
 export default PersonalChatChat;
