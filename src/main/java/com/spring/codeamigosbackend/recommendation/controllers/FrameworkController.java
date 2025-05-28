@@ -39,9 +39,9 @@ public class FrameworkController {
         }
     }
         @GetMapping("/users")
-        @PreAuthorize("hasAnyAuthority('PAID')")
         public ResponseEntity<ApiResponse> getUsers(@RequestParam(required = true) String username) {
             try{
+
                 UserFrameworkStats userFrameworkStats = this.frameworkAnalysisService.getUserFrameworkStats(username);
                 if(userFrameworkStats == null){
                     throw  new ApiException(400,"No frameworks found for the user");

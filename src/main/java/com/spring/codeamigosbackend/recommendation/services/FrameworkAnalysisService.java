@@ -64,32 +64,38 @@ public class FrameworkAnalysisService {
         }else{
             throw new ApiException(404, "No user found for user: " + request.getUsername());
         }
-        // If framework stats already present then delete them
-        if (this.userFrameworkStatsRepository.getUserFrameworkStatsByUserId(user1.getId()) != null) {
-            this.userFrameworkStatsRepository.delete(this.userFrameworkStatsRepository.getUserFrameworkStatsByUserId(user1.getId()));
-        }
-        UserFrameworkStats userFrameworkStats = new UserFrameworkStats();
+//        // If framework stats already present then delete them
+//        if (this.userFrameworkStatsRepository.getUserFrameworkStatsByUserId(user1.getId()) != null) {
+//            this.userFrameworkStatsRepository.delete(this.userFrameworkStatsRepository.getUserFrameworkStatsByUserId(user1.getId()));
+//        }
 
+        UserFrameworkStats userFrameworkStats = new UserFrameworkStats();
         userFrameworkStats.setUserId(user1.getId());
         userFrameworkStats.setFrameworkUsage(frameworkToFileCounts);
         userFrameworkStats.setLastUpdated(LocalDateTime.now());
         Optional<User> optionalUser2 = this.userRepository.findByUsername(request.getUsername());
         if(optionalUser2.isPresent()){
+            logger.info("Found existing user: "+optionalUser2.get().getUsername());
             User user2 = optionalUser2.get();
-              Optional<UserFrameworkStats> optionalUserFrameworkStats = this.userFrameworkStatsRepository.findById(user1.getId());
+              Optional<UserFrameworkStats> optionalUserFrameworkStats = this.userFrameworkStatsRepository.findByUserId(user1.getId());
               if(optionalUserFrameworkStats.isPresent()){
+                  logger.info("Found existing user framework stats: "+optionalUserFrameworkStats.get().getFrameworkUsage());
                   UserFrameworkStats userFrameworkStats2 = optionalUserFrameworkStats.get();
                   userFrameworkStats2.setFrameworkUsage(frameworkToFileCounts);
                   userFrameworkStats2.setLastUpdated(LocalDateTime.now());
-                  return;
+                  this.userFrameworkStatsRepository.save(userFrameworkStats2);
+                  return ;
               }
         }
-        this.userFrameworkStatsRepository.save(userFrameworkStats);
-        System.out.println(frameworkToFileCounts);
+        logger.info("Saving user framework stats: {}", userFrameworkStats);
+        UserFrameworkStats savedUserFrameworks =  this.userFrameworkStatsRepository.save(userFrameworkStats);
+        logger.info("Saved user Frameworks: {}", savedUserFrameworks);
     }
 
     public UserFrameworkStats getUserFrameworkStats(String username) {
          User user = this.userRepository.findByUsername(username).get();
-         return this.userFrameworkStatsRepository.getUserFrameworkStatsByUserId(user.getId());
+         UserFrameworkStats stats =  this.userFrameworkStatsRepository.findByUserId(user.getId()).get();
+         logger.info("Found user framework stats: {}", stats);
+         return stats;
     }
 }
