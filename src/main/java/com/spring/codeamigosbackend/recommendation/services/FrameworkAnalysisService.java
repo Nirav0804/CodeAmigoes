@@ -98,4 +98,15 @@ public class FrameworkAnalysisService {
          logger.info("Found user framework stats: {}", stats);
          return stats;
     }
+
+    @RabbitListener(queues = {"${rabbitmq.queue}"})
+    public void calculateUserFrameworkStats(GithubScoreRequest request) {
+        try{
+            logger.info("Processing message for user: {}", request.getUsername());
+            this.analyseUserFrameworkStats(request);
+        }catch (Exception e){
+            logger.error("Error processing message for user {}: {}", request.getUsername(), e.getMessage());
+            throw e; // Rethrow to trigger retry mechanism Thus necessary for retry
+        }
+    }
 }

@@ -27,7 +27,6 @@ public class FrameworkController {
      * @param request Request body containing GitHub username, email, and access token
      * @return ResponseEntity containing an ApiResponse with a map of frameworks to their file counts
      */
-    @RabbitListener(queues = {"${RABBITMQ_QUEUE}"})
     public void setGithubScore(@RequestBody GithubScoreRequest request) {
         try {
             System.out.println(request.getUsername());
