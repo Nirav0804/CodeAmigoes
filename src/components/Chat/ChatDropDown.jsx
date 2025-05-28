@@ -12,6 +12,7 @@ import { useAuth } from "../../context/AuthContext";
 import { generateBase64AesKey } from "../../config/secretKeyGenerator";
 import { set as idbSet, get as idbGet , createStore } from 'idb-keyval';
 import { storeSecretChatKeyInIdb } from "../../config/IndexDb";
+import { decryptMessage, encryptMessage } from "../../config/rasCrypto";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -112,21 +113,22 @@ function ChatDropDown() {
             if(publicKeyPem){
                 console.log("PublicKeyHi");
                 console.log(publicKeyPem);
-                setPartnerPublicKey(publicKeyPem)
+                setPartnerPublicKey(publicKeyPem);
+                console.log("Partner public key set ",partnerPublicKey);
+                
             }else{
                 // 1) Fetch their public key PEM (optional here)
                 pkResp = await axios.get(
                 `${API_BASE}/api/users/public_key/${partnerName}`,
                 { withCredentials: true }
             );
+            console.log("Pkresp: ",pkResp.data);
+            console.log("partnerPublicKey set",partnerPublicKey);
             
-            // localStorage.setItem(`publicKey:${partnerName}`, pkResp.data); // local storage 
-
              // Store in IndexedDB public-key store
+             setPartnerPublicKey(pkResp.data)
             await idbSet(partnerName, pkResp.data, publicKeyStore);
-            setPartnerPublicKey(pkResp.data)
-            console.log("set partner Public Key in setPartner"+partnerPublicKey);
-            
+            console.log("set partner Public Key in setPartner"+pkResp.data);
             }
             
             
@@ -134,9 +136,11 @@ function ChatDropDown() {
             let secretB64;
             let chatSecretKey = await idbGet(partnerName, chatSecretKeyStore);
             if(chatSecretKey){
+                // ##  Decrypt with our own private key
                 setPartnerChatSecretKey(chatSecretKey);
                 console.log("FoundChatSecretKey",partnerChatSecretKey);
             }else{
+                // Get secretKey from db
                 const getRes = await axios.get(
                 `${API_BASE}/api/secret_key/${chatId}/${userId}/`,
                 {
@@ -147,34 +151,42 @@ function ChatDropDown() {
 
             if (getRes.status === 200 && getRes.data) {
                 // Reuse
+                const encryptedChatKey = getRes.data
                 secretB64 = getRes.data;
                 console.log("Reusing existing chat key");
-                // Store the secret key in localStorage
-
-                // localStorage.setItem(`secretKey:${partnerName}`, secretB64);
-                
+                const decreyptedChatKey = await decryptMessage(encryptedChatKey,localStorage.getItem("rsaPrivateKey"))
                 // Set Chat Secret Key in IDB
                 
-                await storeSecretChatKeyInIdb(partnerName,secretB64,publicKeyPem,chatSecretKeyStore)
+                await storeSecretChatKeyInIdb(partnerName,decreyptedChatKey,chatSecretKeyStore)
                 setPartnerChatSecretKey(secretB64);
                 console.log(`Stored secretKey:${partnerName} : ${partnerChatSecretKey} in IndexDb`);
             } else {
-                // Generate + persist
+                // Generate + persist + encrypt with receiver's public key + encrypt with our public key 
                 console.log("Generating new chat key");
                 secretB64 = await generateBase64AesKey();
+                console.log(partnerPublicKey);
+
+                // encrypt with both users public key
+                console.log("PublicKeyPem in ChatDropDown",partnerPublicKey);
+                const encryptedSecretKey = await encryptMessage(secretB64,pkResp.data);
+                const encryptedSecretKey1 = await encryptMessage(secretB64,localStorage.getItem("rsaPublicKey"))
+                
                 await axios.post(
-                    `${API_BASE}/api/secret_key/${chatId}/${userId}/`,
-                    secretB64,
+                    `${API_BASE}/api/secret_key/${chatId}/${userId}/`,{
+                        secretKey:encryptedSecretKey,  // ## Encrypt with public key1
+                        secretKey1:encryptedSecretKey1   // ## Encrypt with public key2
+                    },
                     {
-                        headers: { "Content-Type": "text/plain" },
+                        headers: { "Content-Type": "application/json" },
                         withCredentials: true,
                     }
                 );
                 // Store the newly generated secret key in IndexDb
                 // localStorage.setItem(`secretKey:${partnerName}`, secretB64);
-                 // Generateed and  Set Chat Secret Key in IDB a
-                // await idbSet(partnerName, chatSecretKey, chatSecretKeyStore);
-                await storeSecretChatKeyInIdb(partnerName,secretB64,publicKeyPem,chatSecretKeyStore)
+                 // Generateed and  Set Chat Secret Key in IDB 
+
+                 // Encrypt with private Key of currentUSer and store in indexDb
+                await storeSecretChatKeyInIdb(partnerName,secretB64,chatSecretKeyStore)
                 
                 setPartnerChatSecretKey(secretB64);
                 console.log(`Generated and Stored secretKey:${partnerName}:${partnerChatSecretKey} in indexDb`);
