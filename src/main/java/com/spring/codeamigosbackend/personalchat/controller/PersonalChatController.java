@@ -56,29 +56,29 @@ public class PersonalChatController {
         return ResponseEntity.ok(messages);
     }
 
-    @PostMapping("/secret_key/{chatId}/")
-    public ResponseEntity<?> setSecretKey(@RequestBody String secretKey, @PathVariable String chatId) {
-        Optional<PersonalChat> chat = this.personalChatRepository.findById(chatId);
-        if (chat.isPresent()) {
-            chat.get().setSecretKey(secretKey);
-            this.personalChatRepository.save(chat.get());
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(404).body("Chat not found");
-        }
-    }
-
-    @GetMapping("/secret_key/{chatId}/")
-    public ResponseEntity<?> getSecretKey( @PathVariable String chatId) {
-        Optional<PersonalChat> chat = this.personalChatRepository.findById(chatId);
-        if (chat.isPresent()) {
-            String secretKey = chat.get().getSecretKey();
-            this.personalChatRepository.save(chat.get());
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(404).body("Chat not found");
-        }
-    }
+//    @PostMapping("/secret_key/{chatId}/")
+//    public ResponseEntity<?> setSecretKey(@RequestBody String secretKey, @PathVariable String chatId) {
+//        Optional<PersonalChat> chat = this.personalChatRepository.findById(chatId);
+//        if (chat.isPresent()) {
+//            chat.get().setSecretKey(secretKey);
+//            this.personalChatRepository.save(chat.get());
+//            return ResponseEntity.ok().build();
+//        } else {
+//            return ResponseEntity.status(404).body("Chat not found");
+//        }
+//    }
+//
+//    @GetMapping("/secret_key/{chatId}/")
+//    public ResponseEntity<?> getSecretKey( @PathVariable String chatId) {
+//        Optional<PersonalChat> chat = this.personalChatRepository.findById(chatId);
+//        if (chat.isPresent()) {
+//            String secretKey = chat.get().getSecretKey();
+//            this.personalChatRepository.save(chat.get());
+//            return ResponseEntity.ok().build();
+//        } else {
+//            return ResponseEntity.status(404).body("Chat not found");
+//        }
+//    }
 
 
 }
