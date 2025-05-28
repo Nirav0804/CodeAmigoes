@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, use } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Navigation from "../navigation/Navigation";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -11,7 +11,9 @@ import { LogIn } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { generateBase64AesKey } from "../../config/secretKeyGenerator";
 import { set as idbSet, get as idbGet } from 'idb-keyval';
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 function ChatDropDown() {
     const [personalChats, setPersonalChats] = useState([]);
     const [filteredPersonalChats, setFilteredPersonalChats] = useState([]);
@@ -25,6 +27,7 @@ function ChatDropDown() {
     const location = useLocation();
 
     const { userId, username } = useAuth();
+
     // Initialize user and fetch chats
     useEffect(() => {
         const initialize = async () => {
@@ -36,13 +39,11 @@ function ChatDropDown() {
 
             if (userId) {
                 try {
-
                     console.log(userId);
-
                     console.log(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`);
 
                     const response = await axios.get(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`, {
-                        withCredentials: true, // <-- This sends cookies!
+                        withCredentials: true,
                     });
                     console.log(response.data);
 
@@ -69,7 +70,7 @@ function ChatDropDown() {
                         if (matchingChat) {
                             console.log("Matching chat found:", matchingChat);
                             setMember2Id(matchingChat.id);
-                            setMember2Name(matchingChat.githubUserName); // Ensure this matches API response
+                            setMember2Name(matchingChat.githubUserName);
                         } else {
                             console.log("No matching chat found for leader:", leaderName);
                         }
@@ -91,95 +92,81 @@ function ChatDropDown() {
         }
     }, [member2Id, member2Name]);
 
-  // main handler
-  const handlePersonalChatClick = async (partnerName, chatId) => {
-    setMember2Id(chatId);
-    setMember2Name(partnerName);
+    // Main handler
+    const handlePersonalChatClick = async (partnerName, chatId) => {
+        setMember2Id(chatId);
+        setMember2Name(partnerName);
+        console.log("handle chatid: " + chatId);
+        console.log("handle userId: " + userId);
 
-    try {
-      // 1) Fetch their public key PEM (optional here)
-      const pkResp = await axios.get(
-        `${API_BASE}/api/users/public_key/${partnerName}`,
-        { withCredentials: true }
-      );
-      localStorage.setItem(`publicKey:${partnerName}`, pkResp.data);
+        try {
+            // 1) Fetch their public key PEM (optional here)
+            const pkResp = await axios.get(
+                `${API_BASE}/api/users/public_key/${partnerName}`,
+                { withCredentials: true }
+            );
+            localStorage.setItem(`publicKey:${partnerName}`, pkResp.data);
 
-      // 2) Try to GET an existing chat-secret from your backend
-      let secretB64;
-      const getRes = await axios.get(
-        `${API_BASE}/api/secret_key/${chatId}/`,
-        { 
-          withCredentials: true,
-          validateStatus: (s) => s < 500 
-        } 
-      );
+            // 2) Try to GET an existing chat-secret from your backend
+            let secretB64;
+            const getRes = await axios.get(
+                `${API_BASE}/api/secret_key/${chatId}/${userId}/`,
+                {
+                    withCredentials: true,
+                    validateStatus: (s) => s < 500
+                }
+            );
 
-      if (getRes.status === 200 && getRes.data) {
-        // reuse
-        secretB64 = getRes.data;
-        console.log("Reusing existing chat key");
-      } else {
-        // generate + persist
-        console.log("Generating new chat key");
-        secretB64 = await generateBase64AesKey();
-        await axios.post(
-          `${API_BASE}/api/secret_key/${chatId}/`,
-          secretB64,
-          {
-            headers: { "Content-Type": "text/plain" },
-            withCredentials: true,
-          }
-        );
-          // 3) Persist the Base64 secret in IndexedDB too,
- //    so we can recover it locally if the server is unreachable
+            if (getRes.status === 200 && getRes.data) {
+                // Reuse
+                secretB64 = getRes.data;
+                console.log("Reusing existing chat key");
+                // Store the secret key in localStorage
+                localStorage.setItem(`secretKey:${partnerName}`, secretB64);
+                console.log(`Stored secretKey:${partnerName} in localStorage`);
+            } else {
+                // Generate + persist
+                console.log("Generating new chat key");
+                secretB64 = await generateBase64AesKey();
+                await axios.post(
+                    `${API_BASE}/api/secret_key/${chatId}/${userId}/`,
+                    secretB64,
+                    {
+                        headers: { "Content-Type": "text/plain" },
+                        withCredentials: true,
+                    }
+                );
 
-      try{
-        await idbSet(`chatKey:${chatId}`, secretB64);
-        console.log(`🔒 Stored chatKey:${chatId} in IndexedDB`);
-    }catch (e) {
-      console.warn("Failed to write chat key to IndexedDB", e);
-    }
-      }
+                // Store the newly generated secret key in localStorage
+                localStorage.setItem(`secretKey:${partnerName}`, secretB64);
+                console.log(`Stored secretKey:${partnerName} in localStorage`);
 
-      // 4) Import the Base64 key into a CryptoKey
-      const raw = Uint8Array.from(atob(secretB64), (c) =>
-        c.charCodeAt(0)
-      );
-      const importedKey = await window.crypto.subtle.importKey(
-        "raw",
-        raw.buffer,
-        { name: "AES-GCM" },
-        true,
-        ["encrypt", "decrypt"]
-      );
-      setChatKey(importedKey);
-    } catch (err) {
-      console.error("Error setting up chat key:", err);
-    }
-  };
+                // 3) Persist the Base64 secret in IndexedDB too
+                try {
+                    await idbSet(`chatKey:${chatId}`, secretB64);
+                    console.log(`🔒 Stored chatKey:${chatId} in IndexedDB`);
+                } catch (e) {
+                    console.warn("Failed to write chat key to IndexedDB", e);
+                }
+            }
 
+            // // 4) Import the Base64 key into a CryptoKey
+            // const raw = Uint8Array.from(atob(secretB64), (c) =>
+            //     c.charCodeAt(0)
+            // );
+            // const importedKey = await window.crypto.subtle.importKey(
+            //     "raw",
+            //     raw.buffer,
+            //     { name: "AES-GCM" },
+            //     true,
+            //     ["encrypt", "decrypt"]
+            // );
+            // setChatKey(importedKey); // Note: setChatKey is undefined; this might need to be defined elsewhere
+        } catch (err) {
+            console.error("Error setting up chat key:", err);
+        }
+    };
 
-//    const handlePersonalChatClick = async (member2Name, id) => {
-//     setMember2Id(id);
-//     setMember2Name(member2Name);
-
-//     try {
-//         // Fetch the public key from backend
-//         const res = await axios.get(`${API_BASE}/api/users/public_key/${member2Name}`, {
-//   withCredentials: true  
-// });
-//         const publicKeyPem = res.data; // This should be the PEM string
-
-//         // Store it in state, context, or pass to your chat component
-//         localStorage.setItem(`publicKey:${member2Name}`, publicKeyPem);
-//         // Or: setPublicKey(publicKeyPem); if you want to use React state
-
-//         // Now you can use this publicKeyPem for RSA encryption when sending messages
-//     } catch (err) {
-//         console.error("Could not fetch public key for", member2Name, err);
-//         // Handle error (show message to user, etc)
-//     }
-// };
     const debouncedSearch = useCallback(
         debounce((query) => {
             const filteredChats = personalChats.filter((chat) =>
