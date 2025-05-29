@@ -28,6 +28,8 @@ const Navigation = () => {
     // localStorage.removeItem("githubUsername");
     // localStorage.removeItem("status");
     // Redirect to homepage or login
+    //  localStorage.removeItem("rsaPrivateKey");
+    //  localStorage.removeItem("rsaPublicKey");
     navigate("/");
   };
 

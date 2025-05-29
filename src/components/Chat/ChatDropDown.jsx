@@ -13,7 +13,7 @@ import { generateBase64AesKey } from "../../config/secretKeyGenerator";
 import { set as idbSet, get as idbGet , createStore } from 'idb-keyval';
 import { getChatKeyFromIdb, storeSecretChatKeyInIdb } from "../../config/IndexDb";
 import { decryptMessage, encryptMessage } from "../../config/rasCrypto";
-
+import { getUserPrivateKey } from '../../config/fileFunctions';
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // Create a dedicated IndexedDB store for public keys
@@ -156,7 +156,8 @@ function ChatDropDown() {
                 const encryptedChatKey = getRes.data
                 secretB64 = getRes.data;
                 console.log("Reusing existing chat key");
-                const decreyptedChatKey = await decryptMessage(encryptedChatKey,localStorage.getItem("rsaPrivateKey"))
+                  const privateKey = await getUserPrivateKey();
+                const decreyptedChatKey = await decryptMessage(encryptedChatKey,privateKey);
                 // Set Chat Secret Key in IDB
                 
                 await storeSecretChatKeyInIdb(partnerName,decreyptedChatKey,chatSecretKeyStore)
