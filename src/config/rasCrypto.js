@@ -86,7 +86,11 @@ export async function decryptMessage(ciphertextBase64, privateKeyPem) {
   console.log(ciphertextBase64);
   console.log(privateKeyPem);
   const privateKey = await importPrivateKey(privateKeyPem);
+  console.log(`ImportedPrivateKey: ${privateKey} `);
+  
   const encryptedBuffer = base64ToArrayBuffer(ciphertextBase64);
+  console.log(`EncryptedBuffer ${encryptedBuffer} `);
+  
   const decrypted = await window.crypto.subtle.decrypt(
     {
       name: 'RSA-OAEP',
@@ -94,6 +98,9 @@ export async function decryptMessage(ciphertextBase64, privateKeyPem) {
     privateKey,
     encryptedBuffer
   );
+  
+  console.log(`Decrypted: ${decrypted}`);
+
   const decoder = new TextDecoder();
   return decoder.decode(decrypted);
 }

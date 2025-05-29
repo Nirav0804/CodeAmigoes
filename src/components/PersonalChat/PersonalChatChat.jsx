@@ -10,6 +10,7 @@ import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import { useAuth } from "../../context/AuthContext";
 import { getChatKeyFromIdb } from "../../config/IndexDb";
+import { getUserPrivateKey } from "../../config/fileFunctions";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -64,6 +65,17 @@ const PersonalChatChat = ({ memberId, memberName }) => {
     setCurrentUserId(userId);
     setMember2Id(memberId);
   }, [memberId, username, userId]);
+
+  // const getPrivateKey = async()=>{
+  //   const privateKey = await getUserPrivateKey();
+  //   console.log(privateKey);
+  // }
+
+  // useEffect(()=>{
+    
+  //   getPrivateKey();
+
+  // },[])
 
   // Redirect if no chat target
   useEffect(() => {

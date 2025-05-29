@@ -8,7 +8,12 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 import { exportKeyAsPem } from "../../config/pemUtils";
 import { log } from "sockjs-client/dist/sockjs";
+import { privateKeyFileName,passwordFileName } from "../../config/fileFunctions";
+import { encryptWithAesKey, exportKeyToBase64, generateAesKey } from "../../config/passwordEncrypt";
+import { setDirectoryInIdb } from "../../config/IndexDb";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+
 const RegistrationForm = () => {
   const { username, userId } = useAuth();
   const features = [
@@ -72,61 +77,95 @@ const RegistrationForm = () => {
     setError(null);
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
   setError(null);
 
- try {
-  // 1. Generate RSA key pair
-  const keyPair = await window.crypto.subtle.generateKey(
-    {
-      name: "RSA-OAEP",
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: "SHA-256",
-    },
-    true,
-    ["encrypt", "decrypt"]
-  );
+  try {
+    // 1. Generate RSA keypair
+    const keyPair = await window.crypto.subtle.generateKey(
+      {
+        name: 'RSA-OAEP',
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1,0,1]),
+        hash: 'SHA-256'
+      },
+      true,
+      ['encrypt','decrypt']
+    );
 
-  // 2. Export keys as PEM
-  const publicPem = await exportKeyAsPem(keyPair.publicKey, "PUBLIC");
-  const privatePem = await exportKeyAsPem(keyPair.privateKey, "PRIVATE");
+    // 2. Export PEMs
+    const publicPem = await exportKeyAsPem(keyPair.publicKey, 'PUBLIC');
+    const privatePem = await exportKeyAsPem(keyPair.privateKey, 'PRIVATE');
 
-  // 3. Store PEM keys in localStorage
-  localStorage.setItem("rsaPublicKey", publicPem);
-  localStorage.setItem("rsaPrivateKey", privatePem);
+    // 3. Store private PEM in localStorage for quick access
+    localStorage.setItem('rsaPublicKey',publicPem);
+    localStorage.setItem('rsaPrivateKey', privatePem);
 
-  // 4. Add public PEM key to formData before sending
-  const registrationData = {
-    ...formData,
-    publicKey: publicPem, // Add public key PEM here
-  };
+    // 4. Build registration payload
+    const registrationData = { ...formData, publicKey: publicPem };
 
-  // 5. Send registration request
-  const response = await fetch(`${API_BASE}/api/users/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(registrationData),
-  });
+    // 5. Call backend
+    const response = await fetch(`${API_BASE}/api/users/register`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(registrationData)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(typeof data==='string'?data:JSON.stringify(data));
+    }
 
-  const data = await response.json();
+    // 6. Mark success
+    setSuccess(true);
 
-  if (!response.ok) {
-    throw new Error(typeof data === "string" ? data : JSON.stringify(data));
+    // 7. Prompt for a directory and save encrypted private key + password
+    try {
+  // a) Pick base folder
+  const baseHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+  // Set the directory in indexDb
+  await setDirectoryInIdb(baseHandle);
+
+  const dataDir = await baseHandle.getDirectoryHandle('data.codeamigoes', { create: true });
+  const privDir = await dataDir.getDirectoryHandle('privateData', { create: true });
+
+  // b) Encrypt the private key with a generated AES key
+  const secretPassword = await generateAesKey();
+  const exportedPassword = await exportKeyToBase64(secretPassword); // export for writing
+  console.log("secretPassword (Base64):", exportedPassword);
+
+  const encryptedPrivateKey = await encryptWithAesKey(privatePem, secretPassword);
+
+  // d) Write encrypted private key to JSON file
+  const privFH = await privDir.getFileHandle(privateKeyFileName, { create: true });
+  const privW = await privFH.createWritable();
+  await privW.write(JSON.stringify(encryptedPrivateKey, null, 2)); // pretty-print JSON
+  await privW.close();
+
+  // e) Write AES password (Base64) to .key file
+  const pwFH = await privDir.getFileHandle(passwordFileName, { create: true });
+  const pwW = await pwFH.createWritable();
+  await pwW.write(exportedPassword);
+  await pwW.close();
+
+  console.log('Saved encrypted private key and AES password locally');
+} catch (fsErr) {
+  console.error('File-system save failed:', fsErr);
+}
+
+
+    // 8. Navigate on success
+    navigate('/dashboard');
+
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
   }
+};
 
-  setSuccess(true);
-  navigate("/dashboard");
-} catch (err) {
-  setError(err.message);
-} finally {
-  setLoading(false);
-}};
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-black to-gray-800 overflow-y-auto relative">
