@@ -389,4 +389,8 @@ public class UserController {
     public String getCurrentUserId() {
         return this.userService.getCurrentUserId();
     }
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("ping");
+    }
 }

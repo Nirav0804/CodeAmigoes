@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/", "/api/users/login","/api/users/me", "/register/", "/oauth2/authorization/**", "/login/oauth2/code/**", "/request/**", "/requests/**","/api/users/register"
+                                "/", "/api/users/login","/api/users/me", "/register/", "/oauth2/authorization/**", "/login/oauth2/code/**", "/request/**", "/requests/**","/api/users/register","api/users/ping"
                         ).permitAll()
                         .requestMatchers("/oauth2/success").authenticated()
                         .requestMatchers("/api/hackathons/recommended-hackathons", "/api/hackathons/nearby-hackathons")
