@@ -253,10 +253,11 @@ const PersonalChatChat = ({ memberId, memberName }) => {
 
           {showEmojiPicker && (
             <div className="absolute bottom-14 left-0 z-20">
-              <EmojiPicker
-                theme="dark"
-                onEmojiClick={(_, emoji) => setInput((i) => i + emoji.emoji)}
-              />
+             <EmojiPicker
+  theme="dark"
+  onEmojiClick={(emojiObject) => setInput(i => i + emojiObject.emoji)}
+/>
+
             </div>
           )}
         </div>
