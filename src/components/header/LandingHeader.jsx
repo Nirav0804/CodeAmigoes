@@ -21,14 +21,15 @@ const LandingHeader = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <motion.div
-              className="text-4xl font-bold text-white"
-              whileHover={{ scale: 1.05 }}
-            >
-              <div className="text-10xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-                CodeAmigos
-              </div>
-            </motion.div>
+                  <motion.div
+                    className="text-4xl font-bold text-white -translate-y-9"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                      <div className="text-10xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                        CodeAmigos
+                      </div>
+                  </motion.div>
+
             <div className="flex space-x-4">
               {/* <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -42,23 +43,24 @@ const LandingHeader = () => {
                   <FaSun className="text-yellow-400" />
                 )}
               </motion.button> */}
-                <motion.button 
-                  onClick={() => handleGithubLogin()}
+              <button onClick={() => handleGithubLogin()}>
+                <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-blue-800 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                  className="bg-blue-800 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all -translate-y-9"
                 >
                   GitHub Login
                 </motion.button>
+              </button>
             </div>
           </motion.div>
 
-          <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
+          <div className="flex flex-col items-center justify-center min-h-[80vh] text-center -translate-y-25 ">
             {/* Logo */}
             <motion.img
               src="src/logoN.png"  // Replace with the actual path to your logo
               alt="logot"
-              className="mb-15 w-80 h-75"  // Adjust the width and height as needed
+              className="mb-15 w-90 h-85"  // Adjust the width and height as needed
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}

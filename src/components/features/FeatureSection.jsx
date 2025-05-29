@@ -21,25 +21,31 @@ const FeatureSection = ({ text }) => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-evenly">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-0 gap-y-5">
           {[
             {
               icon: "👨‍💻",
               title: "Build Your Profile",
               description:
-                "Showcase achievements from platforms like GitHub, LeetCode, and CodeChef.",
+                "Showcase your achievements from GitHub, LeetCode, CodeChef — and highlight the powerful frameworks you've mastered!",
             },
             {
               icon: "🤝",
               title: "Hackathon Connections",
               description:
-                "Find hackathons and build your dream team effortlessly.",
+                "Discover hackathons tailored to your tech — team up with like-minded developers and build your dream team effortlessly.",
             },
             {
               icon: "💬",
               title: "One on One Chat",
               description:
-                "Collaborate with peers by direct messsage for connections.",
+                "Collaborate with peers through secure, end-to-end encrypted chats — build meaningful connections with confidence.",
+            },
+             {
+              icon: "💎",
+              title: "Premium Features",
+              description:
+                "Get hackathon recommendations tailored to your tech stack and location — build, compete, and shine where you belong!",
             },
           ].map((card, index) => (
             <div

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 const FeatureCard = ({ icon, title, description }) => {
   return (
     <motion.div
-      className="relative w-full h-full max-w-sm flex flex-col"
+     className="relative w-full h-full max-w-[600px] flex flex-col"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}

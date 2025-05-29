@@ -49,7 +49,7 @@ const Navigation = () => {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link onClick={() => handleRedirect()} className="text-3xl font-extrabold tracking-wide text-blue-400">
-            CodeAmigos 🚀
+            CodeAmigos 
           </Link>
           <div className="hidden md:flex items-center space-x-8">
             {status === "paid" ? (
