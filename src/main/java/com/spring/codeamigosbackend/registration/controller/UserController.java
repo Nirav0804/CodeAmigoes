@@ -66,9 +66,6 @@ public class UserController {
     @Value("${razorpay.key_secret}")
     private String key_secret;
 
-
-    private String secret_key = "e905db59b4ed608f3df6625b18b22e497e22e0b02ea89f9f55edb8b2b88ab5221d4bb31f9035d521920225b39b55178abd444ee05d8aac8c86810bda17eb3efebce9ca439f4afad1925a6f8ca58e99291f2955ed142426022b795ca792559aff9b4a3fc45a37aeb299d7a2425dd6760ead76f72b7372b623c6ff9f80e871e6a20b05a8f60ed56230365a6a909bdbfd84546a7fa256112092366b45b426d89e830195adb442260db07a1b40d4d279da95b2506de0b69c56ec9a6a402d06d69b0e2c1b16fa4504211b0154ed93345593cc1fcb01ff4c05afe9da225423dfa857417716d559a93ff8227fc0a45f8bd95b9b09244d68b256697abb5678cee3ce612e"; // Store in env variable
-
     @GetMapping("/me")
     public ResponseEntity<?> getUsersDetailsFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
@@ -127,8 +124,9 @@ public class UserController {
                 u.setLeetcodeUsername(user.getLeetcodeUsername());
                 u.setCodechefUsername(user.getCodechefUsername());
                 // Save the public key from request
-                System.out.println(user.getRsaPublicKey());
-                u.setRsaPublicKey(user.getRsaPublicKey());
+//                System.out.println(user.getRsaPublicKey());
+                String encryptPublickey = EncryptionUtil.encrypt(user.getRsaPublicKey(), SECRET_KEY);
+                u.setRsaPublicKey(encryptPublickey);
                 savedUser = userRepository.save(u);
             } else {
                 savedUser = userRepository.save(user);
@@ -379,7 +377,9 @@ public class UserController {
     public ResponseEntity<?> getPublicKey(@PathVariable String githubUserName) {
         Optional<User> userOpt = userRepository.findByGithubUsername(githubUserName);
         if (userOpt.isPresent()) {
-            return ResponseEntity.ok(userOpt.get().getRsaPublicKey());
+            String decrypyPublickey = EncryptionUtil.decrypt(userOpt.get().getRsaPublicKey(),SECRET_KEY);
+//            System.out.println(decrypyPublickey);
+            return ResponseEntity.ok(decrypyPublickey);
         } else {
             return ResponseEntity.status(404).body("User not found");
         }
