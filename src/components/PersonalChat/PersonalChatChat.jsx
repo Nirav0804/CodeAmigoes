@@ -253,9 +253,9 @@ const PersonalChatChat = ({ memberId, memberName }) => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
           />
-          <button className="p-2 rounded-full bg-purple-600">
+          {/* <button className="p-2 rounded-full bg-purple-600">
             <MdAttachFile size={20} />
-          </button>
+          </button> */}
           <button
             onClick={sendMessage}
             className="p-2 rounded-full bg-green-600"

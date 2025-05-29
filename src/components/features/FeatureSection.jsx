@@ -16,8 +16,7 @@ const FeatureSection = ({ text }) => {
             {text}
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mt-8">
-            Join a community of passionate developers and unlock your full
-            potential.
+           Kick off your journey with CodeAmigos — join challenges, showcase your skills, and discover your ideal coding partner!
           </p>
         </motion.div>
 
