@@ -164,12 +164,13 @@ function ChatDropDown() {
                 // Generate + persist + encrypt with receiver's public key + encrypt with our public key 
                 console.log("Generating new chat key");
                 secretB64 = await generateBase64AesKey();
-                console.log(partnerPublicKey);
-
+                console.log(pkResp);
                 // encrypt with both users public key
-                console.log("PublicKeyPem in ChatDropDown",partnerPublicKey);
-                const encryptedSecretKey = await encryptMessage(secretB64,pkResp.data);
+                console.log("PublicKeyPem in ChatDropDown ",publicKeyPem);
+                console.log("PkResp.data in ChatDropDown ",pkResp?.data);
+                const encryptedSecretKey = await encryptMessage(secretB64,pkResp?.data || publicKeyPem );
                 const encryptedSecretKey1 = await encryptMessage(secretB64,localStorage.getItem("rsaPublicKey"))
+                console.log("Encrypted Secret Key: ",encryptedSecretKey,encryptedSecretKey1);
                 
                 await axios.post(
                     `${API_BASE}/api/secret_key/${chatId}/${userId}/`,{
