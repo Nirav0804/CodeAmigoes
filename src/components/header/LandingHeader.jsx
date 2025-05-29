@@ -42,15 +42,14 @@ const LandingHeader = () => {
                   <FaSun className="text-yellow-400" />
                 )}
               </motion.button> */}
-              <button onClick={() => handleGithubLogin()}>
-                <motion.button
+                <motion.button 
+                  onClick={() => handleGithubLogin()}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-blue-800 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
                 >
                   GitHub Login
                 </motion.button>
-              </button>
             </div>
           </motion.div>
 

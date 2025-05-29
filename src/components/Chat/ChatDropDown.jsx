@@ -11,7 +11,7 @@ import { LogIn } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { generateBase64AesKey } from "../../config/secretKeyGenerator";
 import { set as idbSet, get as idbGet , createStore } from 'idb-keyval';
-import { storeSecretChatKeyInIdb } from "../../config/IndexDb";
+import { getChatKeyFromIdb, storeSecretChatKeyInIdb } from "../../config/IndexDb";
 import { decryptMessage, encryptMessage } from "../../config/rasCrypto";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -109,6 +109,7 @@ function ChatDropDown() {
         try {
              // 1) Try to get public key from IndexedDB
             let publicKeyPem = await idbGet(partnerName, publicKeyStore);
+            console.log("publicKeyPem",publicKeyPem);
             let pkResp;
             if(publicKeyPem){
                 console.log("PublicKeyHi");
@@ -130,13 +131,14 @@ function ChatDropDown() {
             await idbSet(partnerName, pkResp.data, publicKeyStore);
             console.log("set partner Public Key in setPartner"+pkResp.data);
             }
-            
+
+            // public key done
             
             // 2) Try to GET an existing chat-secret from your backend
             let secretB64;
-            let chatSecretKey = await idbGet(partnerName, chatSecretKeyStore);
+            let chatSecretKey = await getChatKeyFromIdb(partnerName, chatSecretKeyStore);
             if(chatSecretKey){
-                // ##  Decrypt with our own private key
+                
                 setPartnerChatSecretKey(chatSecretKey);
                 console.log("FoundChatSecretKey",partnerChatSecretKey);
             }else{
@@ -158,18 +160,21 @@ function ChatDropDown() {
                 // Set Chat Secret Key in IDB
                 
                 await storeSecretChatKeyInIdb(partnerName,decreyptedChatKey,chatSecretKeyStore)
-                setPartnerChatSecretKey(secretB64);
+                setPartnerChatSecretKey(decreyptedChatKey);
                 console.log(`Stored secretKey:${partnerName} : ${partnerChatSecretKey} in IndexDb`);
             } else {
                 // Generate + persist + encrypt with receiver's public key + encrypt with our public key 
                 console.log("Generating new chat key");
                 secretB64 = await generateBase64AesKey();
-                console.log(pkResp);
+                console.log(`pkResp: ${pkResp}`);
+                console.log(`secretB64: ${secretB64}`);
                 // encrypt with both users public key
                 console.log("PublicKeyPem in ChatDropDown ",publicKeyPem);
                 console.log("PkResp.data in ChatDropDown ",pkResp?.data);
+
                 const encryptedSecretKey = await encryptMessage(secretB64,pkResp?.data || publicKeyPem );
                 const encryptedSecretKey1 = await encryptMessage(secretB64,localStorage.getItem("rsaPublicKey"))
+
                 console.log("Encrypted Secret Key: ",encryptedSecretKey,encryptedSecretKey1);
                 
                 await axios.post(
