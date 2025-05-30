@@ -47,6 +47,7 @@ export const useAuth = () => {
         username,
         status,
         email,
-        loading
+        loading,
+        user
     };
 };

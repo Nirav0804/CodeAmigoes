@@ -10,15 +10,15 @@ import PersonalChatChat from "../PersonalChat/PersonalChatChat";
 import { LogIn } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { generateBase64AesKey } from "../../config/secretKeyGenerator";
-import { set as idbSet, get as idbGet , createStore } from 'idb-keyval';
-import { getChatKeyFromIdb, storeSecretChatKeyInIdb,setDirectoryInIdb,getDirectoryFromIdb } from "../../config/IndexDb";
+import { set as idbSet, get as idbGet, createStore } from "idb-keyval";
+import { getChatKeyFromIdb, storeSecretChatKeyInIdb, setDirectoryInIdb, getDirectoryFromIdb } from "../../config/IndexDb";
 import { decryptMessage, encryptMessage } from "../../config/rasCrypto";
-import { getUserPrivateKey } from '../../config/fileFunctions';
+import { getUserPrivateKey } from "../../config/fileFunctions";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // Create a dedicated IndexedDB store for public keys
-const publicKeyStore = createStore('public-key', 'documents');
-const chatSecretKeyStore = createStore('chat-secret-key-store', 'chat-secret-key');
+const publicKeyStore = createStore("public-key", "documents");
+const chatSecretKeyStore = createStore("chat-secret-key-store", "chat-secret-key");
 
 function ChatDropDown() {
     const [personalChats, setPersonalChats] = useState([]);
@@ -28,15 +28,13 @@ function ChatDropDown() {
     const [searchTerm, setSearchTerm] = useState("");
     const [personalChatOpen, setPersonalChatOpen] = useState(false);
     const [currentUserId, setCurrentUserId] = useState("");
-    // const [partnerPublicKey, setPartnerPublicKey] = useState("") // 
-    // const [partnerChatSecretKey, setPartnerChatSecretKey] = useState("") // 
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
-
     const { userId, username } = useAuth();
-const [directorySet, setDirectorySet] = useState(false);
+    const [directorySet, setDirectorySet] = useState(false);
 
-    // Check if directory is set when the component mounts
+        // Check if directory is set when the component mounts
     const checkDirectory = async () => {
         console.log("checkDirectory called");
         const directory = await getDirectoryFromIdb();
@@ -45,6 +43,7 @@ const [directorySet, setDirectorySet] = useState(false);
         } else {
             setDirectorySet(false);
         }
+        setLoading(false);
     };
 
     // Run the check when the component mounts
@@ -55,16 +54,15 @@ const [directorySet, setDirectorySet] = useState(false);
     // Function to handle directory selection on user action (e.g., button click)
     const handleSetDirectory = async () => {
         try {
-            const baseDir = await window.showDirectoryPicker({ mode: 'readwrite' });
-            await setDirectoryInIdb(baseDir); // Store the selected directory
-            setDirectorySet(true); // Update state to reflect the directory is set
+            const baseDir = await window.showDirectoryPicker({ mode: "readwrite" });
+            await setDirectoryInIdb(baseDir);
+            setDirectorySet(true);
             console.log("Directory set successfully:", baseDir);
         } catch (error) {
             console.error("Error selecting directory:", error);
             alert("Failed to select directory. Please try again.");
         }
     };
-
 
     // Initialize user and fetch chats
     useEffect(() => {
@@ -77,24 +75,14 @@ const [directorySet, setDirectorySet] = useState(false);
 
             if (userId) {
                 try {
-                    console.log(userId);
-                    console.log(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`);
-
                     const response = await axios.get(`${API_BASE}/api/v1/personal_chat/all_personal_chats/${userId}`, {
                         withCredentials: true,
                     });
-                    console.log(response.data);
-
-                    const sortedPersonalChat = response.data
-                        .sort((a, b) => {
-                            const latestA = a.messages?.length
-                                ? new Date(a.messages[a.messages.length - 1].timestamp).getTime()
-                                : 0;
-                            const latestB = b.messages?.length
-                                ? new Date(b.messages[b.messages.length - 1].timestamp).getTime()
-                                : 0;
-                            return latestB - latestA;
-                        });
+                    const sortedPersonalChat = response.data.sort((a, b) => {
+                        const latestA = a.messages?.length ? new Date(a.messages[a.messages.length - 1].timestamp).getTime() : 0;
+                        const latestB = b.messages?.length ? new Date(b.messages[b.messages.length - 1].timestamp).getTime() : 0;
+                        return latestB - latestA;
+                    });
                     setPersonalChats(sortedPersonalChat);
                     setFilteredPersonalChats(sortedPersonalChat);
 
@@ -106,11 +94,8 @@ const [directorySet, setDirectorySet] = useState(false);
                             (chat) => chat.githubUserName.toLowerCase() === leaderName.toLowerCase()
                         );
                         if (matchingChat) {
-                            console.log("Matching chat found:", matchingChat);
                             setMember2Id(matchingChat.id);
                             setMember2Name(matchingChat.githubUserName);
-                        } else {
-                            console.log("No matching chat found for leader:", leaderName);
                         }
                     }
                 } catch (error) {
@@ -118,158 +103,53 @@ const [directorySet, setDirectorySet] = useState(false);
                 }
             }
         };
-
         initialize();
     }, [navigate, location.search]);
 
-    // Open chat when member2Id and member2Name are set
+        // Open chat when member2Id and member2Name are set
+
     useEffect(() => {
         if (member2Id && member2Name) {
-            console.log("Opening chat for:", member2Name, member2Id);
             setPersonalChatOpen(true);
         }
     }, [member2Id, member2Name]);
 
-    // Main handler
     const handlePersonalChatClick = async (partnerName, chatId) => {
         setMember2Id(chatId);
         setMember2Name(partnerName);
-        console.log("handle member2Id: " + chatId);
-        console.log("handle userId: " + userId);
-
         try {
-             // 1) Try to get public key from IndexedDB
+            // 1) Try to get public key from IndexedDB
             let publicKeyPem = await idbGet(partnerName, publicKeyStore);
-            console.log("publicKeyPem",publicKeyPem);
             let pkResp;
-            if(publicKeyPem){
-                console.log("PublicKeyHi");
-                console.log(publicKeyPem);
-                // setPartnerPublicKey(publicKeyPem);
-                // console.log("Partner public key set ",partnerPublicKey);
-                
-            }else{
-                // 1) Fetch their public key PEM (optional here)
-                pkResp = await axios.get(
-                `${API_BASE}/api/users/public_key/${partnerName}`,
-                { withCredentials: true }
-            );
-            console.log("Pkresp: ",pkResp.data);
-            // console.log("partnerPublicKey set",partnerPublicKey);
-            
-             // Store in IndexedDB public-key store
-             // setPartnerPublicKey(pkResp.data)
-            await idbSet(partnerName, pkResp.data, publicKeyStore);
-            console.log("set partner Public Key in setPartner"+pkResp.data);
+            if (!publicKeyPem) {
+// 2) Fetch their public key PEM
+                pkResp = await axios.get(`${API_BASE}/api/users/public_key/${partnerName}`, { withCredentials: true });
+                await idbSet(partnerName, pkResp.data, publicKeyStore);
             }
-
-            // public key done
-            
-            // 2) Try to GET an existing chat-secret from your backend
             let secretB64;
             let chatSecretKey = await getChatKeyFromIdb(partnerName, chatSecretKeyStore);
-            if(chatSecretKey){
-                
-             //setPartnerChatSecretKey(chatSecretKey);
-                // console.log("FoundChatSecretKey",partnerChatSecretKey);
-            }else{
-                // Get secretKey from db
-                const getRes = await axios.get(
-                `${API_BASE}/api/secret_key/${chatId}/${userId}/`,
-                {
+            if (!chatSecretKey) {
+                // Get encrypted secretKey from db
+                const getRes = await axios.get(`${API_BASE}/api/secret_key/${chatId}/${userId}/`, {
                     withCredentials: true,
-                    validateStatus: (s) => s < 500
-                }
-            );
-
-            if (getRes.status === 200 && getRes.data) {
-                // Reuse
-                const encryptedChatKey = getRes.data
-                secretB64 = getRes.data;
-                console.log("Reusing existing chat key");
-                  const privateKey = await getUserPrivateKey();
-                //const decreyptedChatKey = await decryptMessage(encryptedChatKey,privateKey);
-                // Set Chat Secret Key in IDB
-                
-                await storeSecretChatKeyInIdb(partnerName,encryptedChatKey,chatSecretKeyStore)
-                // setPartnerChatSecretKey(secretB64);
-                // console.log(`Stored secretKey:${partnerName} : ${partnerChatSecretKey} in IndexDb`);
-            } else {
-                // Generate + persist + encrypt with receiver's public key + encrypt with our public key 
-                console.log("Generating new chat key");
-                secretB64 = await generateBase64AesKey();
-                console.log(`pkResp: ${pkResp}`);
-                console.log(`secretB64: ${secretB64}`);
-                // encrypt with both users public key
-                console.log("PublicKeyPem in ChatDropDown ",publicKeyPem);
-                console.log("PkResp.data in ChatDropDown ",pkResp?.data);
-
-                const encryptedSecretKey = await encryptMessage(secretB64,pkResp?.data || publicKeyPem );
-                
-                     const getPublicKey = async (username, API_BASE) => {
-                    console.log("inside getpublic key")
-                    let publicKey = localStorage.getItem('rsaPublicKey');
-                    if (!publicKey) {
-                        try {
-                        const response = await fetch(`${API_BASE}/api/users/public_key/${username}`, {
-                            method: 'GET',
-                            credentials: 'include'
-                        });
-                        if (response.ok) {
-                            publicKey = await response.text();
-                            localStorage.setItem('rsaPublicKey', publicKey);
-                        } else {
-                            console.error('Public key not found in backend');
-                            return null;
-                        }
-                        } catch (error) {
-                        console.error('Error fetching public key:', error);
-                        return null;
-                        }
-                    }
-                return publicKey;
-                };
-
-// Usage:
-const publicKey = await getPublicKey(username, API_BASE);
-                const encryptedSecretKey1 = await encryptMessage(secretB64,publicKey);
-
-                console.log("Encrypted Secret Key: ",encryptedSecretKey,encryptedSecretKey1);
-                await axios.post(
-                    `${API_BASE}/api/secret_key/${chatId}/${userId}/`,{
-                        secretKey:encryptedSecretKey,  // ## Encrypt with public key1
-                        secretKey1:encryptedSecretKey1   // ## Encrypt with public key2
-                    },
-                    {
-                        headers: { "Content-Type": "application/json" },
-                        withCredentials: true,
-                    }
-                );
-                // Store the newly generated secret key in IndexDb
-                // localStorage.setItem(`secretKey:${partnerName}`, secretB64);
-                 // Generateed and  Set Chat Secret Key in IDB 
-
-                 // Encrypt with private Key of currentUSer and store in indexDb
-                 console.log("inchatdropdown"+username);
-                await storeSecretChatKeyInIdb(partnerName,encryptedSecretKey1,chatSecretKeyStore)
-                
-                // setPartnerChatSecretKey(secretB64);
-                // console.log(`Generated and Stored secretKey:${partnerName}:${partnerChatSecretKey} in indexDb`);
+                    validateStatus: (s) => s < 500,
+                });
+                if (getRes.status === 200 && getRes.data) {
+                    secretB64 = getRes.data;
+                    await storeSecretChatKeyInIdb(partnerName, secretB64, chatSecretKeyStore);
+                } else {
+                    secretB64 = await generateBase64AesKey();
+                    const encryptedSecretKey = await encryptMessage(secretB64, pkResp?.data || publicKeyPem);
+                    const publicKey = await getPublicKey(username, API_BASE);
+                    const encryptedSecretKey1 = await encryptMessage(secretB64, publicKey);
+                    await axios.post(
+                        `${API_BASE}/api/secret_key/${chatId}/${userId}/`,
+                        { secretKey: encryptedSecretKey, secretKey1: encryptedSecretKey1 },
+                        { headers: { "Content-Type": "application/json" }, withCredentials: true }
+                    );
+                    await storeSecretChatKeyInIdb(partnerName, encryptedSecretKey1, chatSecretKeyStore);
                 }
             }
-
-            // // 4) Import the Base64 key into a CryptoKey
-            // const raw = Uint8Array.from(atob(secretB64), (c) =>
-            //     c.charCodeAt(0)
-            // );
-            // const importedKey = await window.crypto.subtle.importKey(
-            //     "raw",
-            //     raw.buffer,
-            //     { name: "AES-GCM" },
-            //     true,
-            //     ["encrypt", "decrypt"]
-            // );
-            // setChatKey(importedKey); // Note: setChatKey is undefined; this might need to be defined elsewhere
         } catch (err) {
             console.error("Error setting up chat key:", err);
         }
@@ -289,11 +169,49 @@ const publicKey = await getPublicKey(username, API_BASE);
         setSearchTerm(event.target.value);
         debouncedSearch(event.target.value);
     };
-// Render the directory selection prompt if directory is not set
+
+    const getPublicKey = async (username, API_BASE) => {
+        let publicKey = localStorage.getItem("rsaPublicKey");
+        if (!publicKey) {
+            try {
+                const response = await fetch(`${API_BASE}/api/users/public_key/${username}`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+                if (response.ok) {
+                    publicKey = await response.text();
+                    localStorage.setItem("rsaPublicKey", publicKey);
+                } else {
+                    console.error("Public key not found in backend");
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error fetching public key:", error);
+                return null;
+            }
+        }
+        return publicKey;
+    };
+
+    if (loading) {
+        return (
+            <GradientBackground>
+                <div className="min-h-screen flex items-center justify-center text-white">
+                    <div className="animate-pulse text-2xl">
+                        Loading Personal Chats...
+                    </div>
+                </div>
+            </GradientBackground>
+        );
+    }
+    // Render the directory selection prompt if directory is not set
     if (!directorySet) {
         return (
             <GradientBackground>
                 <div className="flex flex-col h-screen text-white justify-center items-center">
+                    <div className="fixed top-0 left-0 w-full z-50">
+                        <Navigation />
+                    </div>
                     <p className="text-lg mb-4">Directory not set. Please select a directory to continue.</p>
                     <button
                         onClick={handleSetDirectory}
@@ -305,13 +223,13 @@ const publicKey = await getPublicKey(username, API_BASE);
             </GradientBackground>
         );
     }
+
     return (
         <GradientBackground>
             <div className="flex flex-col h-screen text-white">
                 <div className="fixed top-0 left-0 w-full z-50">
                     <Navigation />
                 </div>
-
                 <div className="flex flex-1 pt-20">
                     <div className="w-1/4 p-4 border-r bg-gray-900 border-gray-700 h-[calc(100vh-4rem)]">
                         <div className="mb-4 flex items-center bg-gray-800 px-3 py-2 rounded-lg">
@@ -324,7 +242,6 @@ const publicKey = await getPublicKey(username, API_BASE);
                                 placeholder="Search chats..."
                             />
                         </div>
-
                         <div className="space-y-3 max-h-[calc(100vh-8rem)] overflow-y-auto">
                             {filteredPersonalChats.length > 0 ? (
                                 filteredPersonalChats.map((personalChat) => (
@@ -340,17 +257,7 @@ const publicKey = await getPublicKey(username, API_BASE);
                                         />
                                         <div>
                                             <h3 className="text-md font-bold text-gray-200">{personalChat.githubUserName}</h3>
-                                            <div className="text-sm text-gray-400">
-                                                {/* {personalChat.messages?.length > 0 ? (
-                                                    <>
-                                                        <span className="font-semibold text-white">
-                                                            {personalChat.messages[personalChat.messages.length - 1]?.sender || "Unknown"}:
-                                                        </span>{" "}
-                                                    </>
-                                                ) : (
-                                                    "No messages yet"
-                                                )} */}
-                                            </div>
+                                            <div className="text-sm text-gray-400"></div>
                                         </div>
                                     </div>
                                 ))
@@ -359,7 +266,6 @@ const publicKey = await getPublicKey(username, API_BASE);
                             )}
                         </div>
                     </div>
-
                     <div className="w-3/4 flex flex-col h-[calc(100vh-4rem)] text-center overflow-hidden justify-center">
                         {personalChatOpen ? (
                             <PersonalChatChat memberId={member2Id} memberName={member2Name} />
@@ -372,5 +278,6 @@ const publicKey = await getPublicKey(username, API_BASE);
         </GradientBackground>
     );
 }
-export{publicKeyStore,chatSecretKeyStore}
+
+export { publicKeyStore, chatSecretKeyStore };
 export default ChatDropDown;
