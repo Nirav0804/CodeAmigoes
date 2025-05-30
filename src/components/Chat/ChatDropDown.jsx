@@ -11,7 +11,7 @@ import { LogIn } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { generateBase64AesKey } from "../../config/secretKeyGenerator";
 import { set as idbSet, get as idbGet , createStore } from 'idb-keyval';
-import { getChatKeyFromIdb, storeSecretChatKeyInIdb } from "../../config/IndexDb";
+import { getChatKeyFromIdb, storeSecretChatKeyInIdb,setDirectoryInIdb,getDirectoryFromIdb } from "../../config/IndexDb";
 import { decryptMessage, encryptMessage } from "../../config/rasCrypto";
 import { getUserPrivateKey } from '../../config/fileFunctions';
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -34,6 +34,37 @@ function ChatDropDown() {
     const location = useLocation();
 
     const { userId, username } = useAuth();
+const [directorySet, setDirectorySet] = useState(false);
+
+    // Check if directory is set when the component mounts
+    const checkDirectory = async () => {
+        console.log("checkDirectory called");
+        const directory = await getDirectoryFromIdb();
+        if (directory) {
+            setDirectorySet(true);
+        } else {
+            setDirectorySet(false);
+        }
+    };
+
+    // Run the check when the component mounts
+    useEffect(() => {
+        checkDirectory();
+    }, []);
+
+    // Function to handle directory selection on user action (e.g., button click)
+    const handleSetDirectory = async () => {
+        try {
+            const baseDir = await window.showDirectoryPicker({ mode: 'readwrite' });
+            await setDirectoryInIdb(baseDir); // Store the selected directory
+            setDirectorySet(true); // Update state to reflect the directory is set
+            console.log("Directory set successfully:", baseDir);
+        } catch (error) {
+            console.error("Error selecting directory:", error);
+            alert("Failed to select directory. Please try again.");
+        }
+    };
+
 
     // Initialize user and fetch chats
     useEffect(() => {
@@ -174,10 +205,36 @@ function ChatDropDown() {
                 console.log("PkResp.data in ChatDropDown ",pkResp?.data);
 
                 const encryptedSecretKey = await encryptMessage(secretB64,pkResp?.data || publicKeyPem );
-                const encryptedSecretKey1 = await encryptMessage(secretB64,localStorage.getItem("rsaPublicKey"))
+                
+                     const getPublicKey = async (username, API_BASE) => {
+                    console.log("inside getpublic key")
+                    let publicKey = localStorage.getItem('rsaPublicKey');
+                    if (!publicKey) {
+                        try {
+                        const response = await fetch(`${API_BASE}/api/users/public_key/${username}`, {
+                            method: 'GET',
+                            credentials: 'include'
+                        });
+                        if (response.ok) {
+                            publicKey = await response.text();
+                            localStorage.setItem('rsaPublicKey', publicKey);
+                        } else {
+                            console.error('Public key not found in backend');
+                            return null;
+                        }
+                        } catch (error) {
+                        console.error('Error fetching public key:', error);
+                        return null;
+                        }
+                    }
+                return publicKey;
+                };
+
+// Usage:
+const publicKey = await getPublicKey(username, API_BASE);
+                const encryptedSecretKey1 = await encryptMessage(secretB64,publicKey);
 
                 console.log("Encrypted Secret Key: ",encryptedSecretKey,encryptedSecretKey1);
-                
                 await axios.post(
                     `${API_BASE}/api/secret_key/${chatId}/${userId}/`,{
                         secretKey:encryptedSecretKey,  // ## Encrypt with public key1
@@ -193,7 +250,7 @@ function ChatDropDown() {
                  // Generateed and  Set Chat Secret Key in IDB 
 
                  // Encrypt with private Key of currentUSer and store in indexDb
-                await storeSecretChatKeyInIdb(partnerName,secretB64,chatSecretKeyStore)
+                await storeSecretChatKeyInIdb(partnerName,secretB64,chatSecretKeyStore,username)
                 
                 setPartnerChatSecretKey(secretB64);
                 console.log(`Generated and Stored secretKey:${partnerName}:${partnerChatSecretKey} in indexDb`);
@@ -231,7 +288,22 @@ function ChatDropDown() {
         setSearchTerm(event.target.value);
         debouncedSearch(event.target.value);
     };
-
+// Render the directory selection prompt if directory is not set
+    if (!directorySet) {
+        return (
+            <GradientBackground>
+                <div className="flex flex-col h-screen text-white justify-center items-center">
+                    <p className="text-lg mb-4">Directory not set. Please select a directory to continue.</p>
+                    <button
+                        onClick={handleSetDirectory}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-colors"
+                    >
+                        Select Directory
+                    </button>
+                </div>
+            </GradientBackground>
+        );
+    }
     return (
         <GradientBackground>
             <div className="flex flex-col h-screen text-white">

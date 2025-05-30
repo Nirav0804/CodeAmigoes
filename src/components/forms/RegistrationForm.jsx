@@ -100,7 +100,7 @@ const RegistrationForm = () => {
     const privatePem = await exportKeyAsPem(keyPair.privateKey, 'PRIVATE');
 
     // 3. Store private PEM in localStorage for quick access
-    localStorage.setItem('rsaPublicKey',publicPem);
+     localStorage.setItem('rsaPublicKey',publicPem);
     // localStorage.setItem('rsaPrivateKey', privatePem);
 
     // 4. Build registration payload
