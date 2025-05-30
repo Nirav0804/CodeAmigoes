@@ -7,37 +7,10 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 // Create directory handler store globally
 export const directoryHandlerStore = createStore('directory-handler-store', 'directory-handler');
 
-export const storeSecretChatKeyInIdb = async (partnerName, secretKey, storeName,username) => {
-  console.log("username"+username);
-       const getPublicKey = async (username, API_BASE) => {
-                    console.log("inside getpublic key")
-                    let publicKey = localStorage.getItem('rsaPublicKey');
-                    if (!publicKey) {
-                        try {
-                        const response = await fetch(`${API_BASE}/api/users/public_key/${username}`, {
-                            method: 'GET',
-                            credentials: 'include'
-                        });
-                        if (response.ok) {
-                            publicKey = await response.text();
-                            localStorage.setItem('rsaPublicKey', publicKey);
-                        } else {
-                            console.error('Public key not found in backend');
-                            return null;
-                        }
-                        } catch (error) {
-                        console.error('Error fetching public key:', error);
-                        return null;
-                        }
-                    }
-                return publicKey;
-                };
+export const storeSecretChatKeyInIdb = async (partnerName, encryptedSecretKey1, storeName) => {
 
-// Usage:
-const publicKey = await getPublicKey(username, API_BASE);
-  const encryptedSecretKey = await encryptMessage(secretKey,publicKey);
-  console.log("Storing in indexDb", partnerName, secretKey);
-  await idbSet(partnerName, encryptedSecretKey, storeName);
+  console.log("Storing in indexDb", partnerName, encryptedSecretKey1);
+  await idbSet(partnerName, encryptedSecretKey1, storeName);
 };
 
 export const getPublicKeyFromIdb = async (key) => {

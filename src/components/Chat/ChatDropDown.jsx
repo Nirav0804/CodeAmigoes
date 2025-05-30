@@ -28,8 +28,8 @@ function ChatDropDown() {
     const [searchTerm, setSearchTerm] = useState("");
     const [personalChatOpen, setPersonalChatOpen] = useState(false);
     const [currentUserId, setCurrentUserId] = useState("");
-    const [partnerPublicKey, setPartnerPublicKey] = useState("") // 
-    const [partnerChatSecretKey, setPartnerChatSecretKey] = useState("") // 
+    // const [partnerPublicKey, setPartnerPublicKey] = useState("") // 
+    // const [partnerChatSecretKey, setPartnerChatSecretKey] = useState("") // 
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -145,8 +145,8 @@ const [directorySet, setDirectorySet] = useState(false);
             if(publicKeyPem){
                 console.log("PublicKeyHi");
                 console.log(publicKeyPem);
-                setPartnerPublicKey(publicKeyPem);
-                console.log("Partner public key set ",partnerPublicKey);
+                // setPartnerPublicKey(publicKeyPem);
+                // console.log("Partner public key set ",partnerPublicKey);
                 
             }else{
                 // 1) Fetch their public key PEM (optional here)
@@ -155,10 +155,10 @@ const [directorySet, setDirectorySet] = useState(false);
                 { withCredentials: true }
             );
             console.log("Pkresp: ",pkResp.data);
-            console.log("partnerPublicKey set",partnerPublicKey);
+            // console.log("partnerPublicKey set",partnerPublicKey);
             
              // Store in IndexedDB public-key store
-             setPartnerPublicKey(pkResp.data)
+             // setPartnerPublicKey(pkResp.data)
             await idbSet(partnerName, pkResp.data, publicKeyStore);
             console.log("set partner Public Key in setPartner"+pkResp.data);
             }
@@ -170,8 +170,8 @@ const [directorySet, setDirectorySet] = useState(false);
             let chatSecretKey = await getChatKeyFromIdb(partnerName, chatSecretKeyStore);
             if(chatSecretKey){
                 
-                setPartnerChatSecretKey(chatSecretKey);
-                console.log("FoundChatSecretKey",partnerChatSecretKey);
+             //setPartnerChatSecretKey(chatSecretKey);
+                // console.log("FoundChatSecretKey",partnerChatSecretKey);
             }else{
                 // Get secretKey from db
                 const getRes = await axios.get(
@@ -188,12 +188,12 @@ const [directorySet, setDirectorySet] = useState(false);
                 secretB64 = getRes.data;
                 console.log("Reusing existing chat key");
                   const privateKey = await getUserPrivateKey();
-                const decreyptedChatKey = await decryptMessage(encryptedChatKey,privateKey);
+                //const decreyptedChatKey = await decryptMessage(encryptedChatKey,privateKey);
                 // Set Chat Secret Key in IDB
                 
-                await storeSecretChatKeyInIdb(partnerName,decreyptedChatKey,chatSecretKeyStore)
-                setPartnerChatSecretKey(decreyptedChatKey);
-                console.log(`Stored secretKey:${partnerName} : ${partnerChatSecretKey} in IndexDb`);
+                await storeSecretChatKeyInIdb(partnerName,encryptedChatKey,chatSecretKeyStore)
+                // setPartnerChatSecretKey(secretB64);
+                // console.log(`Stored secretKey:${partnerName} : ${partnerChatSecretKey} in IndexDb`);
             } else {
                 // Generate + persist + encrypt with receiver's public key + encrypt with our public key 
                 console.log("Generating new chat key");
@@ -250,10 +250,11 @@ const publicKey = await getPublicKey(username, API_BASE);
                  // Generateed and  Set Chat Secret Key in IDB 
 
                  // Encrypt with private Key of currentUSer and store in indexDb
-                await storeSecretChatKeyInIdb(partnerName,secretB64,chatSecretKeyStore,username)
+                 console.log("inchatdropdown"+username);
+                await storeSecretChatKeyInIdb(partnerName,encryptedSecretKey1,chatSecretKeyStore)
                 
-                setPartnerChatSecretKey(secretB64);
-                console.log(`Generated and Stored secretKey:${partnerName}:${partnerChatSecretKey} in indexDb`);
+                // setPartnerChatSecretKey(secretB64);
+                // console.log(`Generated and Stored secretKey:${partnerName}:${partnerChatSecretKey} in indexDb`);
                 }
             }
 
