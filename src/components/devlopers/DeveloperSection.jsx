@@ -2,6 +2,7 @@ import React from "react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import khushi from '../../assets/khushi.jpg'; // adjust the path relative to your component file
 import suhani from '../../assets/suhani.jpg';
+import nirav from '../../assets/nirav.jpeg' // adjust the path relative to your component file
 const developers = [
   {
     name: "Khushi Zalavadiya",
@@ -13,7 +14,7 @@ const developers = [
     name: "Suhani Parmar",
     github: "https://github.com/Suhaniparmar",
     linkedin: "https://www.linkedin.com/in/suhani-parmar-315a93252/",
-     image: suhani,
+    image: suhani,
   },
   {
     name: "Nayan Thakker",
@@ -23,9 +24,9 @@ const developers = [
   },
   {
     name: "Nirav Patel",
-    github: "https://github.com/OmUnadkat",
-    linkedin: "https://linkedin.com/in/om-unadkat",
-    // image: niravImg,
+    github: "https://github.com/Nirav0804",
+    linkedin: "https://www.linkedin.com/in/nirav-patel-292206207/",
+    image: nirav,
   },
 ];
 

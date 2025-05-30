@@ -19,6 +19,7 @@ import Navigation from "../navigation/Navigation";
 import GradientBackground from "../background/GradientBackground";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // Reuse the Input component with icon support
@@ -167,16 +168,16 @@ const ProfileEditForm = () => {
 
     try {
       const response = await axios.put(
-        `${API_BASE}/api/users/${username}`, {
-        withCredentials: true, // <-- This sends cookies!
-      },
-        formData,
+        `${API_BASE}/api/users/${username}`,
+        formData, // body
         {
+          withCredentials: true, // correctly placed
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
+
 
       setSuccess(true);
       // Optionally redirect or show success message
