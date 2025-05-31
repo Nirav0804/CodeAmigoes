@@ -91,7 +91,7 @@ public class HackathonRequestService {
                     "🔗 <a href=url+'/dashboard/hackathons/" + request.getHackathonId() +
                     "' style='background-color: #1a73e8; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>Review Request & Manage Hackathon</a>" +
                     "</p>" +
-                    "<br><p style='font-size: 16px; text-align: center;'>Best Regards,<br><strong>🚀 Elev8 Team</strong></p>" +
+                    "<br><p style='font-size: 16px; text-align: center;'>Best Regards,<br><strong>CodeAmigos Team</strong></p>" +
                     "</div>";
 
             mailService.sendEmail(toEmail, subject, body);
@@ -208,7 +208,7 @@ public class HackathonRequestService {
                             "<p style='font-size: 16px;'>We appreciate your interest! Although this request wasn’t approved, keep an eye on upcoming hackathons. 🚀</p>" +
                                     "<p style='font-size: 16px;'>Find more opportunities to showcase your skills:</p>" +
                                     "<p style='text-align: center;'><a href=url+'/dashboard/hackathons\" style='background-color: #ff9800; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>Explore More Hackathons</a></p>") +
-                    "<br><p style='font-size: 16px;'>Best Regards,<br><strong>🚀 Elev8 Team</strong></p>" +
+                    "<br><p style='font-size: 16px;'>Best Regards,<br><strong> CodeAmigos Team</strong></p>" +
                     "</div>";
 
             mailService.sendEmail(toEmail, subject, body);
