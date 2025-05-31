@@ -146,8 +146,8 @@ const Chatbot = () => {
           <div className="p-4 border-b border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-blue-900/30 to-purple-900/30">
             <div className="flex items-center gap-2">
               <motion.img
-                src="src/logoN.png"
-                alt="logot"
+                src='/logoN.png'
+                alt="logo"
                 className="w-8 h-10"
               />
               <span className={`text-xl font-bold ${gradientHeader}`}>CodeAmigos AI</span>

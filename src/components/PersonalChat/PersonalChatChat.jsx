@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MdAttachFile, MdSend, MdEmojiEmotions } from "react-icons/md";
 import { useNavigate, Link } from "react-router-dom";
 import SockJS from "sockjs-client/dist/sockjs";
@@ -44,7 +44,7 @@ const decryptAES = async (encryptedBase64, base64Key) => {
   return new TextDecoder().decode(decrypted);
 };
 
-const PersonalChatChat = ({ memberId, memberName }) => {
+const PersonalChatChat = ({ memberId, memberName, isKeySetupComplete }) => {
   const { username, userId } = useAuth();
   const [currentUserId, setCurrentUserId] = useState("");
   const [currentUser, setCurrentUser] = useState("");
@@ -53,10 +53,12 @@ const PersonalChatChat = ({ memberId, memberName }) => {
   const [input, setInput] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
 
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   const stompClientRef = useRef(null);
+  const messageInputRef = useRef(null); // Ref for the message input field
   const navigate = useNavigate();
 
   // Initialize user and member IDs
@@ -66,29 +68,37 @@ const PersonalChatChat = ({ memberId, memberName }) => {
     setMember2Id(memberId);
   }, [memberId, username, userId]);
 
-  // const getPrivateKey = async()=>{
-  //   const privateKey = await getUserPrivateKey();
-  //   console.log(privateKey);
-  // }
+  // Check if all required data is ready
+  useEffect(() => {
+    if (currentUserId && member2Id && memberName && isKeySetupComplete) {
+      setIsReady(true);
+    } else {
+      setIsReady(false);
+      console.log('Waiting for data:', { currentUserId, member2Id, memberName, isKeySetupComplete });
+    }
+  }, [currentUserId, member2Id, memberName, isKeySetupComplete]);
 
-  // useEffect(()=>{
-    
-  //   getPrivateKey();
-
-  // },[])
+  // Focus the input field when the chat opens
+  useEffect(() => {
+    if (isReady && messageInputRef.current) {
+      messageInputRef.current.focus();
+    }
+  }, [isReady]);
 
   // Redirect if no chat target
   useEffect(() => {
     if (!member2Id) navigate("/dashboard/chat");
   }, [member2Id, navigate]);
 
-  // Fetch and decrypt past messages
+  // Fetch and decrypt past messages when ready
   useEffect(() => {
+    if (!isReady) return;
+
     let isMounted = true;
     const sortedChatId = [currentUserId, member2Id].sort().join("/");
+    console.log("Fetch messages called");
 
     const fetchMessages = async () => {
-      if (!currentUserId || !member2Id) return;
       setLoading(true);
       try {
         const secretKey = await getChatKeyFromIdb(memberName);
@@ -116,7 +126,7 @@ const PersonalChatChat = ({ memberId, memberName }) => {
           isMounted && setMessages([]);
         }
       } catch (err) {
-        console.error(err);
+        console.error("Fetch messages error:", err);
         isMounted && setMessages([]);
         toast.error('Failed to load messages');
       } finally {
@@ -126,7 +136,7 @@ const PersonalChatChat = ({ memberId, memberName }) => {
 
     fetchMessages();
     return () => { isMounted = false; };
-  }, [currentUserId, member2Id, memberName]);
+  }, [isReady, currentUserId, member2Id, memberName]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -139,7 +149,11 @@ const PersonalChatChat = ({ memberId, memberName }) => {
     let isMounted = true;
     const sortedChatId = [currentUserId, member2Id].sort().join("/");
     const socket = new SockJS(`${baseURL}/chat`);
-    const client = Stomp.over(socket);
+    const client = Stomp.over(() => socket, {
+      reconnectDelay: 5000, // Enable auto-reconnect with 5-second delay
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
 
     client.connect({}, () => {
       stompClientRef.current = client;
@@ -157,6 +171,8 @@ const PersonalChatChat = ({ memberId, memberName }) => {
           setMessages((prev) => [...prev, newMsg]);
         }
       );
+    }, (error) => {
+      console.error("WebSocket connection error:", error);
     });
 
     return () => {
@@ -182,8 +198,8 @@ const PersonalChatChat = ({ memberId, memberName }) => {
       );
       setInput('');
     } catch (err) {
-      console.error(err);
-      toast.error('Failed to send');
+      console.error("Send message error:", err);
+      toast.error('Failed to send message');
     }
   };
 
@@ -213,8 +229,7 @@ const PersonalChatChat = ({ memberId, memberName }) => {
               key={idx}
               className={`flex mb-3 ${msg.sender === currentUser ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[75%] p-4 rounded-2xl ${msg.sender === currentUser ? 'bg-green-700 text-white' : 'bg-gray-800 text-gray-100'}`}
-                   >
+              <div className={`max-w-[75%] p-4 rounded-2xl ${msg.sender === currentUser ? 'bg-green-700 text-white' : 'bg-gray-800 text-gray-100'}`}>
                 <div className="flex items-center mb-2">
                   <Link to={`/dashboard/profile/${msg.sender}`}>
                     <img
@@ -246,6 +261,7 @@ const PersonalChatChat = ({ memberId, memberName }) => {
             <MdEmojiEmotions size={24} />
           </button>
           <input
+            ref={messageInputRef} // Attach the ref to the input
             className="flex-1 px-4 py-2 rounded-full bg-gray-800 text-white outline-none"
             type="text"
             value={input}
@@ -253,9 +269,6 @@ const PersonalChatChat = ({ memberId, memberName }) => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
           />
-          {/* <button className="p-2 rounded-full bg-purple-600">
-            <MdAttachFile size={20} />
-          </button> */}
           <button
             onClick={sendMessage}
             className="p-2 rounded-full bg-green-600"
@@ -265,11 +278,10 @@ const PersonalChatChat = ({ memberId, memberName }) => {
 
           {showEmojiPicker && (
             <div className="absolute bottom-14 left-0 z-20">
-             <EmojiPicker
-  theme="dark"
-  onEmojiClick={(emojiObject) => setInput(i => i + emojiObject.emoji)}
-/>
-
+              <EmojiPicker
+                theme="dark"
+                onEmojiClick={(emojiObject) => setInput(i => i + emojiObject.emoji)}
+              />
             </div>
           )}
         </div>

@@ -14,6 +14,7 @@ import { set as idbSet, get as idbGet, createStore } from "idb-keyval";
 import { getChatKeyFromIdb, storeSecretChatKeyInIdb, setDirectoryInIdb, getDirectoryFromIdb } from "../../config/IndexDb";
 import { decryptMessage, encryptMessage } from "../../config/rasCrypto";
 import { getUserPrivateKey } from "../../config/fileFunctions";
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // Create a dedicated IndexedDB store for public keys
@@ -29,12 +30,13 @@ function ChatDropDown() {
     const [personalChatOpen, setPersonalChatOpen] = useState(false);
     const [currentUserId, setCurrentUserId] = useState("");
     const [loading, setLoading] = useState(true);
+    const [isKeySetupComplete, setIsKeySetupComplete] = useState(false); // New state to track key setup
     const navigate = useNavigate();
     const location = useLocation();
     const { userId, username } = useAuth();
     const [directorySet, setDirectorySet] = useState(false);
 
-        // Check if directory is set when the component mounts
+    // Check if directory is set when the component mounts
     const checkDirectory = async () => {
         console.log("checkDirectory called");
         const directory = await getDirectoryFromIdb();
@@ -106,30 +108,40 @@ function ChatDropDown() {
         initialize();
     }, [navigate, location.search]);
 
-        // Open chat when member2Id and member2Name are set
+    // Setup chat keys when member2Id and member2Name are set
+    useEffect(() => {
+        if (member2Id && member2Name) {
+            setIsKeySetupComplete(false); // Reset before setup
+            setupChatKeys(member2Name, member2Id).then(() => {
+                setIsKeySetupComplete(true); // Mark as complete
+            }).catch((err) => {
+                console.error("Key setup failed:", err);
+                setIsKeySetupComplete(false);
+            });
+        }
+    }, [member2Id, member2Name]);
 
+    // Open chat when member2Id and member2Name are set
     useEffect(() => {
         if (member2Id && member2Name) {
             setPersonalChatOpen(true);
         }
     }, [member2Id, member2Name]);
 
-    const handlePersonalChatClick = async (partnerName, chatId) => {
-        setMember2Id(chatId);
-        setMember2Name(partnerName);
+    // Function to setup chat keys
+    const setupChatKeys = async (partnerName, chatId) => {
         try {
-            // 1) Try to get public key from IndexedDB
             let publicKeyPem = await idbGet(partnerName, publicKeyStore);
             let pkResp;
             if (!publicKeyPem) {
-// 2) Fetch their public key PEM
                 pkResp = await axios.get(`${API_BASE}/api/users/public_key/${partnerName}`, { withCredentials: true });
+                if (!pkResp.data) throw new Error("Public key not found for partner");
                 await idbSet(partnerName, pkResp.data, publicKeyStore);
             }
+            console.log("Fetched public key for chat setup");
             let secretB64;
             let chatSecretKey = await getChatKeyFromIdb(partnerName, chatSecretKeyStore);
             if (!chatSecretKey) {
-                // Get encrypted secretKey from db
                 const getRes = await axios.get(`${API_BASE}/api/secret_key/${chatId}/${userId}/`, {
                     withCredentials: true,
                     validateStatus: (s) => s < 500,
@@ -150,9 +162,18 @@ function ChatDropDown() {
                     await storeSecretChatKeyInIdb(partnerName, encryptedSecretKey1, chatSecretKeyStore);
                 }
             }
+            console.log("Chat keys setup completed");
         } catch (err) {
             console.error("Error setting up chat key:", err);
+            throw err; // Re-throw to handle in useEffect
         }
+    };
+
+    // Handler for selecting a chat from the dropdown
+    const handlePersonalChatClick = async (partnerName, chatId) => {
+        setMember2Id(chatId);
+        setMember2Name(partnerName);
+        // setupChatKeys will be called via useEffect
     };
 
     const debouncedSearch = useCallback(
@@ -204,35 +225,36 @@ function ChatDropDown() {
             </GradientBackground>
         );
     }
+
     // Render the directory selection prompt if directory is not set
-if (!directorySet) {
-    return (
-        <GradientBackground>
-            <div className="flex flex-col h-screen text-white justify-center items-center px-4">
-                <div className="fixed top-0 left-0 w-full z-50">
-                    <Navigation />
+    if (!directorySet) {
+        return (
+            <GradientBackground>
+                <div className="flex flex-col h-screen text-white justify-center items-center px-4">
+                    <div className="fixed top-0 left-0 w-full z-50">
+                        <Navigation />
+                    </div>
+                    <div className="text-center max-w-md">
+                        <h2 className="text-2xl font-semibold mb-3">
+                            Set Your Directory to Continue
+                        </h2>
+                        <p className="text-lg mb-4 leading-relaxed">
+                            Please select the directory where <code className="bg-gray-700 px-1 rounded">data.codeamigoes</code> is located. If you've recently changed browsers or cleared your settings, you may need to reselect this directory.
+                        </p>
+                        <p className="text-sm text-gray-300 mb-6">
+                            <span className="font-medium">Ex:</span> Look for a folder named <code className="bg-gray-700 px-1 rounded">data.codeamigoes</code> in your <code className="bg-gray-700 px-1 rounded">project</code> directory, and select <code className="bg-gray-700 px-1 rounded">project</code> folder to proceed.
+                        </p>
+                        <button
+                            onClick={handleSetDirectory}
+                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-colors transform hover:scale-105 duration-200 shadow-lg"
+                        >
+                            Select Directory
+                        </button>
+                    </div>
                 </div>
-                <div className="text-center max-w-md">
-                    <h2 className="text-2xl font-semibold mb-3">
-                        Set Your Directory to Continue
-                    </h2>
-                    <p className="text-lg mb-4 leading-relaxed">
-                        Please select the directory where <code className="bg-gray-700 px-1 rounded">data.codeamigoes</code> is located. If you've recently changed browsers or cleared your settings, you may need to reselect this directory.
-                    </p>
-                    <p className="text-sm text-gray-300 mb-6">
-                        <span className="font-medium">Ex:</span> Look for a folder named <code className="bg-gray-700 px-1 rounded">data.codeamigoes</code> in your <code className="bg-gray-700 px-1 rounded" >project</code> directory, and select <code className="bg-gray-700 px-1 rounded" >project</code> folder to proceed.
-                    </p>
-                    <button
-                        onClick={handleSetDirectory}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-colors transform hover:scale-105 duration-200 shadow-lg"
-                    >
-                        Select Directory
-                    </button>
-                </div>
-            </div>
-        </GradientBackground>
-    );
-}
+            </GradientBackground>
+        );
+    }
 
     return (
         <GradientBackground>
@@ -278,7 +300,11 @@ if (!directorySet) {
                     </div>
                     <div className="w-3/4 flex flex-col h-[calc(100vh-4rem)] text-center overflow-hidden justify-center">
                         {personalChatOpen ? (
-                            <PersonalChatChat memberId={member2Id} memberName={member2Name} />
+                            <PersonalChatChat 
+                                memberId={member2Id} 
+                                memberName={member2Name} 
+                                isKeySetupComplete={isKeySetupComplete} // Pass key setup status
+                            />
                         ) : (
                             <p className="text-lg text-gray-500">Select a Personal chat to continue</p>
                         )}
@@ -290,4 +316,4 @@ if (!directorySet) {
 }
 
 export { publicKeyStore, chatSecretKeyStore };
-export default ChatDropDown ;  
+export default ChatDropDown;
