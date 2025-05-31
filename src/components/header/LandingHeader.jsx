@@ -60,7 +60,7 @@ const LandingHeader = () => {
             <motion.img
               src="src/logoN.png"  // Replace with the actual path to your logo
               alt="logot"
-              className="mb-15 w-90 h-85"  // Adjust the width and height as needed
+              className="mb-15 w-75 h-85"  // Adjust the width and height as needed
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
