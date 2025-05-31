@@ -4,6 +4,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([{ sender: "bot", text: "Hi! How can I help you today?" }]);
   const [userInput, setUserInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isBotTyping, setIsBotTyping] = useState(false);
 
   const handleSend = async () => {
     if (!userInput.trim()) return;
@@ -11,12 +12,13 @@ const Chatbot = () => {
     const userMessage = { sender: "user", text: userInput };
     setMessages((prev) => [...prev, userMessage]);
     setUserInput("");
+    setIsBotTyping(true);
 
     try {
       const payload = {
         session_id: "user124-session",
         query: userInput,
-        user_id: "default_user" // Changed from name to user_id
+        user_id: "default_user"
       };
       console.log("Sending request to: http://localhost:8080/api/chatbot/test");
       console.log("Payload:", JSON.stringify(payload));
@@ -49,6 +51,8 @@ const Chatbot = () => {
     } catch (error) {
       console.error("❌ Fetch error:", error.message, "Details:", error);
       setMessages((prev) => [...prev, { sender: "bot", text: "Sorry, something went wrong. Please try again." }]);
+    } finally {
+      setIsBotTyping(false);
     }
   };
 
@@ -67,7 +71,7 @@ const Chatbot = () => {
           <div className="p-4 border-b border-gray-700 text-white font-bold flex justify-between items-center">
             💬 Chatbot
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => setIsOpen36(false)}
               className="text-gray-400 hover:text-white"
               aria-label="Close chatbot"
             >
@@ -87,6 +91,16 @@ const Chatbot = () => {
                 {msg.text}
               </div>
             ))}
+            {isBotTyping && (
+              <div className="p-2 rounded-lg max-w-[80%] bg-gray-800 text-gray-200 self-start flex items-center space-x-2">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                </div>
+                <span>Typing...</span>
+              </div>
+            )}
           </div>
           <div className="p-3 border-t border-gray-700 flex items-center gap-2">
             <input
@@ -96,12 +110,16 @@ const Chatbot = () => {
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               className="flex-1 px-3 py-2 rounded-lg bg-gray-900 text-white border border-gray-600 focus:outline-none"
               placeholder="Type your message..."
+              disabled={isBotTyping}
             />
             <button
               onClick={handleSend}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className={`px-4 py-2 text-white rounded-lg ${
+                isBotTyping ? "bg-gray-600 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              }`}
+              disabled={isBotTyping}
             >
-              Send
+              {isBotTyping ? "Sending..." : "Send"}
             </button>
           </div>
         </div>
