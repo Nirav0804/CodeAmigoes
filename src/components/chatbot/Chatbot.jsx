@@ -7,6 +7,17 @@ function cleanMessage(text) {
   return text.replace(/^(Type something\.{0,3}|Start typing\.{0,3}|Start type of something\.{0,3})/i, '').trim();
 }
 
+// Utility to format message with clickable links and preserve line breaks
+function formatMessageWithLinks(text) {
+  if (!text) return "";
+  // Convert line breaks to <br> tags
+  const withBreaks = text.replace(/\n/g, '<br>');
+  // Regex to match URLs
+  const urlRegex = /(https?:\/\/[^\s<]+[^\s<.,!?])/g;
+  // Replace URLs with clickable links
+  return withBreaks.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="underline text-blue-400 hover:text-blue-300">${url}</a>`);
+}
+
 const gradientHeader = "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400";
 
 // Custom open button inspired by your image
@@ -24,7 +35,6 @@ function ChatbotOpenButton({ onClick }) {
         border: "none",
       }}
     >
-      {/* Centered bot/plug icon (SVG) */}
       <span className="block">
         <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
           <circle cx="19" cy="19" r="16" fill="#181C2F" />
@@ -131,11 +141,10 @@ const Chatbot = () => {
           variants={chatbotVariants}
           className="w-[350px] max-h-[500px] bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-2xl flex flex-col"
         >
-          {/* Header */}
           <div className="p-4 border-b border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-blue-900/30 to-purple-900/30">
             <div className="flex items-center gap-2">
               <motion.img
-                src="src/logoN.png"  // Replace with your actual logo path
+                src="src/logoN.png"
                 alt="logot"
                 className="w-8 h-10"
               />
@@ -151,8 +160,6 @@ const Chatbot = () => {
               </svg>
             </button>
           </div>
-
-          {/* Messages Container */}
           <div className="flex-1 p-3 overflow-y-auto space-y-2 text-sm bg-gradient-to-b from-[#0f172a] to-[#1e293b]">
             {messages.map((msg, idx) => (
               <motion.div
@@ -165,7 +172,10 @@ const Chatbot = () => {
                     : "bg-gradient-to-br from-purple-200/90 via-purple-300/90 to-fuchsia-200/90 text-gray-900 self-start"
                 }`}
               >
-                {cleanMessage(msg.text)}
+                <div
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: formatMessageWithLinks(cleanMessage(msg.text)) }}
+                />
               </motion.div>
             ))}
             {isBotTyping && (
@@ -182,8 +192,6 @@ const Chatbot = () => {
             )}
             <div ref={messagesEndRef} />
           </div>
-
-          {/* Input Area */}
           <div className="p-3 border-t border-gray-700/50 bg-gradient-to-r from-blue-900/30 to-purple-900/30">
             <div className="flex items-center gap-2">
               <input
