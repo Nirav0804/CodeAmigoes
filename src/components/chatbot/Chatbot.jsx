@@ -49,13 +49,14 @@ const Chatbot = () => {
   ]);
   const [userInput, setUserInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isBotTyping, setIsBotTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, isBotTyping]);
 
   const chatbotVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -66,12 +67,24 @@ const Chatbot = () => {
     }
   };
 
+  const typingVariants = {
+    animate: {
+      opacity: [0.4, 1, 0.4],
+      transition: {
+        duration: 1.2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }
+    }
+  };
+
   const handleSend = async () => {
     if (!userInput.trim()) return;
 
     const userMessage = { sender: "user", text: userInput };
     setMessages((prev) => [...prev, userMessage]);
     setUserInput("");
+    setIsBotTyping(true);
 
     try {
       const payload = {
@@ -102,6 +115,8 @@ const Chatbot = () => {
         ...prev,
         { sender: "bot", text: "Sorry, something went wrong. Please try again." }
       ]);
+    } finally {
+      setIsBotTyping(false);
     }
   };
 
@@ -110,14 +125,12 @@ const Chatbot = () => {
       {!isOpen ? (
         <ChatbotOpenButton onClick={() => setIsOpen(true)} />
       ) : (
-     <motion.div
-  initial="hidden"
-  animate="visible"
-  variants={chatbotVariants}
-  className="w-[350px] max-h-[500px] bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-2xl flex flex-col"
-  // Remove the style prop if you don't want any border
->
-
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={chatbotVariants}
+          className="w-[350px] max-h-[500px] bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-2xl flex flex-col"
+        >
           {/* Header */}
           <div className="p-4 border-b border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-blue-900/30 to-purple-900/30">
             <div className="flex items-center gap-2">
@@ -148,15 +161,25 @@ const Chatbot = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className={`p-3 rounded-2xl max-w-[85%] relative shadow-md ${
                   msg.sender === "user"
-                    // Muted dark gray with glass effect for user message
                     ? "bg-gray-700/80 text-white self-end ml-auto backdrop-blur-sm"
-                    // Lighter, beautiful bot response
                     : "bg-gradient-to-br from-purple-200/90 via-purple-300/90 to-fuchsia-200/90 text-gray-900 self-start"
                 }`}
               >
                 {cleanMessage(msg.text)}
               </motion.div>
             ))}
+            {isBotTyping && (
+              <motion.div
+                variants={typingVariants}
+                animate="animate"
+                className="p-3 rounded-2xl max-w-[85%] bg-gradient-to-br from-purple-200/90 via-purple-300/90 to-fuchsia-200/90 text-gray-900 self-start flex items-center gap-2"
+              >
+                <span className="inline-block w-2 h-2 bg-gray-900 rounded-full animate-bounce"></span>
+                <span className="inline-block w-2 h-2 bg-gray-900 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></span>
+                <span className="inline-block w-2 h-2 bg-gray-900 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></span>
+                <span>Typing...</span>
+              </motion.div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -178,7 +201,6 @@ const Chatbot = () => {
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-md hover:from-purple-600 hover:to-purple-800 transition-all"
                 aria-label="Send"
               >
-                {/* Heroicons Paper Airplane (Arrow) */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
