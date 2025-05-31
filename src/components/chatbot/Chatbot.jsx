@@ -6,6 +6,16 @@ const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isBotTyping, setIsBotTyping] = useState(false);
 
+  // Function to format text and make URLs clickable
+  const formatMessage = (text) => {
+    // Replace newlines with <br /> for proper formatting
+    const formattedText = text.replace(/\n/g, "<br />");
+    // Regular expression to detect URLs
+    const urlRegex = /(https?:\/\/[^\s<]+)(?![^<]*>)/g;
+    // Replace URLs with clickable anchor tags
+    return formattedText.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline">${url}</a>`);
+  };
+
   const handleSend = async () => {
     if (!userInput.trim()) return;
 
@@ -71,7 +81,7 @@ const Chatbot = () => {
           <div className="p-4 border-b border-gray-700 text-white font-bold flex justify-between items-center">
             💬 Chatbot
             <button
-              onClick={() => setIsOpen36(false)}
+              onClick={() => setIsOpen(false)} // Fixed typo: setIsOpen36 to setIsOpen
               className="text-gray-400 hover:text-white"
               aria-label="Close chatbot"
             >
@@ -87,9 +97,8 @@ const Chatbot = () => {
                     ? "bg-blue-600 text-white self-end ml-auto"
                     : "bg-gray-800 text-gray-200 self-start"
                 }`}
-              >
-                {msg.text}
-              </div>
+                dangerouslySetInnerHTML={{ __html: formatMessage(msg.text) }}
+              />
             ))}
             {isBotTyping && (
               <div className="p-2 rounded-lg max-w-[80%] bg-gray-800 text-gray-200 self-start flex items-center space-x-2">
