@@ -20,7 +20,6 @@ const LandingPage = () => {
       <LandingHeader />
       <FeatureSection text="Why join us?" />
       <DeveloperSection /> 
-      <Chatbot />
       <Footer />
     </GradientBackground>
   );

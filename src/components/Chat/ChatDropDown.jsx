@@ -205,24 +205,34 @@ function ChatDropDown() {
         );
     }
     // Render the directory selection prompt if directory is not set
-    if (!directorySet) {
-        return (
-            <GradientBackground>
-                <div className="flex flex-col h-screen text-white justify-center items-center">
-                    <div className="fixed top-0 left-0 w-full z-50">
-                        <Navigation />
-                    </div>
-                    <p className="text-lg mb-4">Directory not set. Please select a directory to continue.</p>
+if (!directorySet) {
+    return (
+        <GradientBackground>
+            <div className="flex flex-col h-screen text-white justify-center items-center px-4">
+                <div className="fixed top-0 left-0 w-full z-50">
+                    <Navigation />
+                </div>
+                <div className="text-center max-w-md">
+                    <h2 className="text-2xl font-semibold mb-3">
+                        Set Your Directory to Continue
+                    </h2>
+                    <p className="text-lg mb-4 leading-relaxed">
+                        Please select the directory where <code className="bg-gray-700 px-1 rounded">data.codeamigoes</code> is located. If you've recently changed browsers or cleared your settings, you may need to reselect this directory.
+                    </p>
+                    <p className="text-sm text-gray-300 mb-6">
+                        <span className="font-medium">Ex:</span> Look for a folder named <code className="bg-gray-700 px-1 rounded">data.codeamigoes</code> in your <code className="bg-gray-700 px-1 rounded" >project</code> directory, and select <code className="bg-gray-700 px-1 rounded" >project</code> folder to proceed.
+                    </p>
                     <button
                         onClick={handleSetDirectory}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-colors"
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-colors transform hover:scale-105 duration-200 shadow-lg"
                     >
                         Select Directory
                     </button>
                 </div>
-            </GradientBackground>
-        );
-    }
+            </div>
+        </GradientBackground>
+    );
+}
 
     return (
         <GradientBackground>
@@ -280,4 +290,4 @@ function ChatDropDown() {
 }
 
 export { publicKeyStore, chatSecretKeyStore };
-export default ChatDropDown;
+export default ChatDropDown ;  
