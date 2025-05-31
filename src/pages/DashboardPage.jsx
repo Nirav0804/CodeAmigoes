@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Chatbot from "../components/chatbot/Chatbot";
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -40,6 +41,7 @@ const DashboardPage = () => {
     <GradientBackground className="min-h-screen">
       <Navigation />
       <Welcome text={username} />
+      <Chatbot/>
       <Footer />
     </GradientBackground>
   );

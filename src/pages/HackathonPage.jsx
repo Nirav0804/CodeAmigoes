@@ -5,6 +5,7 @@ import GradientBackground from "../components/background/GradientBackground";
 import Navigation from "../components/navigation/Navigation";
 import { useState, useEffect } from "react";
 import VerticalNavBar from "../components/navigation/VerticalNavBar";
+import Chatbot from "../components/chatbot/Chatbot";
 import { useAuth } from "../context/AuthContext";
 
 const HackathonPage = () => {
@@ -51,6 +52,7 @@ const HackathonPage = () => {
           setFilteredHackathons={setFilteredHackathons}
         />
       </div>
+      <Chatbot/>
     </GradientBackground>
   );
 };

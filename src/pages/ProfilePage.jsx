@@ -4,6 +4,7 @@ import Navigation from "../components/navigation/Navigation";
 import ProfileDashboard from "../components/body/ProfileDashboard";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Chatbot from "../components/chatbot/Chatbot";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const ProfilePage = () => {
     <GradientBackground className="min-h-screen">
       <Navigation />
       <ProfileDashboard />
+      <Chatbot/>
     </GradientBackground>
   );
 };

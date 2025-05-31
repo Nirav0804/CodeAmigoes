@@ -5,6 +5,7 @@ import HackathonRequestStatusCard from "../components/hackathonRequest/Hackathon
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Chatbot from "../components/chatbot/Chatbot";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const HackathonRequestStatusPage = () => {
   const navigate = useNavigate();
@@ -77,6 +78,7 @@ const HackathonRequestStatusPage = () => {
           </div>
         </main>
       </div>
+      <Chatbot/>
     </GradientBackground>
   );
 };
