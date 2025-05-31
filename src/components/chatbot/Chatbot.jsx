@@ -19,7 +19,7 @@ function ChatbotOpenButton({ onClick }) {
       aria-label="Open chatbot"
       className="w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-all border-none outline-none focus:outline-none"
       style={{
-        background: "radial-gradient(circle at 70% 30%, #60a5fa 0%, #a78bfa 60%, #34d399 100%)",
+        background: "radial-gradient(circle at 70% 30%, #60a5fa 0%,rgb(128, 103, 206) 60%, #34d399 100%)",
         boxShadow: "0 4px 24px 0 rgba(80, 70, 229, 0.25)",
         border: "none",
       }}
@@ -72,7 +72,6 @@ const Chatbot = () => {
     const userMessage = { sender: "user", text: userInput };
     setMessages((prev) => [...prev, userMessage]);
     setUserInput("");
-    setIsBotTyping(true);
 
     try {
       const payload = {
