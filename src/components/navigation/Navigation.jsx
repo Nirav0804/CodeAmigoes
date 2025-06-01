@@ -5,7 +5,6 @@ import Username from "./Username";
 import NavItem from "./NavItem";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
-import { motion } from "framer-motion";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -40,7 +39,7 @@ const Navigation = () => {
             <motion.img
               src="/logoN.png"
               alt="logo"
-              className="w-12 h-12"
+              className="w-12 h-16"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
             />
