@@ -96,10 +96,19 @@ const Chatbot = () => {
     setMessages((prev) => [...prev, userMessage]);
     setUserInput("");
     setIsBotTyping(true);
-
+    // Generate and store session_id in localStorage or sessionStorage
+    const generateSessionId = () => {
+      const sessionId = `session-${Date.now()}-${Math.random()}`;
+      localStorage.setItem("session_id", sessionId);
+      return sessionId;
+    };
+    // Call this only if session_id is not already set
+    const getSessionId = () => {
+      return localStorage.getItem("session_id") || generateSessionId();
+    };
     try {
       const payload = {
-        session_id: "user124-session",
+        session_id: getSessionId(),
         query: userInput,
         user_id: "default_user"
       };

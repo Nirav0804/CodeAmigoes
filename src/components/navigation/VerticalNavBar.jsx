@@ -34,7 +34,7 @@ const VerticalNavBar = ({
     <div className="flex h-screen">
       {/* Sidebar Navigation */}
       <nav className="w-1/5 bg-gray-900/80 backdrop-blur-lg text-white shadow-lg p-4 flex flex-col space-y-4 rounded-lg mr-8 min-h-screen">
-        <h2 className="text-xl font-semibold mb-6 text-center">Hackathon Filters</h2>
+        <h2 className="text-xl font-semibold mb-6 ">Hackathon Filters</h2>
         {tabs.map(({ key, label, locked }) => (
           <button
             key={key}

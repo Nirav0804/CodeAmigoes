@@ -16,6 +16,7 @@ const Navigation = () => {
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem("session_id");
       await fetch(`${API_BASE}/api/users/logout`, {
         method: 'POST',
         credentials: 'include',
@@ -35,23 +36,20 @@ const Navigation = () => {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Group logo and name together */}
-          <div className="flex items-center gap-2">
-            <motion.img
+          <div className="flex items-center gap-3">
+            <img
               src="/logoN.png"
               alt="logo"
               className="w-12 h-16"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
             />
-            <Link onClick={() => handleRedirect()} className="text-3xl font-extrabold tracking-wide text-blue-400">
-              <motion.p 
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                >
-                  CodeAmigos
-                </motion.p> 
+            <Link
+              onClick={handleRedirect}
+              className="text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"
+            >
+              CodeAmigos
             </Link>
           </div>
+
           <div className="hidden md:flex items-center space-x-8">
             {status === "paid" ? (
               <span className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold rounded-lg shadow-md animate-pulse">

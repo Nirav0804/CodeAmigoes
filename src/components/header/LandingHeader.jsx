@@ -48,8 +48,8 @@ const LandingHeader = () => {
                   onClick={() => handleGithubLogin()}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-blue-800 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all -translate-y-9"
-                >
+                  className="bg-gradient-to-r from-blue-800 to-purple-800 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all -translate-y-9"
+>
                   GitHub Login
                 </motion.button>
             </div>
