@@ -124,9 +124,9 @@ const RegistrationForm = () => {
         // a) Pick base folder
         const baseHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
         // Set the directory in indexDb
-        await setDirectoryInIdb(baseHandle);
+        await setDirectoryInIdb(username , baseHandle);
 
-        const dataDir = await baseHandle.getDirectoryHandle('data.codeamigoes', { create: true });
+        const dataDir = await baseHandle.getDirectoryHandle(`${username}.data.codeamigoes`, { create: true });
         const privDir = await dataDir.getDirectoryHandle('privateData', { create: true });
 
         // b) Encrypt the private key with a generated AES key

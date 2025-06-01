@@ -36,7 +36,7 @@ function ChatDropDown() {
     // Check if directory is set when the component mounts
     const checkDirectory = async () => {
         console.log("checkDirectory called");
-        const directory = await getDirectoryFromIdb();
+        const directory = await getDirectoryFromIdb(username);
         if (directory) {
             setDirectorySet(true);
         } else {
@@ -54,7 +54,7 @@ function ChatDropDown() {
     const handleSetDirectory = async () => {
         try {
             const baseDir = await window.showDirectoryPicker({ mode: "readwrite" });
-            await setDirectoryInIdb(baseDir);
+            await setDirectoryInIdb(username,baseDir);
             setDirectorySet(true);
             console.log("Directory set successfully:", baseDir);
         } catch (error) {

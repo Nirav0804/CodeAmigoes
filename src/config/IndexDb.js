@@ -25,7 +25,7 @@ export const getChatKeyFromIdb = async (username,key) => {
   }
   console.log("Hello: " + encryptedChatKey);
   
-  const privateKey = await getUserPrivateKey();
+  const privateKey = await getUserPrivateKey(username);
   console.log("PrivateKey Encrypted: " + privateKey);
   
   const decryptedSecretKey = await decryptMessage(encryptedChatKey, privateKey);
@@ -33,19 +33,19 @@ export const getChatKeyFromIdb = async (username,key) => {
   return decryptedSecretKey;
 };
 
-export const setDirectoryInIdb = async (directory) => {
+export const setDirectoryInIdb = async (username , directory) => {
   try {
-    await idbSet('directory-path', directory, directoryHandlerStore);
+    await idbSet(`${username}:directory-path`, directory, directoryHandlerStore);
     console.log(`Directory ${directory} stored and saved`);
   } catch (error) {
     console.log("Error picking directory");
   }
 };
 
-export const getDirectoryFromIdb = async () => {
+export const getDirectoryFromIdb = async (username) => {
   if ('showDirectoryPicker' in window) {
     try {
-      const saved = await idbGet('directory-path', directoryHandlerStore);
+      const saved = await idbGet(`${username}:directory-path`, directoryHandlerStore);
       if (saved) {
         const permission = await saved.queryPermission({ mode: 'readwrite' });
         if (permission === 'granted' ||

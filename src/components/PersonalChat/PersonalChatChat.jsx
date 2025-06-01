@@ -10,7 +10,6 @@ import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import { useAuth } from "../../context/AuthContext";
 import { getChatKeyFromIdb } from "../../config/IndexDb";
-import { getUserPrivateKey } from "../../config/fileFunctions";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 

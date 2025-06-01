@@ -4,17 +4,17 @@ import { decryptWithAesKey, importKeyFromBase64 } from "./passwordEncrypt";
 export const privateKeyFileName = "rsaPrivateEncryptedKey.json";
 export const passwordFileName = "aesPassword.key";
 
-export const getUserPrivateKey = async () => {
-  const directory = await getDirectoryFromIdb();
+export const getUserPrivateKey = async (username) => {
+  const directory = await getDirectoryFromIdb(username);
   if (!directory) {
     console.log('Please select a directory first');
     return;
   }
   console.log(`directory: ${directory}`);
-  const encryptedPrivateKey1 = await getContentFromFile(directory, privateKeyFileName);
+  const encryptedPrivateKey1 = await getContentFromFile(username,directory, privateKeyFileName);
   console.log(`encryptedPrivateKey: ${encryptedPrivateKey1}`);
   const encryptedPrivateKey = JSON.parse(encryptedPrivateKey1);
-  const passwordBase64 = await getContentFromFile(directory, passwordFileName);
+  const passwordBase64 = await getContentFromFile(username,directory, passwordFileName);
   
   // Import the Base64-encoded AES key as a CryptoKey
   const aesKey = await importKeyFromBase64(passwordBase64);
@@ -29,9 +29,9 @@ export const getUserPrivateKey = async () => {
   return decryptedPrivateKey;
 };
 
-const getContentFromFile = async (baseHandle, fileName) => {
+const getContentFromFile = async (username,baseHandle, fileName) => {
   try {
-    const dataDir = await baseHandle.getDirectoryHandle('data.codeamigoes');
+    const dataDir = await baseHandle.getDirectoryHandle(`${username}.data.codeamigoes`);
     const privDir = await dataDir.getDirectoryHandle('privateData');
     const fileHandle = await privDir.getFileHandle(fileName);
     const file = await fileHandle.getFile();
