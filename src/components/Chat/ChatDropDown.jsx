@@ -7,14 +7,11 @@ import { FaSearch } from "react-icons/fa";
 import GradientBackground from "../background/GradientBackground";
 import { timeAgo } from "../../config/helper";
 import PersonalChatChat from "../PersonalChat/PersonalChatChat";
-import { LogIn } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { generateBase64AesKey } from "../../config/secretKeyGenerator";
 import { set as idbSet, get as idbGet, createStore } from "idb-keyval";
 import { getChatKeyFromIdb, storeSecretChatKeyInIdb, setDirectoryInIdb, getDirectoryFromIdb } from "../../config/IndexDb";
-import { decryptMessage, encryptMessage } from "../../config/rasCrypto";
-import { getUserPrivateKey } from "../../config/fileFunctions";
-
+import { encryptMessage } from "../../config/rasCrypto";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // Create a dedicated IndexedDB store for public keys
@@ -140,7 +137,9 @@ function ChatDropDown() {
             }
             console.log("Fetched public key for chat setup");
             let secretB64;
-            let chatSecretKey = await getChatKeyFromIdb(partnerName, chatSecretKeyStore);
+            let chatSecretKey = await getChatKeyFromIdb(username,partnerName, chatSecretKeyStore);
+            console.log("Called getChatKey from Idb",chatSecretKey);
+            
             if (!chatSecretKey) {
                 const getRes = await axios.get(`${API_BASE}/api/secret_key/${chatId}/${userId}/`, {
                     withCredentials: true,
@@ -148,7 +147,7 @@ function ChatDropDown() {
                 });
                 if (getRes.status === 200 && getRes.data) {
                     secretB64 = getRes.data;
-                    await storeSecretChatKeyInIdb(partnerName, secretB64, chatSecretKeyStore);
+                    await storeSecretChatKeyInIdb(username,partnerName, secretB64, chatSecretKeyStore);
                 } else {
                     secretB64 = await generateBase64AesKey();
                     const encryptedSecretKey = await encryptMessage(secretB64, pkResp?.data || publicKeyPem);
@@ -159,7 +158,7 @@ function ChatDropDown() {
                         { secretKey: encryptedSecretKey, secretKey1: encryptedSecretKey1 },
                         { headers: { "Content-Type": "application/json" }, withCredentials: true }
                     );
-                    await storeSecretChatKeyInIdb(partnerName, encryptedSecretKey1, chatSecretKeyStore);
+                    await storeSecretChatKeyInIdb(username,partnerName, encryptedSecretKey1, chatSecretKeyStore);
                 }
             }
             console.log("Chat keys setup completed");

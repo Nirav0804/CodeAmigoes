@@ -101,7 +101,7 @@ const PersonalChatChat = ({ memberId, memberName, isKeySetupComplete }) => {
     const fetchMessages = async () => {
       setLoading(true);
       try {
-        const secretKey = await getChatKeyFromIdb(memberName);
+        const secretKey = await getChatKeyFromIdb(username , memberName);
         if (!secretKey) throw new Error("Secret key missing");
 
         const { data } = await axios.get(
@@ -163,7 +163,7 @@ const PersonalChatChat = ({ memberId, memberName, isKeySetupComplete }) => {
           if (!isMounted) return;
           const newMsg = JSON.parse(frame.body);
           try {
-            const key = await getChatKeyFromIdb(memberName);
+            const key = await getChatKeyFromIdb(username,memberName);
             newMsg.content = await decryptAES(newMsg.content, key);
           } catch {
             newMsg.content = '[Decryption Failed]';
@@ -186,7 +186,7 @@ const PersonalChatChat = ({ memberId, memberName, isKeySetupComplete }) => {
   const sendMessage = async () => {
     if (!stompClientRef.current || !input.trim()) return;
     try {
-      const key = await getChatKeyFromIdb(memberName);
+      const key = await getChatKeyFromIdb(username,memberName);
       if (!key) throw new Error('Secret key missing');
       const encrypted = await encryptAES(input, key);
       const msg = { sender: currentUser, content: encrypted, timestamp: new Date().toISOString() };

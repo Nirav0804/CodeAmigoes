@@ -17,12 +17,8 @@ const Username = ({ username }) => {
       </span>
       {isDropdownOpen && (
         <div className="absolute z-50 mt-2 w-48 bg-black rounded-md shadow-lg py-1">
-          <Link to={`/dashboard/profile/${username}/edit`}>
-            <button
-              className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
-            >
+          <Link to={`/dashboard/profile/${username}/edit`} className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"> 
               Edit Profile
-            </button>
           </Link>
         </div>
       )}

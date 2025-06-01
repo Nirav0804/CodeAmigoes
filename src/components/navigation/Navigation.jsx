@@ -5,64 +5,54 @@ import Username from "./Username";
 import NavItem from "./NavItem";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
+import { motion } from "framer-motion";
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const Navigation = () => {
   const { username, status } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  // const username = localStorage.getItem("username");
   const [showPaymentSuccessCard, setShowPaymentSuccessCard] = useState(false);
-  // const [status, setStatus] = useState("");
+
   const handleLogout = async () => {
     try {
       await fetch(`${API_BASE}/api/users/logout`, {
         method: 'POST',
-        credentials: 'include', // Ensures cookies are sent!
+        credentials: 'include',
       });
     } catch (error) {
       console.error('Logout failed:', error);
     }
-    // Clear localStorage
-    // localStorage.removeItem("username");
-    // localStorage.removeItem("userId");
-    // localStorage.removeItem("college");
-    // localStorage.removeItem("githubUsername");
-    // localStorage.removeItem("status");
-    // Redirect to homepage or login
-    //  localStorage.removeItem("rsaPrivateKey");
-    //  localStorage.removeItem("rsaPublicKey");
     navigate("/");
   };
 
-
   const handleRedirect = () => {
-    // const status = localStorage.getItem("status");
-    // const userId = localStorage.getItem("userId");
-    // navigate(`/dashboard?username=${username}&status=${status}&userId=${userId}&githubUsername=${username}`);
     navigate(`/dashboard`);
-  }
-
-  // useEffect(() => {
-  //   const s = localStorage.getItem("status");
-  //   setStatus(s);
-  // }, []);
+  };
 
   return (
     <nav className="bg-gray-900/80 backdrop-blur-lg text-white shadow-lg fixed w-full z-50">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-      <Link
-  onClick={() => handleRedirect()}
-  className="flex items-center space-x-2 text-3xl font-extrabold tracking-wide text-blue-400"
->
-  <motion.img
-    src="/logoN.png"
-    alt="logo"
-    className="w-12 h-18"
-  />
-  <span>CodeAmigos</span>
-</Link>
-
+          {/* Group logo and name together */}
+          <div className="flex items-center gap-2">
+            <motion.img
+              src="/logoN.png"
+              alt="logo"
+              className="w-12 h-12"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+            />
+            <Link onClick={() => handleRedirect()} className="text-3xl font-extrabold tracking-wide text-blue-400">
+              <motion.p 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                >
+                  CodeAmigos
+                </motion.p> 
+            </Link>
+          </div>
           <div className="hidden md:flex items-center space-x-8">
             {status === "paid" ? (
               <span className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold rounded-lg shadow-md animate-pulse">
@@ -83,7 +73,7 @@ const Navigation = () => {
               to="/dashboard/chat"
               className={({ isActive }) =>
                 `flex items-center px-4 py-2 rounded-lg transition-all 
-     ${isActive ? "bg-blue-600 text-white hover:bg-blue-" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`
+                ${isActive ? "bg-blue-600 text-white hover:bg-blue-" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`
               }
             >
               <FaUsers className="mr-2" />
@@ -94,7 +84,7 @@ const Navigation = () => {
               to="/dashboard/hackathons"
               className={({ isActive }) =>
                 `flex items-center px-4 py-2 rounded-lg transition-all 
-     ${isActive ? "bg-blue-600 text-white hover:bg-blue-300" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`
+                ${isActive ? "bg-blue-600 text-white hover:bg-blue-300" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`
               }
             >
               <FaCode className="mr-2" />
@@ -105,7 +95,7 @@ const Navigation = () => {
               to={`/dashboard/profile/${username}`}
               className={({ isActive }) =>
                 `flex items-center px-4 py-2 rounded-lg transition-all 
-     ${isActive ? "bg-blue-600 text-white hover:bg-blue-300" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`
+                ${isActive ? "bg-blue-600 text-white hover:bg-blue-300" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`
               }
             >
               <FaUser className="mr-2" />

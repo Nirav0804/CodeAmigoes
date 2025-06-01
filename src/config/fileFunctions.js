@@ -42,6 +42,5 @@ const getContentFromFile = async (baseHandle, fileName) => {
     return text;
   } catch (err) {
     console.error('Loading wrapped key failed', err);
-    setMessage('Failed to load wrapped key');
   }
 };
