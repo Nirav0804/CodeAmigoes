@@ -18,7 +18,7 @@ const developers = [
     image: suhani,
   },
   {
-    name: "Nayan Thakker",
+    name: "Nayan Thacker",
     github: "https://github.com/nayan1729",
     linkedin: "https://linkedin.com/in/nayan-thacker-86457a244",
     image: nayan,
