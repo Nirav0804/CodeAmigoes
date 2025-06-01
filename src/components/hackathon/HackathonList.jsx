@@ -49,6 +49,8 @@ const HackathonList = ({
       setFilteredHackathons(data);
     }
     if (type == "nearby") {
+      console.log(`status : ${status}`);
+      
       if (status !== "paid") {
         navigate("/dashboard");
       }

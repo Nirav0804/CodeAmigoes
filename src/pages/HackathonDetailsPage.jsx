@@ -35,8 +35,7 @@ const HackathonDetailsPage = () => {
   // const username = localStorage.getItem("username");
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    const fetchHackathonData = async () => {
+  const fetchHackathonData = async () => {
       try {
         const start = Date.now();
         const response = await axios.get(
@@ -59,12 +58,24 @@ const HackathonDetailsPage = () => {
       } catch (err) {
         setError(err.message);
         console.log("Error fetching hackathon data:", err);
-
         navigate("/dashboard");
         setLoading(false);
       }
     };
-    fetchHackathonData();
+    
+  useEffect(() => {
+
+
+    if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+      console.log("Invalid hackathon ID, navigating back");
+      navigate("/dashboard/hackathons");
+      return ;
+    }else{
+      fetchHackathonData();
+    }
+
+    
+    
   }, [id, username]);
 
   useEffect(() => {
