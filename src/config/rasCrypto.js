@@ -82,14 +82,14 @@ export async function encryptMessage(plaintext, publicKeyPem) {
 
 // Decrypt base64 ciphertext with PEM private key
 export async function decryptMessage(ciphertextBase64, privateKeyPem) {
-  console.log("decrypt function called");
-  console.log(ciphertextBase64);
-  console.log(privateKeyPem);
+  // console.log("decrypt function called");
+  // console.log(ciphertextBase64);
+  // console.log(privateKeyPem);
   const privateKey = await importPrivateKey(privateKeyPem);
-  console.log(`ImportedPrivateKey: ${privateKey} `);
+  // console.log(`ImportedPrivateKey: ${privateKey} `);
   
   const encryptedBuffer = base64ToArrayBuffer(ciphertextBase64);
-  console.log(`EncryptedBuffer ${encryptedBuffer} `);
+  // console.log(`EncryptedBuffer ${encryptedBuffer} `);
   
   const decrypted = await window.crypto.subtle.decrypt(
     {
@@ -99,7 +99,7 @@ export async function decryptMessage(ciphertextBase64, privateKeyPem) {
     encryptedBuffer
   );
   
-  console.log(`Decrypted: ${decrypted}`);
+  // console.log(`Decrypted: ${decrypted}`);
 
   const decoder = new TextDecoder();
   return decoder.decode(decrypted);

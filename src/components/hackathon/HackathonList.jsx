@@ -24,7 +24,7 @@ const HackathonList = ({
       });
 
       const data = await response.json();
-      console.log(response);
+      // console.log(response);
       setHackathons(data);
       setFilteredHackathons(data);
     }
@@ -49,7 +49,7 @@ const HackathonList = ({
       setFilteredHackathons(data);
     }
     if (type == "nearby") {
-      console.log(`status : ${status}`);
+      // console.log(`status : ${status}`);
       
       if (status !== "paid") {
         navigate("/dashboard");
@@ -70,7 +70,7 @@ const HackathonList = ({
         navigate("/dashboard");
       }
       else {
-        console.log("Hello");
+        // console.log("Hello");
 
         const response = await fetch(
           `${API_BASE}/api/hackathons/recommended-hackathons?username=${username}`, {
@@ -78,7 +78,7 @@ const HackathonList = ({
         }
         );
         const data = await response.json();
-        console.log(data);
+        // console.log(data);
 
         if (data.length == 0) {
           setHackathons(["No recommended Hacathons found"])

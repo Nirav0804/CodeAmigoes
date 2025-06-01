@@ -17,9 +17,9 @@ const FrameworksStatsCard = () => {
     async function load() {
       if (!username) return;
       const data = await getUserFrameworks(username);
-      console.log(data);
+      // console.log(data);
       if(data?.error){
-          console.log(data.error);
+          // console.log(data.error);
           
       }else{
         if (data && typeof data === 'object') {

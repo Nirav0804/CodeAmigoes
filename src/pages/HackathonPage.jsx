@@ -26,7 +26,7 @@ const HackathonPage = () => {
           const { latitude, longitude } = position.coords;
           localStorage.setItem("latitude", latitude);
           localStorage.setItem("longitude", longitude);
-          console.log(position);
+          // console.log(position);
         },
         (error) => {
           console.error("Error getting location:", error.message);

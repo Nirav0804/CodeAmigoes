@@ -73,7 +73,7 @@ const PersonalChatChat = ({ memberId, memberName, isKeySetupComplete }) => {
       setIsReady(true);
     } else {
       setIsReady(false);
-      console.log('Waiting for data:', { currentUserId, member2Id, memberName, isKeySetupComplete });
+      // console.log('Waiting for data:', { currentUserId, member2Id, memberName, isKeySetupComplete });
     }
   }, [currentUserId, member2Id, memberName, isKeySetupComplete]);
 
@@ -95,7 +95,7 @@ const PersonalChatChat = ({ memberId, memberName, isKeySetupComplete }) => {
 
     let isMounted = true;
     const sortedChatId = [currentUserId, member2Id].sort().join("/");
-    console.log("Fetch messages called");
+    // console.log("Fetch messages called");
 
     const fetchMessages = async () => {
       setLoading(true);

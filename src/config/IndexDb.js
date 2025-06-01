@@ -9,7 +9,7 @@ export const directoryHandlerStore = createStore('directory-handler-store', 'dir
 
 export const storeSecretChatKeyInIdb = async (username,partnerName, encryptedSecretKey1, storeName) => {
   const keyName = username + ':' + partnerName
-  console.log("Storing in indexDb", partnerName, encryptedSecretKey1);
+  // console.log("Storing in indexDb", partnerName, encryptedSecretKey1);
   await idbSet(keyName, encryptedSecretKey1, storeName);
 };
 
@@ -23,22 +23,22 @@ export const getChatKeyFromIdb = async (username,key) => {
   if (!encryptedChatKey) {
     return null;
   }
-  console.log("Hello: " + encryptedChatKey);
+  // console.log("Hello: " + encryptedChatKey);
   
   const privateKey = await getUserPrivateKey(username);
-  console.log("PrivateKey Encrypted: " + privateKey);
+  // console.log("PrivateKey Encrypted: " + privateKey);
   
   const decryptedSecretKey = await decryptMessage(encryptedChatKey, privateKey);
-  console.log(`Retrieved key for ${key}: ${encryptedChatKey}`);
+  // console.log(`Retrieved key for ${key}: ${encryptedChatKey}`);
   return decryptedSecretKey;
 };
 
 export const setDirectoryInIdb = async (username , directory) => {
   try {
     await idbSet(`${username}:directory-path`, directory, directoryHandlerStore);
-    console.log(`Directory ${directory} stored and saved`);
+    // console.log(`Directory ${directory} stored and saved`);
   } catch (error) {
-    console.log("Error picking directory");
+    // console.log("Error picking directory");
   }
 };
 

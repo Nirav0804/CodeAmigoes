@@ -91,7 +91,7 @@ const Chatbot = () => {
   const handleSend = async () => {
     if (!userInput.trim()) return;
 
-    console.log("inside handlesned ")
+    // console.log("inside handlesned ")
     const userMessage = { sender: "user", text: userInput };
     setMessages((prev) => [...prev, userMessage]);
     setUserInput("");
@@ -112,7 +112,7 @@ const Chatbot = () => {
         query: userInput,
         user_id: "default_user"
       };
-      console.log("before api hit ")
+      // console.log("before api hit ")
       const response = await fetch("http://localhost:8080/api/chatbot/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

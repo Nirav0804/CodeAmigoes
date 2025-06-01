@@ -44,7 +44,7 @@ const HackathonDetailsPage = () => {
         }
         );
         const end = Date.now();
-        console.log("API call took " + (end - start) + " milliseconds");
+        // console.log("API call took " + (end - start) + " milliseconds");
         setHackathonData(response.data);
         setRequestObject({
           hackathonId: response.data.id,
@@ -57,7 +57,7 @@ const HackathonDetailsPage = () => {
         setSuccess(true);
       } catch (err) {
         setError(err.message);
-        console.log("Error fetching hackathon data:", err);
+        // console.log("Error fetching hackathon data:", err);
         navigate("/dashboard");
         setLoading(false);
       }
@@ -67,7 +67,7 @@ const HackathonDetailsPage = () => {
 
 
     if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-      console.log("Invalid hackathon ID, navigating back");
+      // console.log("Invalid hackathon ID, navigating back");
       navigate("/dashboard/hackathons");
       return ;
     }else{
@@ -104,7 +104,7 @@ const HackathonDetailsPage = () => {
       // const currentUserId = localStorage.getItem("userId");
       const member2Id = hackathonData.createdById;
       const leader = hackathonData.createdBy;
-      console.log(member2Id);
+      // console.log(member2Id);
       const response = await axios.post(
         `${API_BASE}/api/v1/personal_chat/create_or_get_personal_chat/${userId}/${member2Id}`,
         {}, // or your data
@@ -113,10 +113,10 @@ const HackathonDetailsPage = () => {
         }
       );
       navigate('/dashboard/chat?leader=' + leader);
-      console.log(response);
+      // console.log(response);
     }
     catch (error) {
-      console.log("Unable to Create or Fetch the Personal Chat.");
+      // console.log("Unable to Create or Fetch the Personal Chat.");
     }
 
   };

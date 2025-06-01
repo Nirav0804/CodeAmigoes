@@ -35,7 +35,7 @@ function ChatDropDown() {
 
     // Check if directory is set when the component mounts
     const checkDirectory = async () => {
-        console.log("checkDirectory called");
+        // console.log("checkDirectory called");
         const directory = await getDirectoryFromIdb(username);
         if (directory) {
             setDirectorySet(true);
@@ -56,7 +56,7 @@ function ChatDropDown() {
             const baseDir = await window.showDirectoryPicker({ mode: "readwrite" });
             await setDirectoryInIdb(username,baseDir);
             setDirectorySet(true);
-            console.log("Directory set successfully:", baseDir);
+            // console.log("Directory set successfully:", baseDir);
         } catch (error) {
             console.error("Error selecting directory:", error);
             alert("Failed to select directory. Please try again.");
@@ -135,10 +135,10 @@ function ChatDropDown() {
                 if (!pkResp.data) throw new Error("Public key not found for partner");
                 await idbSet(partnerName, pkResp.data, publicKeyStore);
             }
-            console.log("Fetched public key for chat setup");
+            // console.log("Fetched public key for chat setup");
             let secretB64;
             let chatSecretKey = await getChatKeyFromIdb(username,partnerName, chatSecretKeyStore);
-            console.log("Called getChatKey from Idb",chatSecretKey);
+            // console.log("Called getChatKey from Idb",chatSecretKey);
             
             if (!chatSecretKey) {
                 const getRes = await axios.get(`${API_BASE}/api/secret_key/${chatId}/${userId}/`, {
@@ -161,7 +161,7 @@ function ChatDropDown() {
                     await storeSecretChatKeyInIdb(username,partnerName, encryptedSecretKey1, chatSecretKeyStore);
                 }
             }
-            console.log("Chat keys setup completed");
+            // console.log("Chat keys setup completed");
         } catch (err) {
             console.error("Error setting up chat key:", err);
             throw err; // Re-throw to handle in useEffect

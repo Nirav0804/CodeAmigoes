@@ -116,7 +116,7 @@ const ProfileDashboard = () => {
       withCredentials: true, // <-- This sends cookies!
     })
       .then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
         setUserData(response.data);
         setUserData({
           ...response.data,
@@ -129,7 +129,7 @@ const ProfileDashboard = () => {
   // Fetch platform data only when userData is successfully set
   useEffect(() => {
     if (success && userData.username) {
-      // console.log("Updated userData:", userData);
+      // // console.log("Updated userData:", userData);
 
       // Fetch GitHub data
       axios

@@ -132,7 +132,7 @@ const RegistrationForm = () => {
         // b) Encrypt the private key with a generated AES key
         const secretPassword = await generateAesKey();
         const exportedPassword = await exportKeyToBase64(secretPassword); // export for writing
-        console.log("secretPassword (Base64):", exportedPassword);
+        // console.log("secretPassword (Base64):", exportedPassword);
 
         const encryptedPrivateKey = await encryptWithAesKey(privatePem, secretPassword);
 
@@ -148,7 +148,7 @@ const RegistrationForm = () => {
         await pwW.write(exportedPassword);
         await pwW.close();
 
-        console.log('Saved encrypted private key and AES password locally');
+        // console.log('Saved encrypted private key and AES password locally');
       } catch (fsErr) {
         console.error('File-system save failed:', fsErr);
         throw new Error('Please select a directory to securely store your private key.');

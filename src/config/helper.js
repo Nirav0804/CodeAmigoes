@@ -17,4 +17,4 @@ export function timeAgo(date) {
 }
 
 // Example usage
-console.log(timeAgo("2023-12-01T14:00:00Z")); // Output depends on the current time
+// console.log(timeAgo("2023-12-01T14:00:00Z")); // Output depends on the current time

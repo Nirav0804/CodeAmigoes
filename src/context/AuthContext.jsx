@@ -33,14 +33,14 @@ export const useAuth = () => {
 
     const { user, setUser, loading } = context;
 
-    // console.log(user);
+    // // console.log(user);
 
     // Optional: provide safely destructured values only if user exists
     const userId = user?.id;
     const username = user?.username;
     const status = user?.status;
     const email = user?.email;
-    // console.log(userId, username, status, email);
+    // // console.log(userId, username, status, email);
 
     return {
         userId,

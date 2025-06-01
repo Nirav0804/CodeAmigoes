@@ -47,7 +47,7 @@ export async function encryptWithAesKey(plainText, cryptoKey) {
     cryptoKey,
     encoded
   );
-  console.log("CryptoKey in encrypt"+cryptoKey);
+  // console.log("CryptoKey in encrypt"+cryptoKey);
   
   return {
     cipherText: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
@@ -59,7 +59,7 @@ export async function encryptWithAesKey(plainText, cryptoKey) {
 export async function decryptWithAesKey(cipherTextB64, ivB64, cryptoKey) {
   const encryptedData = Uint8Array.from(atob(cipherTextB64), c => c.charCodeAt(0));
   const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
-  console.log(`cipherText : ${cipherTextB64} ivB64 : ${ivB64} cryptoKey : ${cryptoKey} `);
+  // console.log(`cipherText : ${cipherTextB64} ivB64 : ${ivB64} cryptoKey : ${cryptoKey} `);
   
   const decrypted = await window.crypto.subtle.decrypt(
     {
@@ -69,6 +69,6 @@ export async function decryptWithAesKey(cipherTextB64, ivB64, cryptoKey) {
     cryptoKey,
     encryptedData
   );
-console.log("CryptoKey in decrypt"+cryptoKey);
+// console.log("CryptoKey in decrypt"+cryptoKey);
   return new TextDecoder().decode(decrypted);
 }

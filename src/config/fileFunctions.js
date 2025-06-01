@@ -7,12 +7,12 @@ export const passwordFileName = "aesPassword.key";
 export const getUserPrivateKey = async (username) => {
   const directory = await getDirectoryFromIdb(username);
   if (!directory) {
-    console.log('Please select a directory first');
+    // console.log('Please select a directory first');
     return;
   }
-  console.log(`directory: ${directory}`);
+  // console.log(`directory: ${directory}`);
   const encryptedPrivateKey1 = await getContentFromFile(username,directory, privateKeyFileName);
-  console.log(`encryptedPrivateKey: ${encryptedPrivateKey1}`);
+  // console.log(`encryptedPrivateKey: ${encryptedPrivateKey1}`);
   const encryptedPrivateKey = JSON.parse(encryptedPrivateKey1);
   const passwordBase64 = await getContentFromFile(username,directory, passwordFileName);
   
@@ -25,7 +25,7 @@ export const getUserPrivateKey = async (username) => {
     aesKey
   );
 
-  console.log(`decryptedPrivateKey: ${decryptedPrivateKey}`);
+  // console.log(`decryptedPrivateKey: ${decryptedPrivateKey}`);
   return decryptedPrivateKey;
 };
 
@@ -38,7 +38,7 @@ const getContentFromFile = async (username,baseHandle, fileName) => {
     const arrayBuffer = await file.arrayBuffer();
     const decoder = new TextDecoder();
     const text = decoder.decode(arrayBuffer);
-    console.log(`Extracted text from ${fileName}: ${text}`);
+    // console.log(`Extracted text from ${fileName}: ${text}`);
     return text;
   } catch (err) {
     console.error('Loading wrapped key failed', err);

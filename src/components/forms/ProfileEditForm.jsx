@@ -97,7 +97,7 @@ const ProfileEditForm = () => {
           `${API_BASE}/api/users/${username}`, {
           withCredentials: true, // <-- This sends cookies!
         });
-        console.log(response.data);
+        // console.log(response.data);
 
         const profile = response.data;
         setFormData({
