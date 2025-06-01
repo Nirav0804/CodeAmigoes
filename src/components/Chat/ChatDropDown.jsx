@@ -5,7 +5,6 @@ import axios from "axios";
 import { debounce } from "lodash";
 import { FaSearch } from "react-icons/fa";
 import GradientBackground from "../background/GradientBackground";
-import { timeAgo } from "../../config/helper";
 import PersonalChatChat from "../PersonalChat/PersonalChatChat";
 import { useAuth } from "../../context/AuthContext";
 import { generateBase64AesKey } from "../../config/secretKeyGenerator";
@@ -27,20 +26,49 @@ function ChatDropDown() {
     const [personalChatOpen, setPersonalChatOpen] = useState(false);
     const [currentUserId, setCurrentUserId] = useState("");
     const [loading, setLoading] = useState(true);
-    const [isKeySetupComplete, setIsKeySetupComplete] = useState(false); // New state to track key setup
+    const [isKeySetupComplete, setIsKeySetupComplete] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const { userId, username } = useAuth();
     const [directorySet, setDirectorySet] = useState(false);
+    const [directoryExists, setDirectoryExists] = useState(true); // New state to track directory existence
 
-    // Check if directory is set when the component mounts
+    // Check if directory contains required structure
     const checkDirectory = async () => {
-        // console.log("checkDirectory called");
-        const directory = await getDirectoryFromIdb(username);
-        if (directory) {
-            setDirectorySet(true);
-        } else {
+        const directoryHandle = await getDirectoryFromIdb(username);
+        if (!directoryHandle) {
             setDirectorySet(false);
+            setDirectoryExists(false); // No directory set
+            setLoading(false);
+            return;
+        }
+
+        try {
+            // Navigate to username.data.codeamigoes
+            const userDirName = `${username}.data.codeamigoes`;
+            const userDirHandle = await directoryHandle.getDirectoryHandle(userDirName, { create: false });
+
+            // Navigate to privateData
+            const privateDataDirHandle = await userDirHandle.getDirectoryHandle("privateData", { create: false });
+
+            // Check for rsaPrivateEncryptedKey.json
+            const rsaFileHandle = await privateDataDirHandle.getFileHandle("rsaPrivateEncryptedKey.json", { create: false });
+
+            // Check for aesPassword.key
+            const aesFileHandle = await privateDataDirHandle.getFileHandle("aesPassword.key", { create: false });
+
+            // If both files exist, set directorySet to true
+            if (rsaFileHandle && aesFileHandle) {
+                setDirectorySet(true);
+                setDirectoryExists(true);
+            } else {
+                setDirectorySet(false);
+                setDirectoryExists(true); // Directory exists but files are missing
+            }
+        } catch (error) {
+            console.error("Error checking directory:", error);
+            setDirectorySet(false);
+            setDirectoryExists(true); // Directory exists but structure is invalid
         }
         setLoading(false);
     };
@@ -48,15 +76,17 @@ function ChatDropDown() {
     // Run the check when the component mounts
     useEffect(() => {
         checkDirectory();
-    }, []);
+    }, [username]);
 
-    // Function to handle directory selection on user action (e.g., button click)
+    // Function to handle directory selection on user action
     const handleSetDirectory = async () => {
         try {
             const baseDir = await window.showDirectoryPicker({ mode: "readwrite" });
-            await setDirectoryInIdb(username,baseDir);
+            await setDirectoryInIdb(username, baseDir);
             setDirectorySet(true);
-            // console.log("Directory set successfully:", baseDir);
+            setDirectoryExists(true);
+            // Re-check directory after setting
+            await checkDirectory();
         } catch (error) {
             console.error("Error selecting directory:", error);
             alert("Failed to select directory. Please try again.");
@@ -103,14 +133,14 @@ function ChatDropDown() {
             }
         };
         initialize();
-    }, [navigate, location.search]);
+    }, [navigate, location.search, userId, username]);
 
     // Setup chat keys when member2Id and member2Name are set
     useEffect(() => {
         if (member2Id && member2Name) {
-            setIsKeySetupComplete(false); // Reset before setup
+            setIsKeySetupComplete(false);
             setupChatKeys(member2Name, member2Id).then(() => {
-                setIsKeySetupComplete(true); // Mark as complete
+                setIsKeySetupComplete(true);
             }).catch((err) => {
                 console.error("Key setup failed:", err);
                 setIsKeySetupComplete(false);
@@ -135,10 +165,8 @@ function ChatDropDown() {
                 if (!pkResp.data) throw new Error("Public key not found for partner");
                 await idbSet(partnerName, pkResp.data, publicKeyStore);
             }
-            // console.log("Fetched public key for chat setup");
             let secretB64;
-            let chatSecretKey = await getChatKeyFromIdb(username,partnerName, chatSecretKeyStore);
-            // console.log("Called getChatKey from Idb",chatSecretKey);
+            let chatSecretKey = await getChatKeyFromIdb(username, partnerName, chatSecretKeyStore);
             
             if (!chatSecretKey) {
                 const getRes = await axios.get(`${API_BASE}/api/secret_key/${chatId}/${userId}/`, {
@@ -147,7 +175,7 @@ function ChatDropDown() {
                 });
                 if (getRes.status === 200 && getRes.data) {
                     secretB64 = getRes.data;
-                    await storeSecretChatKeyInIdb(username,partnerName, secretB64, chatSecretKeyStore);
+                    await storeSecretChatKeyInIdb(username, partnerName, secretB64, chatSecretKeyStore);
                 } else {
                     secretB64 = await generateBase64AesKey();
                     const encryptedSecretKey = await encryptMessage(secretB64, pkResp?.data || publicKeyPem);
@@ -158,13 +186,12 @@ function ChatDropDown() {
                         { secretKey: encryptedSecretKey, secretKey1: encryptedSecretKey1 },
                         { headers: { "Content-Type": "application/json" }, withCredentials: true }
                     );
-                    await storeSecretChatKeyInIdb(username,partnerName, encryptedSecretKey1, chatSecretKeyStore);
+                    await storeSecretChatKeyInIdb(username, partnerName, encryptedSecretKey1, chatSecretKeyStore);
                 }
             }
-            // console.log("Chat keys setup completed");
         } catch (err) {
             console.error("Error setting up chat key:", err);
-            throw err; // Re-throw to handle in useEffect
+            throw err;
         }
     };
 
@@ -172,7 +199,6 @@ function ChatDropDown() {
     const handlePersonalChatClick = async (partnerName, chatId) => {
         setMember2Id(chatId);
         setMember2Name(partnerName);
-        // setupChatKeys will be called via useEffect
     };
 
     const debouncedSearch = useCallback(
@@ -225,7 +251,7 @@ function ChatDropDown() {
         );
     }
 
-    // Render the directory selection prompt if directory is not set
+    // Render the directory selection prompt if directory is not set or invalid
     if (!directorySet) {
         return (
             <GradientBackground>
@@ -234,14 +260,33 @@ function ChatDropDown() {
                         <Navigation />
                     </div>
                     <div className="text-center max-w-md">
-                        <h2 className="text-2xl font-semibold mb-3">
-                            Set Your Directory to Continue
-                        </h2>
-                        <p className="text-lg mb-4 leading-relaxed">
-                            Please select the directory where <code className="bg-gray-700 px-1 rounded">data.codeamigoes</code> is located. If you've recently changed browsers or cleared your settings, you may need to reselect this directory.
-                        </p>
+                        {directoryExists ? (
+                            <>
+                                <h2 className="text-2xl font-semibold mb-3">
+                                    Incorrect Directory or Missing Files
+                                </h2>
+                                <p className="text-lg mb-4 leading-relaxed">
+                                    It looks like the selected directory does not contain the required files. Please select the folder that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code>, which should include a <code className="bg-gray-700 px-1 rounded">privateData</code> folder with <code className="bg-gray-700 px-1 rounded">rsaPrivateEncryptedKey.json</code> and <code className="bg-gray-700 px-1 rounded">aesPassword.key</code>.
+                                </p>
+                                <p className="text-sm text-gray-300 mb-6">
+                                    Your username is <code className="bg-gray-700 px-1 rounded">{username}</code>,so select the folder (e.g., <code className="bg-gray-700 px-1 rounded">project</code>) that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code>.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <h2 className="text-2xl font-semibold mb-3">
+                                    No Directory Selected
+                                </h2>
+                                <p className="text-lg mb-4 leading-relaxed">
+                                    Please select the folder that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code>, which should include a <code className="bg-gray-700 px-1 rounded">privateData</code> folder with <code className="bg-gray-700 px-1 rounded">rsaPrivateEncryptedKey.json</code> and <code className="bg-gray-700 px-1 rounded">aesPassword.key</code>.
+                                </p>
+                                <p className="text-sm text-gray-300 mb-6">
+                                     Your username is <code className="bg-gray-700 px-1 rounded">{username}</code>, select a folder (e.g., <code className="bg-gray-700 px-1 rounded">project</code>) that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code> 
+                                </p>
+                            </>
+                        )}
                         <p className="text-sm text-gray-300 mb-6">
-                            <span className="font-medium">Ex:</span> Look for a folder named <code className="bg-gray-700 px-1 rounded">data.codeamigoes</code> in your <code className="bg-gray-700 px-1 rounded">project</code> directory, and select <code className="bg-gray-700 px-1 rounded">project</code> folder to proceed.
+                            If you are still facing issues, please contact us at <a href="mailto:codeamigos7@gmail.com" className="text-blue-400 hover:underline">codeamigos7@gmail.com</a> for assistance.
                         </p>
                         <button
                             onClick={handleSetDirectory}
@@ -302,7 +347,7 @@ function ChatDropDown() {
                             <PersonalChatChat 
                                 memberId={member2Id} 
                                 memberName={member2Name} 
-                                isKeySetupComplete={isKeySetupComplete} // Pass key setup status
+                                isKeySetupComplete={isKeySetupComplete}
                             />
                         ) : (
                             <p className="text-lg text-gray-500">Select a Personal chat to continue</p>
