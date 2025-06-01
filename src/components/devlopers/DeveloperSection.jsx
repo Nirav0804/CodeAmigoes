@@ -35,7 +35,14 @@ const developers = [
 const DeveloperSection = () => {
   return (
     <div className="text-white text-center py-16 px-4">
-      <h2 className="text-4xl font-bold mb-10">👩‍💻 Meet Our Developers 👨‍💻</h2>
+     <div className="flex items-center justify-center gap-4 mb-6">
+  <span className="text-3xl">👩‍💻</span>
+  <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+    Meet Our Developers
+  </h2>
+  <span className="text-3xl">👨‍💻</span>
+</div>
+      
       <div className="flex justify-center gap-8 flex-wrap">
         {developers.map((dev, index) => (
           <div
