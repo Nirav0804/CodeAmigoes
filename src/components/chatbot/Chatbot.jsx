@@ -15,7 +15,7 @@ function formatMessageWithLinks(text) {
   // Regex to match URLs
   const urlRegex = /(https?:\/\/[^\s<]+[^\s<.,!?])/g;
   // Replace URLs with clickable links
-  return withBreaks.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="underline text-blue-400 hover:text-blue-300">${url}</a>`);
+  return withBreaks.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="underline text-blue-800 hover:text-blue-500">${url}</a>`);
 }
 
 const gradientHeader = "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400";
@@ -55,7 +55,7 @@ function ChatbotOpenButton({ onClick }) {
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([
-    { sender: "bot", text: "Hi! How can I help you today?" }
+    { sender: "bot", text: "Hi! How can I help you today? I'm here to assist you specifically with anything related to hackathons—feel free to ask, I can guide you thoroughly!" }
   ]);
   const [userInput, setUserInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -148,7 +148,7 @@ const Chatbot = () => {
               <motion.img
                 src='/logoN.png'
                 alt="logo"
-                className="w-8 h-10"
+                className="w-8 h-12"
               />
               <span className={`text-xl font-bold ${gradientHeader}`}>CodeAmigos AI</span>
             </div>
@@ -171,7 +171,7 @@ const Chatbot = () => {
                 className={`p-3 rounded-2xl max-w-[85%] relative shadow-md ${
                   msg.sender === "user"
                     ? "bg-gray-700/80 text-white self-end ml-auto backdrop-blur-sm"
-                    : "bg-gradient-to-br from-purple-200/90 via-purple-300/90 to-fuchsia-200/90 text-gray-900 self-start"
+      : "bg-gradient-to-br from-purple-300/90 via-purple-300/90 to-fuchsia-300/90 text-gray-900 self-start"
                 }`}
               >
                 <div

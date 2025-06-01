@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaUser, FaSignOutAlt, FaUsers, FaComments, FaCode } from "react-icons/fa";
 import Username from "./Username";
 import NavItem from "./NavItem";
+import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const Navigation = () => {
@@ -50,9 +51,18 @@ const Navigation = () => {
     <nav className="bg-gray-900/80 backdrop-blur-lg text-white shadow-lg fixed w-full z-50">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          <Link onClick={() => handleRedirect()} className="text-3xl font-extrabold tracking-wide text-blue-400">
-            CodeAmigos 
-          </Link>
+      <Link
+  onClick={() => handleRedirect()}
+  className="flex items-center space-x-2 text-3xl font-extrabold tracking-wide text-blue-400"
+>
+  <motion.img
+    src="/logoN.png"
+    alt="logo"
+    className="w-12 h-18"
+  />
+  <span>CodeAmigos</span>
+</Link>
+
           <div className="hidden md:flex items-center space-x-8">
             {status === "paid" ? (
               <span className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold rounded-lg shadow-md animate-pulse">
