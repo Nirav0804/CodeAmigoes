@@ -3,7 +3,7 @@ import Navigation from "../navigation/Navigation";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { debounce } from "lodash";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaArrowLeft } from "react-icons/fa";
 import GradientBackground from "../background/GradientBackground";
 import PersonalChatChat from "../PersonalChat/PersonalChatChat";
 import { useAuth } from "../../context/AuthContext";
@@ -11,6 +11,7 @@ import { generateBase64AesKey } from "../../config/secretKeyGenerator";
 import { set as idbSet, get as idbGet, createStore } from "idb-keyval";
 import { getChatKeyFromIdb, storeSecretChatKeyInIdb, setDirectoryInIdb, getDirectoryFromIdb } from "../../config/IndexDb";
 import { encryptMessage } from "../../config/rasCrypto";
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // Create a dedicated IndexedDB store for public keys
@@ -27,65 +28,70 @@ function ChatDropDown() {
     const [currentUserId, setCurrentUserId] = useState("");
     const [loading, setLoading] = useState(true);
     const [isKeySetupComplete, setIsKeySetupComplete] = useState(false);
+    
+    // New state for mobile view management
+    const [showChatList, setShowChatList] = useState(true);
+    const [isMobileView, setIsMobileView] = useState(false);
+    
     const navigate = useNavigate();
     const location = useLocation();
     const { userId, username } = useAuth();
     const [directorySet, setDirectorySet] = useState(false);
-    const [directoryExists, setDirectoryExists] = useState(true); // New state to track directory existence
+    const [directoryExists, setDirectoryExists] = useState(true);
+
+    // Check screen size for mobile view
+    useEffect(() => {
+        const checkScreenSize = () => {
+            setIsMobileView(window.innerWidth < 768);
+        };
+        
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+        return () => window.removeEventListener('resize', checkScreenSize);
+    }, []);
 
     // Check if directory contains required structure
     const checkDirectory = async () => {
         const directoryHandle = await getDirectoryFromIdb(username);
         if (!directoryHandle) {
             setDirectorySet(false);
-            setDirectoryExists(false); // No directory set
+            setDirectoryExists(false);
             setLoading(false);
             return;
         }
 
         try {
-            // Navigate to username.data.codeamigoes
             const userDirName = `${username}.data.codeamigoes`;
             const userDirHandle = await directoryHandle.getDirectoryHandle(userDirName, { create: false });
-
-            // Navigate to privateData
             const privateDataDirHandle = await userDirHandle.getDirectoryHandle("privateData", { create: false });
-
-            // Check for rsaPrivateEncryptedKey.json
             const rsaFileHandle = await privateDataDirHandle.getFileHandle("rsaPrivateEncryptedKey.json", { create: false });
-
-            // Check for aesPassword.key
             const aesFileHandle = await privateDataDirHandle.getFileHandle("aesPassword.key", { create: false });
 
-            // If both files exist, set directorySet to true
             if (rsaFileHandle && aesFileHandle) {
                 setDirectorySet(true);
                 setDirectoryExists(true);
             } else {
                 setDirectorySet(false);
-                setDirectoryExists(true); // Directory exists but files are missing
+                setDirectoryExists(true);
             }
         } catch (error) {
             console.error("Error checking directory:", error);
             setDirectorySet(false);
-            setDirectoryExists(true); // Directory exists but structure is invalid
+            setDirectoryExists(true);
         }
         setLoading(false);
     };
 
-    // Run the check when the component mounts
     useEffect(() => {
         checkDirectory();
     }, [username]);
 
-    // Function to handle directory selection on user action
     const handleSetDirectory = async () => {
         try {
             const baseDir = await window.showDirectoryPicker({ mode: "readwrite" });
             await setDirectoryInIdb(username, baseDir);
             setDirectorySet(true);
             setDirectoryExists(true);
-            // Re-check directory after setting
             await checkDirectory();
         } catch (error) {
             console.error("Error selecting directory:", error);
@@ -93,7 +99,6 @@ function ChatDropDown() {
         }
     };
 
-    // Initialize user and fetch chats
     useEffect(() => {
         const initialize = async () => {
             if (!username) {
@@ -115,7 +120,6 @@ function ChatDropDown() {
                     setPersonalChats(sortedPersonalChat);
                     setFilteredPersonalChats(sortedPersonalChat);
 
-                    // Process query parameter after chats are loaded
                     const queryParams = new URLSearchParams(location.search);
                     const leaderName = queryParams.get("leader");
                     if (leaderName && sortedPersonalChat.length > 0) {
@@ -135,7 +139,6 @@ function ChatDropDown() {
         initialize();
     }, [navigate, location.search, userId, username]);
 
-    // Setup chat keys when member2Id and member2Name are set
     useEffect(() => {
         if (member2Id && member2Name) {
             setIsKeySetupComplete(false);
@@ -148,14 +151,16 @@ function ChatDropDown() {
         }
     }, [member2Id, member2Name]);
 
-    // Open chat when member2Id and member2Name are set
     useEffect(() => {
         if (member2Id && member2Name) {
             setPersonalChatOpen(true);
+            // On mobile, hide chat list when opening a chat
+            if (isMobileView) {
+                setShowChatList(false);
+            }
         }
-    }, [member2Id, member2Name]);
+    }, [member2Id, member2Name, isMobileView]);
 
-    // Function to setup chat keys
     const setupChatKeys = async (partnerName, chatId) => {
         try {
             let publicKeyPem = await idbGet(partnerName, publicKeyStore);
@@ -195,10 +200,17 @@ function ChatDropDown() {
         }
     };
 
-    // Handler for selecting a chat from the dropdown
     const handlePersonalChatClick = async (partnerName, chatId) => {
         setMember2Id(chatId);
         setMember2Name(partnerName);
+    };
+
+    // Handle back button for mobile
+    const handleBackToChats = () => {
+        setPersonalChatOpen(false);
+        setMember2Id("");
+        setMember2Name("");
+        setShowChatList(true);
     };
 
     const debouncedSearch = useCallback(
@@ -243,7 +255,7 @@ function ChatDropDown() {
         return (
             <GradientBackground>
                 <div className="min-h-screen flex items-center justify-center text-white">
-                    <div className="animate-pulse text-2xl">
+                    <div className="animate-pulse text-xl sm:text-2xl">
                         Loading Personal Chats...
                     </div>
                 </div>
@@ -251,37 +263,37 @@ function ChatDropDown() {
         );
     }
 
-    // Render the directory selection prompt if directory is not set or invalid
+    // Directory selection prompt
     if (!directorySet) {
         return (
             <GradientBackground>
-                <div className="flex flex-col h-screen text-white justify-center items-center px-4">
+                <div className="flex flex-col min-h-screen text-white justify-center items-center px-4">
                     <div className="fixed top-0 left-0 w-full z-50">
                         <Navigation />
                     </div>
-                    <div className="text-center max-w-md">
+                    <div className="text-center max-w-md sm:max-w-lg px-4">
                         {directoryExists ? (
                             <>
-                                <h2 className="text-2xl font-semibold mb-3">
+                                <h2 className="text-xl sm:text-2xl font-semibold mb-3">
                                     Incorrect Directory or Missing Files
                                 </h2>
-                                <p className="text-lg mb-4 leading-relaxed">
-                                    It looks like the selected directory does not contain the required files. Please select the folder that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code>, which should include a <code className="bg-gray-700 px-1 rounded">privateData</code> folder with <code className="bg-gray-700 px-1 rounded">rsaPrivateEncryptedKey.json</code> and <code className="bg-gray-700 px-1 rounded">aesPassword.key</code>.
+                                <p className="text-base sm:text-lg mb-4 leading-relaxed">
+                                    It looks like the selected directory does not contain the required files. Please select the folder that contains <code className="bg-gray-700 px-1 rounded text-sm">{username}.data.codeamigoes</code>, which should include a <code className="bg-gray-700 px-1 rounded text-sm">privateData</code> folder with <code className="bg-gray-700 px-1 rounded text-sm">rsaPrivateEncryptedKey.json</code> and <code className="bg-gray-700 px-1 rounded text-sm">aesPassword.key</code>.
                                 </p>
                                 <p className="text-sm text-gray-300 mb-6">
-                                    Your username is <code className="bg-gray-700 px-1 rounded">{username}</code>,so select the folder (e.g., <code className="bg-gray-700 px-1 rounded">project</code>) that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code>.
+                                    Your username is <code className="bg-gray-700 px-1 rounded">{username}</code>, so select the folder (e.g., <code className="bg-gray-700 px-1 rounded">project</code>) that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code>.
                                 </p>
                             </>
                         ) : (
                             <>
-                                <h2 className="text-2xl font-semibold mb-3">
+                                <h2 className="text-xl sm:text-2xl font-semibold mb-3">
                                     No Directory Selected
                                 </h2>
-                                <p className="text-lg mb-4 leading-relaxed">
-                                    Please select the folder that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code>, which should include a <code className="bg-gray-700 px-1 rounded">privateData</code> folder with <code className="bg-gray-700 px-1 rounded">rsaPrivateEncryptedKey.json</code> and <code className="bg-gray-700 px-1 rounded">aesPassword.key</code>.
+                                <p className="text-base sm:text-lg mb-4 leading-relaxed">
+                                    Please select the folder that contains <code className="bg-gray-700 px-1 rounded text-sm">{username}.data.codeamigoes</code>, which should include a <code className="bg-gray-700 px-1 rounded text-sm">privateData</code> folder with <code className="bg-gray-700 px-1 rounded text-sm">rsaPrivateEncryptedKey.json</code> and <code className="bg-gray-700 px-1 rounded text-sm">aesPassword.key</code>.
                                 </p>
                                 <p className="text-sm text-gray-300 mb-6">
-                                     Your username is <code className="bg-gray-700 px-1 rounded">{username}</code>, select a folder (e.g., <code className="bg-gray-700 px-1 rounded">project</code>) that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code> 
+                                    Your username is <code className="bg-gray-700 px-1 rounded">{username}</code>, select a folder (e.g., <code className="bg-gray-700 px-1 rounded">project</code>) that contains <code className="bg-gray-700 px-1 rounded">{username}.data.codeamigoes</code>
                                 </p>
                             </>
                         )}
@@ -290,7 +302,7 @@ function ChatDropDown() {
                         </p>
                         <button
                             onClick={handleSetDirectory}
-                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-colors transform hover:scale-105 duration-200 shadow-lg"
+                            className="px-4 py-2 sm:px-6 sm:py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition-colors transform hover:scale-105 duration-200 shadow-lg text-sm sm:text-base"
                         >
                             Select Directory
                         </button>
@@ -302,55 +314,95 @@ function ChatDropDown() {
 
     return (
         <GradientBackground>
-            <div className="flex flex-col h-screen text-white">
+            <div className="flex flex-col min-h-screen text-white">
+                {/* Navigation Bar */}
                 <div className="fixed top-0 left-0 w-full z-50">
                     <Navigation />
                 </div>
-                <div className="flex flex-1 pt-20">
-                    <div className="w-1/4 p-4 border-r bg-gray-900 border-gray-700 h-[calc(100vh-4rem)]">
-                        <div className="mb-4 flex items-center bg-gray-800 px-3 py-2 rounded-lg">
-                            <FaSearch className="text-gray-400 mr-2" />
+
+                {/* Main Content - Mobile: Stack, Desktop: Side by side */}
+                <div className="flex flex-1 pt-16 sm:pt-20">
+                    {/* Chat List - Hidden on mobile when chat is open */}
+                    <div className={`
+                        ${isMobileView ? (showChatList ? 'block' : 'hidden') : 'block'}
+                        ${isMobileView ? 'w-full' : 'w-full md:w-1/3 lg:w-1/4'}
+                        p-2 sm:p-4 
+                        ${!isMobileView ? 'border-r border-gray-700' : ''}
+                        bg-gray-900 
+                        ${isMobileView ? 'h-[calc(100vh-4rem)]' : 'h-[calc(100vh-5rem)]'} 
+                        overflow-y-auto
+                    `}>
+                        {/* Search Bar */}
+                        <div className="mb-3 sm:mb-4 flex items-center bg-gray-800 px-3 py-2 rounded-lg">
+                            <FaSearch className="text-gray-400 mr-2 text-sm sm:text-base" />
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={handleSearchChange}
-                                className="bg-transparent outline-none text-white w-full"
+                                className="bg-transparent outline-none text-white w-full text-sm sm:text-base"
                                 placeholder="Search chats..."
                             />
                         </div>
-                        <div className="space-y-3 max-h-[calc(100vh-8rem)] overflow-y-auto">
+
+                        {/* Chat List */}
+                        <div className="space-y-2 sm:space-y-3">
                             {filteredPersonalChats.length > 0 ? (
                                 filteredPersonalChats.map((personalChat) => (
                                     <div
                                         key={personalChat.id}
-                                        className="p-3 bg-gray-700 shadow-lg rounded-lg flex items-center cursor-pointer hover:bg-gray-600 transition-all"
+                                        className="p-3 bg-gray-700 shadow-lg rounded-lg flex items-center cursor-pointer hover:bg-gray-600 transition-all active:bg-gray-500"
                                         onClick={() => handlePersonalChatClick(personalChat.githubUserName, personalChat.id)}
                                     >
                                         <img
                                             src={`https://github.com/${personalChat.githubUserName}.png`}
                                             alt={personalChat.githubUserName}
-                                            className="w-12 h-12 rounded-full object-cover mr-3"
+                                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover mr-3 flex-shrink-0"
                                         />
-                                        <div>
-                                            <h3 className="text-md font-bold text-gray-200">{personalChat.githubUserName}</h3>
-                                            <div className="text-sm text-gray-400"></div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-sm sm:text-md font-bold text-gray-200 truncate">
+                                                {personalChat.githubUserName}
+                                            </h3>
+                                            <p className="text-xs sm:text-sm text-gray-400 truncate">
+                                                Tap to open chat
+                                            </p>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-gray-400">No Personal Chats found.</p>
+                                <p className="text-gray-400 text-center py-8 text-sm sm:text-base">
+                                    No Personal Chats found.
+                                </p>
                             )}
                         </div>
                     </div>
-                    <div className="w-3/4 flex flex-col h-[calc(100vh-4rem)] text-center overflow-hidden justify-center">
+
+                    {/* Chat Area - Hidden on mobile when chat list is shown */}
+                    <div className={`
+                        ${isMobileView ? (showChatList ? 'hidden' : 'block') : 'block'}
+                        ${isMobileView ? 'w-full' : 'flex-1'}
+                        flex flex-col 
+                        ${isMobileView ? 'h-[calc(100vh-4rem)]' : 'h-[calc(100vh-5rem)]'}
+                        overflow-hidden 
+                        ${!personalChatOpen ? 'justify-center items-center' : ''}
+                        bg-gray-800
+                    `}>
                         {personalChatOpen ? (
-                            <PersonalChatChat 
-                                memberId={member2Id} 
-                                memberName={member2Name} 
+                            <PersonalChatChat
+                                memberId={member2Id}
+                                memberName={member2Name}
                                 isKeySetupComplete={isKeySetupComplete}
+                                onBackClick={isMobileView ? handleBackToChats : null}
+                                isMobile={isMobileView}
                             />
                         ) : (
-                            <p className="text-lg text-gray-500">Select a Personal chat to continue</p>
+                            <div className="text-center p-4">
+                                <p className="text-base sm:text-lg text-gray-500">
+                                    Select a Personal chat to continue
+                                </p>
+                                <p className="text-xs sm:text-sm text-gray-600 mt-2">
+                                    Choose a conversation from the list to start chatting
+                                </p>
+                            </div>
                         )}
                     </div>
                 </div>
