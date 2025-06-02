@@ -36,18 +36,20 @@ const LandingHeader = () => {
             CodeAmigos
           </motion.div>
           <motion.button
-            onClick={handleGithubLogin}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="
-              bg-gradient-to-r from-blue-800 to-purple-800
-              text-white font-semibold py-2 px-4 sm:py-2.5 sm:px-6
-              rounded-lg shadow-lg hover:shadow-xl transition-all
-              text-sm sm:text-base
-            "
-          >
-            GitHub Login
-          </motion.button>
+  onClick={handleGithubLogin}
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  className="
+    bg-gradient-to-r from-blue-800 to-purple-800
+    text-white font-semibold py-2 px-4 sm:py-2.5 sm:px-6
+    rounded-lg shadow-lg hover:shadow-xl transition-all
+    text-sm sm:text-base
+    z-20 relative
+  "
+>
+  GitHub Login
+</motion.button>
+
         </motion.div>
 
           <div className="flex flex-col items-center justify-center min-h-[80vh] text-center -translate-y-25 ">

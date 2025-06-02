@@ -1,58 +1,50 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/navigation/NavBar";
 import GradientBackground from "../components/background/GradientBackground";
 import Navigation from "../components/navigation/Navigation";
-import { useState, useEffect } from "react";
+import Navbar from "../components/navigation/NavBar";
 import VerticalNavBar from "../components/navigation/VerticalNavBar";
 import Chatbot from "../components/chatbot/Chatbot";
-import { useAuth } from "../context/AuthContext";
 
 const HackathonPage = () => {
   const navigate = useNavigate();
   const [hackathons, setHackathons] = useState([]);
   const [filteredHackathons, setFilteredHackathons] = useState([]);
+
   useEffect(() => {
-    // const username = localStorage.getItem("username");
-    // if (!username) {
-    //   navigate("/");
-    //   return;
-    // }
-  
-    // Get user's location and store it in localStorage
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           localStorage.setItem("latitude", latitude);
           localStorage.setItem("longitude", longitude);
-          // console.log(position);
         },
         (error) => {
           console.error("Error getting location:", error.message);
         }
       );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
     }
-  }, [navigate]);
-  
+  }, []);
 
   return (
     <GradientBackground className="min-h-screen">
       <Navigation />
-      <div className="container mx-auto p-4 pt-24 pb-24 overflow-auto h-screen">
+      <div className="container mx-auto px-2 sm:px-4 pt-24 pb-24">
+        {/* Responsive top navbar */}
         <Navbar
           hackathons={hackathons}
           setFilteredHackathons={setFilteredHackathons}
         />
-        <VerticalNavBar
-          setHackathons={setHackathons}
-          filteredHackathons={filteredHackathons}
-          setFilteredHackathons={setFilteredHackathons}
-        />
+        <div className="flex flex-col md:flex-row gap-4 mt-4">
+          {/* Responsive vertical nav */}
+          <VerticalNavBar
+            setHackathons={setHackathons}
+            filteredHackathons={filteredHackathons}
+            setFilteredHackathons={setFilteredHackathons}
+          />
+        </div>
       </div>
-      <Chatbot/>
+      <Chatbot />
     </GradientBackground>
   );
 };
