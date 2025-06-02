@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
-import { exportKeyAsPem } from "../../config/pemUtils";
+import { exportKeyAsPem } from "../../config/pemutils";
 import { log } from "sockjs-client/dist/sockjs";
 import { privateKeyFileName, passwordFileName } from "../../config/fileFunctions";
 import { encryptWithAesKey, exportKeyToBase64, generateAesKey } from "../../config/passwordEncrypt";

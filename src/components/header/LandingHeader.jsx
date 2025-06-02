@@ -11,7 +11,7 @@ const LandingHeader = () => {
     if (isMobileDevice() || !("showDirectoryPicker" in window)) {
       setShowError(true);
     } else {
-      window.location.href = "http://localhost:8080/oauth2/authorization/github";
+    window.location.href = "https://backend-0-0-1-release.onrender.com/oauth2/authorization/github";
     }
   };
 
