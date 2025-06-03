@@ -23,33 +23,42 @@ const gradientHeader = "text-transparent bg-clip-text bg-gradient-to-r from-blue
 // Custom open button inspired by your image
 function ChatbotOpenButton({ onClick }) {
   return (
-    <motion.button
-      whileHover={{ scale: 1.08, boxShadow: "0 0 0 8px rgba(124,58,237,0.15)" }}
-      whileTap={{ scale: 0.96 }}
-      onClick={onClick}
-      aria-label="Open chatbot"
-      className="w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-all border-none outline-none focus:outline-none"
-      style={{
-        background: "radial-gradient(circle at 70% 30%, #60a5fa 0%,rgb(128, 103, 206) 60%, #34d399 100%)",
-        boxShadow: "0 4px 24px 0 rgba(80, 70, 229, 0.25)",
-        border: "none",
-      }}
-    >
-      <span className="block">
-        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
-          <circle cx="19" cy="19" r="16" fill="#181C2F" />
-          <rect x="12" y="13" width="14" height="12" rx="6" fill="url(#botGradient)" />
-          <rect x="15" y="17" width="2" height="4" rx="1" fill="#fff" opacity="0.85" />
-          <rect x="21" y="17" width="2" height="4" rx="1" fill="#fff" opacity="0.85" />
-          <defs>
-            <linearGradient id="botGradient" x1="12" y1="13" x2="26" y2="25" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#a78bfa" />
-              <stop offset="1" stopColor="#60a5fa" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </span>
-    </motion.button>
+<motion.button
+  whileHover={{ scale: 1.08, boxShadow: "0 0 0 8px rgba(124,58,237,0.15)" }}
+  whileTap={{ scale: 0.96 }}
+  onClick={onClick}
+  aria-label="Open chatbot"
+  className="w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-all border-none outline-none focus:outline-none"
+  style={{
+    background: "radial-gradient(circle at 70% 30%, #60a5fa 0%,rgb(128, 103, 206) 60%, #34d399 100%)",
+    boxShadow: "0 4px 24px 0 rgba(80, 70, 229, 0.25)",
+    border: "none",
+  }}
+>
+  <motion.span
+    animate={{ rotate: 360 }}
+    transition={{
+      repeat: Infinity,
+      duration: 2,
+      ease: "linear",
+    }}
+    className="block"
+  >
+    <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+      <circle cx="19" cy="19" r="16" fill="#181C2F" />
+      <rect x="12" y="13" width="14" height="12" rx="6" fill="url(#botGradient)" />
+      <rect x="15" y="17" width="2" height="4" rx="1" fill="#fff" opacity="0.85" />
+      <rect x="21" y="17" width="2" height="4" rx="1" fill="#fff" opacity="0.85" />
+      <defs>
+        <linearGradient id="botGradient" x1="12" y1="13" x2="26" y2="25" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#a78bfa" />
+          <stop offset="1" stopColor="#60a5fa" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </motion.span>
+</motion.button>
+
   );
 }
 
