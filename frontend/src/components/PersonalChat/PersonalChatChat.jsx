@@ -277,11 +277,11 @@ const PersonalChatChat = ({ memberId, memberName, isKeySetupComplete, onBackClic
                   </p>
                   
                   {/* Timestamp */}
-                  <p className={`mt-1 text-[10px] sm:text-xs opacity-75 ${
+                  {/* <p className={`mt-1 text-[10px] sm:text-xs opacity-75 ${
                     msg.sender === currentUser ? 'text-right text-green-100' : 'text-left text-gray-300'
                   }`}>
                     {timeAgo(msg.timestamp)}
-                  </p>
+                  </p> */}
                 </div>
               </div>
             ))}

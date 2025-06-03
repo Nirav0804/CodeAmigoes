@@ -636,6 +636,8 @@ const HackathonRegistrationForm = () => {
                           })
                         }
                         error={formErrors.RegStartDate}
+                         className="bg-white text-black border border-gray-300 rounded px-3 py-2"
+
                       />
                       <Input
                         label="Registration End Date"
@@ -648,6 +650,8 @@ const HackathonRegistrationForm = () => {
                           })
                         }
                         error={formErrors.RegEndDate}
+                         className="bg-white text-black border border-gray-300 rounded px-3 py-2"
+
                       />
                     </div>
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -662,6 +666,8 @@ const HackathonRegistrationForm = () => {
                           })
                         }
                         error={formErrors.HackStartDate}
+                         className="bg-white text-black border border-gray-300 rounded px-3 py-2"
+
                       />
                       <Input
                         label="Hackathon End Date"
@@ -674,6 +680,8 @@ const HackathonRegistrationForm = () => {
                           })
                         }
                         error={formErrors.HackEndDate}
+                         className="bg-white text-black border border-gray-300 rounded px-3 py-2"
+
                       />
                     </div>
                     <div className="flex space-x-4">
