@@ -1,0 +1,21 @@
+Python
+
+pycache/ *.pyc *.pyo *.pyd .Python env/ venv/ ENV/ env.bak/ venv.bak/
+
+Environment variables
+
+.env
+
+Logs
+
+*.log
+
+IDE
+
+.idea/ .vscode/
+
+Misc
+
+*.DS_Store
+
+/__pycache__
