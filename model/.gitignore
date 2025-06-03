@@ -2,6 +2,7 @@ Python
 
 pycache/ *.pyc *.pyo *.pyd .Python env/ venv/ ENV/ env.bak/ venv.bak/
 
+
 Environment variables
 
 .env
@@ -19,3 +20,7 @@ Misc
 *.DS_Store
 
 /__pycache__
+
+
+__pycache__/
+venv

@@ -44,3 +44,8 @@ def remove_chat():
         
     except Exception as e:
         return handle_error(e)
+
+
+@chat_bp.route('/ping', methods=['GET', 'HEAD'], strict_slashes=False)
+def ping():
+    return jsonify({"message": "Server is up and running"}), 200
