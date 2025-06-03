@@ -11,8 +11,8 @@ import { FaGithub, FaLinkedin, FaInstagram, FaTrophy } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { SiLeetcode, SiCodechef } from "react-icons/si";
 import ProfileCard from "../profile/ProfileCard";
-import { FaGlobe, FaFileAlt } from "react-icons/fa";
-
+import { FaGlobe, FaFileAlt, FaAward, FaCertificate } from "react-icons/fa";
+import { use } from "react";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const platformConfig = [
@@ -75,6 +75,7 @@ const platformConfig = [
 ];
 
 const ProfileDashboard = () => {
+  // New certifications data
   const certifications = [
     {
       name: "AWS Solutions Architect",
@@ -109,21 +110,33 @@ const ProfileDashboard = () => {
   const username = params.username;
 
   useEffect(() => {
+    // Fetch user data
     axios
-      .get(`${API_BASE}/api/users/${username}`, { withCredentials: true })
+      .get(`${API_BASE}/api/users/${username}`,{
+      withCredentials: true, // <-- This sends cookies!
+    })
       .then((response) => {
+        // console.log(response.data);
         setUserData(response.data);
+        setUserData({
+          ...response.data,
+        });
         setSuccess(true);
       })
       .catch((error) => console.error("Error fetching user data:", error));
   }, [username]);
 
+  // Fetch platform data only when userData is successfully set
   useEffect(() => {
     if (success && userData.username) {
+      // // console.log("Updated userData:", userData);
+
+      // Fetch GitHub data
       axios
         .get(`https://api.github.com/users/${userData.githubUsername}`)
         .then((response) => setGithubData(response.data))
         .catch((error) => console.error("Error fetching GitHub data:", error));
+      // Fetch LeetCode data
       axios
         .get(
           `https://leetcode-stats-api.herokuapp.com/${userData.leetcodeUsername}`
@@ -132,6 +145,8 @@ const ProfileDashboard = () => {
         .catch((error) =>
           console.error("Error fetching LeetCode data:", error)
         );
+
+      // Fetch CodeChef data
       axios
         .get(
           `https://codechef-api.vercel.app/handle/${userData.codechefUsername}`
@@ -143,7 +158,6 @@ const ProfileDashboard = () => {
     }
   }, [success, userData]);
 
-  // Shimmer components (unchanged)
   const ProfileSectionShimmer = () => (
     <div className="w-full md:w-[32rem] bg-black/40 backdrop-blur-md rounded-lg p-6 h-[500px] mx-auto">
       <ShimmerEffect className="w-full h-32 rounded-t-lg mb-4" />
@@ -175,15 +189,15 @@ const ProfileDashboard = () => {
   );
 
   return (
-    <GradientBackground className="min-h-screen text-white flex flex-col px-2 sm:px-4 md:px-6 pt-28">
-      <div className="flex flex-col lg:flex-row gap-6">
+    <GradientBackground className="min-h-screen text-white flex flex-col p-6 pt-28">
+      <div className="flex flex-col md:flex-row gap-6">
         {/* Left Side - Profile Section */}
-        <div className="flex flex-col gap-6 w-full lg:w-[28rem]">
+        <div className="flex flex-col gap-6 w-[32rem]">
           {!success || !codechefData || !githubData ? (
             <>
               <ProfileSectionShimmer />
               {/* Social Media Cards Grid with Shimmer */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-y-8 pl-12">
                 {[...Array(8)].map((_, index) => (
                   <SocialCardShimmer key={index} />
                 ))}
@@ -205,8 +219,37 @@ const ProfileDashboard = () => {
                     : "https://images.unsplash.com/photo-1504805572947-34fad45aed93?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZmFjZWJvb2slMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D"
                 }
               />
+
+              {/* Add Certifications Section before Stats Overview */}
+              {/* <div className="bg-gray-900 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition duration-300 backdrop-blur-md border border-gray-700 ml-10 mb-6">
+                <div className="flex items-center gap-2 mb-6">
+                  <FaCertificate className="text-yellow-400 text-xl" />
+                  <h3 className="text-lg font-semibold">
+                    Professional Certifications
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {certifications.map((cert, index) => (
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-12 h-12 mb-3 rounded-full bg-white/10 flex items-center justify-center">
+                        <img
+                          src={cert.icon}
+                          alt={cert.issuer}
+                          className="w-15 h-15 rounded-full shadow-lg bg-cover bg-center"
+                        />
+                      </div>
+                      <h4 className={`font-medium ${cert.color} mb-1`}>
+                        {cert.name}
+                      </h4>
+                      <p className="text-sm text-gray-400">{cert.issuer}</p>
+                      <p className="text-xs text-gray-500 mt-1">{cert.date}</p>
+                    </div>
+                  ))}
+                </div>
+              </div> */}
+
               {/* Social Media Cards Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-y-8 pl-12">
                 {platformConfig
                   .filter((platform) => userData[platform.usernameKey])
                   .map((platform) => (
@@ -215,7 +258,9 @@ const ProfileDashboard = () => {
                       platform={platform.platform}
                       username={userData[platform.usernameKey]}
                       icon={platform.icon}
-                      link={`${platform.baseUrl}${userData[platform.usernameKey]}`}
+                      link={`${platform.baseUrl}${
+                        userData[platform.usernameKey]
+                      }`}
                       bgColor={platform.bgColor}
                     />
                   ))}
@@ -225,7 +270,7 @@ const ProfileDashboard = () => {
         </div>
 
         {/* Right Side - Platform Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 pl-20">
           {!githubData ? (
             <>
               <CardShimmer />
@@ -296,13 +341,48 @@ const ProfileDashboard = () => {
             </>
           )}
 
+          {!userData ? (
+            <>
+              <CardShimmer />
+            </>
+          ) : (
+            <>
+              {/* Added GIF after CodeChef cards */}
+              {/* <div className="bg-gray-900 rounded-lg p-6 shadow-lg hover:shadow-2xl transition-shadow duration-300 backdrop-blur-md border border-gray-700">
+                <img
+                  src={
+                    userData.gifUrl
+                      ? userData.gifUrl
+                      : "https://media.tenor.com/YZPnGuPeZv8AAAAd/coding.gif"
+                  }
+                  alt="Coding animation"
+                  className="w-full h-auto rounded-lg"
+                />
+              </div> */}
+            </>
+          )}
+
+          {/* Random Quoat */}
+          {/* <div className="bg-gray-900 rounded-lg p-6 shadow-lg hover:shadow-2xl transition-shadow duration-300 backdrop-blur-md border border-gray-700">
+            <h3 className="text-2xl font-bold text-blue-400 mb-4">
+              ✍🏻 Random Dev Quote
+            </h3>
+            <img
+              src={
+                "https://quotes-github-readme.vercel.app/api?type=horizontal&theme=tokyonight"
+              }
+              alt="quote"
+              className="w-full h-auto rounded-lg"
+            />
+          </div> */}
+
           {!githubData ? (
             <CardShimmer />
           ) : (
             <div className="bg-gray-900 rounded-lg p-6 shadow-lg hover:shadow-2xl transition-shadow duration-300 backdrop-blur-md border border-gray-700">
-              <h3 className="text-2xl font-bold text-blue-400 mb-4">
-                Github State
-              </h3>
+               <h3 className="text-2xl font-bold text-blue-400 mb-4">
+              Github State
+            </h3>
               <img
                 src={`https://github-readme-activity-graph.vercel.app/graph?username=${userData.githubUsername}&theme=tokyo-night`}
                 alt="GitHub Activity Graph"
