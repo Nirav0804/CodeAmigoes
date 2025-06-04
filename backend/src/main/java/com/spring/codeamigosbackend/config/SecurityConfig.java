@@ -30,6 +30,15 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter();
     }
 
+    private static final String[] PUBLIC_URLS = {
+            "/api/v3/auth",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/v3/api-docs.yaml",
+            "/swagger-ui.html"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CustomCorsConfiguration corsConfig) throws Exception {
         http
@@ -39,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/","/api/users/login","/api/users/me", "/register/", "/oauth2/authorization/", "/login/oauth2/code/", "/request/", "/requests/","/api/users/register","/api/users/ping"
                         ).permitAll()
+                        .requestMatchers(PUBLIC_URLS).permitAll()
                         .requestMatchers("/oauth2/success").authenticated()
                         .requestMatchers("/api/hackathons/recommended-hackathons", "/api/hackathons/nearby-hackathons")
                         .hasAuthority("PAID")
