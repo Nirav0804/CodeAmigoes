@@ -275,6 +275,7 @@ const RegistrationForm = () => {
                     onChange={handleInputChange}
                     placeholder={field.placeholder}
                     readOnly={field.readOnly || false}
+                    required={field.required}
                     className={`w-full px-4 py-3 rounded-lg bg-gray-700 text-gray-200 placeholder-gray-400 border border-gray-600 focus:ring-4 focus:ring-blue-500 focus:outline-none transition-all ${field.readOnly ? "cursor-not-allowed bg-gray-600" : ""
                       }`}
                   />
