@@ -125,8 +125,10 @@ public class UserController {
                 u.setCodechefUsername(user.getCodechefUsername());
                 // Save the public key from request
 //                System.out.println(user.getRsaPublicKey());
-                String encryptPublickey = EncryptionUtil.encrypt(user.getRsaPublicKey(), SECRET_KEY);
-                u.setRsaPublicKey(encryptPublickey);
+                if(user.getRsaPublicKey() != null){
+                    String encryptPublickey = EncryptionUtil.encrypt(user.getRsaPublicKey(), SECRET_KEY);
+                    u.setRsaPublicKey(encryptPublickey);
+                }
                 savedUser = userRepository.save(u);
             } else {
                 savedUser = userRepository.save(user);
