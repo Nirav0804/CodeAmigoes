@@ -15,12 +15,12 @@ const ProfileSection = ({
     <div className="relative">
       {/* Cover Image */}
       <div
-        className="absolute top-0 left-0 w-full h-48 border-blue-500 border-4 rounded-lg bg-cover bg-center ml-8 mt-1"
+        className="w-full h-32 md:h-48 border-blue-500 border-4 rounded-lg bg-cover bg-center mb-[-4rem] md:mb-[-6rem]"
         style={{ backgroundImage: `url(${coverImageUrl})` }}
       />
 
       {/* Profile Content */}
-      <div className="relative pt-10 flex flex-col items-center text-center space-y-4 pb-10 ml-8 mt-16">
+     <div className="flex flex-col items-center relative z-10">
         <div className="relative">
           <img
             src={imageUrl}
