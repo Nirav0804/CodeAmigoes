@@ -18,7 +18,7 @@ const LandingHeader = () => {
     } else if (!("showDirectoryPicker" in window)) {
       setErrorType("browser");
     } else {
-      window.location.href = "https://backend-0-0-1-release.onrender.com/oauth2/authorization/github";
+      window.location.href = "http://loaclhost:8080/oauth2/authorization/github";
     }
   };
 
