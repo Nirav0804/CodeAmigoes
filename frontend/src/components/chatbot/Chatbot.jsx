@@ -123,7 +123,7 @@ const Chatbot = () => {
       };
       // console.log("before api hit ")
       // ## Change the url here 
-      const response = await fetch("https://backend-0-0-1-release.onrender.com/api/chatbot/test", {
+      const response = await fetch("https://api.codeamigos.tech/api/chatbot/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

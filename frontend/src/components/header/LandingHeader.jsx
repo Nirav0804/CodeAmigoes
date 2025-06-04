@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const LandingHeader = () => {
   const handleGithubLogin = () => {
     // ## Change the backend url here 
-      window.location.href = "http://localhost:8080/oauth2/authorization/github";
+      window.location.href = "https://api.codeamigos.tech/oauth2/authorization/github";
   };
 
   return (
