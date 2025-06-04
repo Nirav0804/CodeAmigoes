@@ -44,3 +44,13 @@ const getContentFromFile = async (username,baseHandle, fileName) => {
     console.error('Loading wrapped key failed', err);
   }
 };
+
+export const isMobileDevice = () => {
+    const ua = navigator.userAgent || "";
+    console.log(ua);
+    const isAndroidPhone = /Android/i.test(ua) && /Mobile/i.test(ua);
+    const isIPhoneOrIPod = /iPhone|iPod/i.test(ua);
+    return isAndroidPhone || isIPhoneOrIPod;
+};
+
+export const isFileSystemSupported = ()=> ("showDirectoryPicker" in window) 

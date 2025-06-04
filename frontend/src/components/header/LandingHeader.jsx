@@ -1,69 +1,16 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaExclamationCircle, FaTimes } from "react-icons/fa";
+
 
 const LandingHeader = () => {
-  const [errorType, setErrorType] = useState(null);
-
-  const isMobileDevice = () => {
-    const ua = navigator.userAgent || "";
-    const isAndroidPhone = /Android/i.test(ua) && /Mobile/i.test(ua);
-    const isIPhoneOrIPod = /iPhone|iPod/i.test(ua);
-    return isAndroidPhone || isIPhoneOrIPod;
-  };
-
   const handleGithubLogin = () => {
-    if (isMobileDevice()) {
-      setErrorType("mobile");
-    } else if (!("showDirectoryPicker" in window)) {
-      setErrorType("browser");
-    } else {
-      window.location.href = "http://loaclhost:8080/oauth2/authorization/github";
-    }
+    // ## Change the backend url here 
+      window.location.href = "http://localhost:8080/oauth2/authorization/github";
   };
 
   return (
     <>
       <header id="about" className="relative min-h-screen overflow-hidden">
-        {/* Error Toast */}
-        <AnimatePresence>
-          {errorType && (
-            <motion.div
-              className="
-                fixed bottom-6 right-6
-                max-w-xs w-full
-                bg-red-600 text-white
-                rounded-lg shadow-lg
-                flex items-start p-4 space-x-3
-                z-50
-              "
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 50 }}
-              transition={{ duration: 0.3 }}
-            >
-              <FaExclamationCircle className="mt-1 text-xl text-white" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold">Unsupported Device or Browser</p>
-                <p className="mt-1 text-xs leading-snug">
-                  Please use Chrome, Edge, or Opera on a Windows desktop to log in via GitHub.
-                </p>
-                {errorType === "mobile" && (
-                  <p className="mt-1 text-xs leading-snug">
-                    If you’re using a browser with developer tools open, please close them and try again.
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => setErrorType(null)}
-                className="text-white hover:text-gray-200"
-              >
-                <FaTimes />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         <div className="relative z-10 container mx-auto px-4 pt-8">
           <motion.div
             className="flex justify-between items-center w-full mb-16 px-2 sm:px-4"

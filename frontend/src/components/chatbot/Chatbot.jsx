@@ -122,6 +122,7 @@ const Chatbot = () => {
         user_id: "default_user"
       };
       // console.log("before api hit ")
+      // ## Change the url here 
       const response = await fetch("https://backend-0-0-1-release.onrender.com/api/chatbot/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -10,6 +10,9 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Chatbot from "../components/chatbot/Chatbot";
+import { isFileSystemSupported, isMobileDevice } from "../config/fileFunctions";
+import { motion, AnimatePresence } from "framer-motion"; // Added for custom toast
+import { FaExclamationCircle, FaTimes } from "react-icons/fa"; // Added for toast icons
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const HackathonDetailsPage = () => {
@@ -18,7 +21,6 @@ const HackathonDetailsPage = () => {
   // useEffect(() => {
   //   // Get the username from localStorage or from a global state if stored after login
   //   // const username = localStorage.getItem("username"); // or from context or redux
-
   //   if (!username) {
   //     // If no username found in localStorage, redirect to login
   //     navigate("/login");
@@ -34,6 +36,7 @@ const HackathonDetailsPage = () => {
   const [visible, setVisible] = useState(true);
   // const username = localStorage.getItem("username");
   const [success, setSuccess] = useState(false);
+  const [errorType, setErrorType] = useState(null); // Added for custom toast
 
   const fetchHackathonData = async () => {
       try {
@@ -64,18 +67,13 @@ const HackathonDetailsPage = () => {
     };
     
   useEffect(() => {
-
-
     if (!/^[0-9a-fA-F]{24}$/.test(id)) {
       // console.log("Invalid hackathon ID, navigating back");
       navigate("/dashboard/hackathons");
-      return ;
-    }else{
+      return;
+    } else {
       fetchHackathonData();
     }
-
-    
-    
   }, [id, username]);
 
   useEffect(() => {
@@ -83,25 +81,30 @@ const HackathonDetailsPage = () => {
       handleJoin();
     }
     if (success === true) {
-      if (new Date(hackathonData.registrationDates.end) < new Date()) {
+      if (new Date(hackathonData?.registrationDates.end) < new Date()) {
         setVisible(false);
       }
     }
-    if (success === true && hackathonData.requestsToJoin.includes(username)) {
+    if (success === true && hackathonData?.requestsToJoin.includes(username)) {
       setVisible(false);
     }
     if (requestObject.createdBy === username) {
       setVisible(false);
     }
-    if (success === true && hackathonData.teamSize.max === hackathonData.currentTeamSize) {
+    if (success === true && hackathonData?.teamSize.max === hackathonData?.currentTeamSize) {
       setVisible(false);
     }
   }, [text, success]);
 
-
   const handleChatNow = async () => {
     try {
-      // const currentUserId = localStorage.getItem("userId");
+      // Check if device or browser is unsupported
+      if (isMobileDevice() || !isFileSystemSupported()) {
+        setErrorType(isMobileDevice() ? "mobile" : "filesystem"); // Trigger custom toast
+        return; // Prevent further execution
+      }
+
+      // Proceed with chat creation if compatible
       const member2Id = hackathonData.createdById;
       const leader = hackathonData.createdBy;
       // console.log(member2Id);
@@ -114,12 +117,12 @@ const HackathonDetailsPage = () => {
       );
       navigate('/dashboard/chat?leader=' + leader);
       // console.log(response);
+    } catch (error) {
+      // Display custom toast for other issues (e.g., network or server errors)
+      setErrorType("chat-error");
     }
-    catch (error) {
-      // console.log("Unable to Create or Fetch the Personal Chat.");
-    }
-
   };
+
   const handleJoin = async () => {
     try {
       await axios.post(`${API_BASE}/request`, requestObject, {
@@ -166,9 +169,9 @@ const HackathonDetailsPage = () => {
 
   return (
     <GradientBackground>
-      <ToastContainer /> {/* Add this line */}
+      <ToastContainer /> {/* Needed for handleJoin toasts */}
       <Navigation />
-      <div className="min-h-screen container mx-auto px-4 py-12 flex flex-col md:flex-row gap-8 max-w-6xl p-4 pt-24">
+            <div className="min-h-screen container mx-auto px-4 py-12 flex flex-col md:flex-row gap-8 max-w-6xl p-4 pt-24">
         {/* Details Section */}
         <div className="md:w-2/3 p-6 bg-gray-900 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20">
           <div className="h-96 flex items-center justify-center">
@@ -340,7 +343,50 @@ const HackathonDetailsPage = () => {
           )}
         </div>
       </div>
-      <Chatbot/>
+      <Chatbot />
+      {/* Custom error toast for unsupported device/browser */}
+      <AnimatePresence>
+        {errorType && (
+          <motion.div
+            className="
+              fixed bottom-6 right-6
+              max-w-xs w-full
+              bg-red-600 text-white
+              rounded-lg shadow-lg
+              flex items-start p-4 space-x-3
+              z-50
+            "
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ duration: 0.3 }}
+          >
+            <FaExclamationCircle className="mt-1 text-xl text-white" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold">Unsupported Device or Browser</p>
+              <p className="mt-1 text-xs leading-snug">
+                Please use Chrome, Edge, or Opera on a Windows desktop to access chats.
+              </p>
+              {errorType === "mobile" && (
+                <p className="mt-1 text-xs leading-snug">
+                  If you’re using a browser with developer tools open, please close them and try again.
+                </p>
+              )}
+              {errorType === "chat-error" && (
+                <p className="mt-1 text-xs leading-snug">
+                  Unable to create or fetch the personal chat. Please try again.
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => setErrorType(null)}
+              className="text-white hover:text-gray-200"
+            >
+              <FaTimes />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </GradientBackground>
   );
 };

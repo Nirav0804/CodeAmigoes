@@ -5,12 +5,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
-import { exportKeyAsPem } from "../../config/pemutils";
-import { log } from "sockjs-client/dist/sockjs";
-import { privateKeyFileName, passwordFileName } from "../../config/fileFunctions";
-import { encryptWithAesKey, exportKeyToBase64, generateAesKey } from "../../config/passwordEncrypt";
-import { setDirectoryInIdb } from "../../config/IndexDb";
-import CookieConsent from "../CookieConsent"; // Import the new component
+import CookieConsent from "../CookieConsent"; 
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -124,29 +119,10 @@ const RegistrationForm = () => {
     setError(null);
 
     try {
-      // 1. Generate RSA keypair
-      const keyPair = await window.crypto.subtle.generateKey(
-        {
-          name: 'RSA-OAEP',
-          modulusLength: 2048,
-          publicExponent: new Uint8Array([1,0,1]),
-          hash: 'SHA-256'
-        },
-        true,
-        ['encrypt','decrypt']
-      );
+      // Build registration payload without public key
+      const registrationData = { ...formData };
 
-      // 2. Export PEMs
-      const publicPem = await exportKeyAsPem(keyPair.publicKey, 'PUBLIC');
-      const privatePem = await exportKeyAsPem(keyPair.privateKey, 'PRIVATE');
-
-      // 3. Store private PEM in localStorage for quick access
-      localStorage.setItem('rsaPublicKey',publicPem);
-
-      // 4. Build registration payload
-      const registrationData = { ...formData, publicKey: publicPem };
-
-      // 5. Call backend
+      // Call backend
       const response = await fetch(`${API_BASE}/api/users/register`, {
         method: 'POST',
         credentials: 'include',
@@ -158,37 +134,10 @@ const RegistrationForm = () => {
         throw new Error(typeof data==='string'?data:JSON.stringify(data));
       }
 
-      // 6. Mark success
+      // Mark success
       setSuccess(true);
 
-      // 7. Prompt for a directory and save encrypted private key + password
-      try {
-        const baseHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-        await setDirectoryInIdb(user.username , baseHandle);
-
-        const dataDir = await baseHandle.getDirectoryHandle(`${user.username}.data.codeamigoes`, { create: true });
-        const privDir = await dataDir.getDirectoryHandle('privateData', { create: true });
-
-        const secretPassword = await generateAesKey();
-        const exportedPassword = await exportKeyToBase64(secretPassword);
-        const encryptedPrivateKey = await encryptWithAesKey(privatePem, secretPassword);
-
-        const privFH = await privDir.getFileHandle(privateKeyFileName, { create: true });
-        const privW = await privFH.createWritable();
-        await privW.write(JSON.stringify(encryptedPrivateKey, null, 2));
-        await privW.close();
-
-        const pwFH = await privDir.getFileHandle(passwordFileName, { create: true });
-        const pwW = await pwFH.createWritable();
-        await pwW.write(exportedPassword);
-        await pwW.close();
-
-      } catch (fsErr) {
-        console.error('File-system save failed:', fsErr);
-        throw new Error('Please select a directory to securely store your private key.');
-      }
-
-      // 8. Navigate on success
+      // Navigate on success
       navigate('/dashboard');
 
     } catch (err) {
@@ -270,10 +219,6 @@ const RegistrationForm = () => {
             <p className="text-center text-gray-400 mb-8">
               Let's set up your account and start your journey!
             </p>
-
-            <div className="mb-6 p-4 bg-blue-500 bg-opacity-20 border border-blue-500 rounded-lg text-blue-300 text-center">
-              During registration, you'll need to select a directory for your personal secure chats, which rely on end-to-end encryption. This directory will safely store your private key, which is essential for enabling this encryption. Please avoid modifying or deleting anything in this directory, as doing so will disrupt your secure chats, disable the personal chat feature entirely, and, in the worst case, result in the permanent loss of your chats. To proceed, make sure to select the directory! In case you lose this directory, please email <a href="mailto:codeamigoes7@gmail.com" className="underline hover:text-blue-100">codeamigoes7@gmail.com</a> for assistance.
-            </div>
 
             <form
               onSubmit={handleSubmit}
