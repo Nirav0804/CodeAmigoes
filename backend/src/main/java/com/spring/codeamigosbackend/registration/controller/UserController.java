@@ -142,12 +142,10 @@ public class UserController {
             // Log JWT token to console
             System.out.println("Generated JWT Token: " + token);
             // Set JWT token as HttpOnly, Secure cookie with SameSite=Strict
-            Cookie cookie = new Cookie("jwtToken", token);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);  // only if HTTPS
-            cookie.setPath("/");
-            cookie.setMaxAge(86400);
-            response.addCookie(cookie);
+             String cookieValue = "jwtToken=" + token
+                    + "; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=86400";
+            response.setHeader("Set-Cookie", cookieValue); // ✅ Set manually
+
             System.out.println("Hello"+response.getHeader("Set-Cookie"));
             // Return user info (without token in body)
             GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
@@ -191,7 +189,7 @@ public class UserController {
         }
 
         // Expire the JWT cookie
-        String expiredCookie = "jwtToken=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0";
+        String expiredCookie = "jwtToken=; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=0";
         response.addHeader("Set-Cookie", expiredCookie);
 
         return ResponseEntity.ok("Logged out successfully");

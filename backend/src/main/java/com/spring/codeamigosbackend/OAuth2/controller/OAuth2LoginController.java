@@ -86,12 +86,10 @@ public class OAuth2LoginController {
 
         System.out.println("Generated JWT Token: " + jwtToken);
 
-        Cookie cookie = new Cookie("jwtToken", jwtToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);  // only if HTTPS
-        cookie.setPath("/");
-        cookie.setMaxAge(86400);
-        response.addCookie(cookie);
+     String cookieValue = "jwtToken=" + jwtToken
+                + "; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=86400";
+        response.setHeader("Set-Cookie", cookieValue); // ✅ Set manually
+
 
         logger.info("OAuth2 User Attributes: " + oAuth2User.getAttributes());
         GithubScoreRequest githubScoreRequest = new GithubScoreRequest();
