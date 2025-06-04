@@ -23,8 +23,11 @@ import org.json.JSONObject;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+// For ResponseEntity return type
 import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
+// For @PostMapping annotation
+// For @RequestBody annotation
 import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.Mac;
@@ -35,9 +38,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;  // For HttpServletResponse parameter
 import jakarta.servlet.http.Cookie;                   // For creating and manipulating cookies
-import org.springframework.http.ResponseEntity;     // For ResponseEntity return type
-import org.springframework.web.bind.annotation.PostMapping;  // For @PostMapping annotation
-import org.springframework.web.bind.annotation.RequestBody;  // For @RequestBody annotation
 
 
 // Also import your User class and jwtUtil as per your project structure
@@ -375,9 +375,30 @@ public class UserController {
     public ResponseEntity<?> getPublicKey(@PathVariable String githubUserName) {
         Optional<User> userOpt = userRepository.findByGithubUsername(githubUserName);
         if (userOpt.isPresent()) {
-            String decrypyPublickey = EncryptionUtil.decrypt(userOpt.get().getRsaPublicKey(),SECRET_KEY);
+            User user = userOpt.get();
+            if(user.getRsaPublicKey() != null){
+                String decrypyPublickey = EncryptionUtil.decrypt(userOpt.get().getRsaPublicKey(),SECRET_KEY);
 //            System.out.println(decrypyPublickey);
-            return ResponseEntity.ok(decrypyPublickey);
+                return ResponseEntity.ok(decrypyPublickey);
+            }else{
+                return ResponseEntity.status(404).body("RSA Public Key not found");
+            }
+
+        } else {
+            return ResponseEntity.status(404).body("User not found");
+        }
+    }
+
+    @PostMapping("/public_key/{githubUserName}")
+    public ResponseEntity<?> setPublicKey(@PathVariable String githubUserName,@RequestBody String publicPem) {
+        Optional<User> userOpt = userRepository.findByGithubUsername(githubUserName);
+        if (userOpt.isPresent()) {
+            String encryptedPublicKey = EncryptionUtil.encrypt(publicPem,SECRET_KEY);
+            System.out.println("EncryptedPublicKey"+encryptedPublicKey);
+            User user = userOpt.get();
+            user.setRsaPublicKey(encryptedPublicKey);
+            this.userRepository.save(user);
+            return ResponseEntity.ok(encryptedPublicKey);
         } else {
             return ResponseEntity.status(404).body("User not found");
         }

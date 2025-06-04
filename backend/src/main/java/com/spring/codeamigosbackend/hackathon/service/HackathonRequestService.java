@@ -156,6 +156,7 @@ public class HackathonRequestService {
             // Save the updated hackathon once after all changes
             Object cached = redisTemplate.opsForValue().get(hackathonRequest.getHackathonId());
             if (cached != null) {
+                // updates the hackathon as already present
                 redisTemplate.opsForValue().set(hackathonRequest.getHackathonId(), hackathon,86400, TimeUnit.SECONDS);
             }
             hackathonRepository.save(hackathon);
