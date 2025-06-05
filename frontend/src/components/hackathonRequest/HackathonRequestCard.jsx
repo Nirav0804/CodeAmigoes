@@ -62,7 +62,10 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
         `${API_BASE}/request/${hackathonId}/accepted`,
         {}, // PUT request body (empty object if not sending any data)
         {
-          withCredentials: true, // <-- This correctly sends cookies
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          }, // <-- This correctly sends cookies
         });
 
       setStatusx("accepted");
@@ -79,7 +82,10 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
         `${API_BASE}/request/${hackathonId}/rejected`,
         {}, // PUT request body (empty object if not sending any data)
         {
-          withCredentials: true, // <-- This correctly sends cookies
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          }, // <-- This correctly sends cookies
         }
 );
 
