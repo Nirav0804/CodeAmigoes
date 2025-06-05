@@ -56,8 +56,6 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
 
   const handleAccept = async () => {
     try {
-      console.log("hakathonId", hackathonId);
-      console.log("id", id);
       await axios.put(
         `${API_BASE}/request/${id}/accepted`,
         {}, // PUT request body (empty object if not sending any data)
@@ -76,8 +74,6 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
 
   const handleReject = async () => {
     try {
-      console.log("hakathonId", hackathonId);
-      console.log("id", id);    
       await axios.put(
         `${API_BASE}/request/${id}/rejected`,
         {}, // PUT request body (empty object if not sending any data)
