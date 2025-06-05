@@ -55,10 +55,17 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
   };
 
   const handleAccept = async () => {
+    console.log("hakathonId", hackathonId);
+    console.log("id", id);
     try {
-      await axios.put(`${API_BASE}/request/${id}/accepted`,{
-      withCredentials: true, // <-- This sends cookies!
-    });
+      await axios.put(
+  `${API_BASE}/request/${hackathonId}/accepted`,
+    {}, // PUT request body (empty object if not sending any data)
+    {
+      withCredentials: true, // <-- This correctly sends cookies
+    } 
+    );
+
       setStatusx("accepted");
     } catch (error) {
       console.error("Error updating request status:", error);
@@ -66,10 +73,17 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
   };
 
   const handleReject = async () => {
+    console.log("hakathonId", hackathonId);
+    console.log("id", id);    
     try {
-      await axios.put(`${API_BASE}/request/${id}/rejected`,{
-      withCredentials: true, // <-- This sends cookies!
-    });
+     await axios.put(
+  `${API_BASE}/request/${hackathonId}/rejected`,
+  {}, // PUT request body (empty object if not sending any data)
+  {
+    withCredentials: true, // <-- This correctly sends cookies
+  }
+);
+
       setStatusx("rejected");
     } catch (error) {
       console.error("Error updating request status:", error);
