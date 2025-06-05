@@ -85,7 +85,6 @@ const ProfileEditForm = () => {
     instagramusername: null,
     portfolioUrl: null,
     resumeUrl: null,
-    gifUrl: null,
     coverPhotoUrl: null,
     emoji: null,
   });
@@ -110,7 +109,6 @@ const ProfileEditForm = () => {
           instagramusername: profile.instagramusername,
           resumeUrl: profile.resumeUrl,
           portfolioUrl: profile.portfolioUrl,
-          gifUrl: profile.gifUrl,
           coverPhotoUrl: profile.coverPhotoUrl,
           emoji: profile.emoji,
         });
@@ -293,16 +291,6 @@ const ProfileEditForm = () => {
                   }
                   error={formErrors.portfolioUrl}
                 />
-
-                <Input
-                  label="GIF URL"
-                  icon={Film}
-                  placeholder="Enter GIF URL (optional)"
-                  value={formData.gifUrl}
-                  onChange={(e) => handleInputChange("gifUrl", e.target.value)}
-                  error={formErrors.gifUrl}
-                />
-
                 <Input
                   label="Cover Picture URL"
                   icon={Image}

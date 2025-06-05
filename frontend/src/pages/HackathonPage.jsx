@@ -14,15 +14,20 @@ const HackathonPage = () => {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          localStorage.setItem("latitude", latitude);
-          localStorage.setItem("longitude", longitude);
-        },
-        (error) => {
-          console.error("Error getting location:", error.message);
-        }
-      );
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        localStorage.setItem("latitude", latitude);
+        localStorage.setItem("longitude", longitude);
+      },
+      (error) => {
+        console.error("Error getting location:", error.message);
+      },
+      {
+        enableHighAccuracy: true,   // Ask for GPS/Wi-Fi scan if possible
+        timeout: 10000,             // Give it up to 10 seconds to find a fix
+        maximumAge: 0               // Don’t use a cached location
+      }
+    );
     }
   }, []);
 
