@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -49,6 +50,7 @@ public class SecurityConfig {
                                 "/","/api/users/login","/api/users/me", "/register/", "/oauth2/authorization/", "/login/oauth2/code/", "/request/", "/requests/","/api/users/register","/api/users/ping"
                         ).permitAll()
                         .requestMatchers(PUBLIC_URLS).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/oauth2/success").authenticated()
                         .requestMatchers("/api/hackathons/recommended-hackathons", "/api/hackathons/nearby-hackathons")
                         .hasAuthority("PAID")
