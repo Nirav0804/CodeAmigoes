@@ -101,11 +101,7 @@ const ProfileEditForm = () => {
 
         const profile = response.data;
         setFormData({
-          username: null,
-          displayName: profile.displayName,
           email: profile.email,
-          collegeName: profile.collegeName,
-          githubUsername: profile.githubUsername,
           leetcodeUsername: profile.leetcodeUsername,
           codechefUsername: profile.codechefUsername,
           bio: profile.bio,
@@ -177,9 +173,8 @@ const ProfileEditForm = () => {
           },
         }
       );
-
-
       setSuccess(true);
+      navigate(`/dashboard/profile/${username}`)
       // Optionally redirect or show success message
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update profile");
@@ -196,9 +191,9 @@ const ProfileEditForm = () => {
           {/* Form Header */}
           <div className="p-6 border-b border-gray-800">
             <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
-            <p className="mt-1 text-gray-400">
-              Update your profile information and social links
-            </p>
+              <p className="mt-1 text-gray-400">
+                Update your profile information and social links
+              </p>
           </div>
 
           {/* Form Content */}
@@ -218,40 +213,6 @@ const ProfileEditForm = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <Input
-                  label="Username"
-                  icon={User}
-                  placeholder="Enter new username (optional)"
-                  value={formData.username}
-                  onChange={(e) =>
-                    handleInputChange("username", e.target.value)
-                  }
-                  error={formErrors.username}
-                />
-
-                <Input
-                  label="Password"
-                  icon={Lock}
-                  type="password"
-                  placeholder="Enter new password (optional)"
-                  value={formData.password}
-                  onChange={(e) =>
-                    handleInputChange("password", e.target.value)
-                  }
-                  error={formErrors.password}
-                />
-
-                <Input
-                  label="Display Name"
-                  icon={User}
-                  placeholder="Enter display name (optional)"
-                  value={formData.displayName}
-                  onChange={(e) =>
-                    handleInputChange("displayName", e.target.value)
-                  }
-                  error={formErrors.displayName}
-                />
-
-                <Input
                   label="Email"
                   icon={Mail}
                   type="email"
@@ -260,28 +221,6 @@ const ProfileEditForm = () => {
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   error={formErrors.email}
                 />
-
-                <Input
-                  label="College Name"
-                  icon={Building}
-                  placeholder="Enter college name (optional)"
-                  value={formData.collegeName}
-                  onChange={(e) =>
-                    handleInputChange("collegeName", e.target.value)
-                  }
-                  error={formErrors.collegeName}
-                />
-
-                <Input
-                  label="GitHub Username"
-                  icon={Github}
-                  placeholder="Enter GitHub username (optional)"
-                  value={formData.githubUsername}
-                  onChange={(e) =>
-                    handleInputChange("githubUsername", e.target.value)
-                  }
-                />
-
                 <Input
                   label="LeetCode Username"
                   icon={Code}
