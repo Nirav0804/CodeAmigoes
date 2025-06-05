@@ -59,7 +59,7 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
       console.log("hakathonId", hackathonId);
       console.log("id", id);
       await axios.put(
-        `${API_BASE}/request/${hackathonId}/accepted`,
+        `${API_BASE}/request/${id}/accepted`,
         {}, // PUT request body (empty object if not sending any data)
         {
           withCredentials: true,
@@ -79,7 +79,7 @@ const HackathonRequestCard = ({ id, hackathonTitle, requestedBy, hackathonId, re
       console.log("hakathonId", hackathonId);
       console.log("id", id);    
       await axios.put(
-        `${API_BASE}/request/${hackathonId}/rejected`,
+        `${API_BASE}/request/${id}/rejected`,
         {}, // PUT request body (empty object if not sending any data)
         {
           withCredentials: true,
