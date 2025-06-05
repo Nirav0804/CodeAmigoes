@@ -58,8 +58,8 @@ const HackathonRequestPage = () => {
         <main className="flex-1 bg-transparent">
           <div className="container mx-auto p-4">
             {filteredRequests.length === 0 ? (
-              <div className="text-center text-xl font-semibold mt-4">
-                No {activeTab} requests found
+              <div className="text-center text-xl font-semibold mt-4 text-white">
+                
               </div>
             ) : (
               filteredRequests.map((request) => (
