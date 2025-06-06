@@ -90,7 +90,7 @@ public class HackathonRequestService {
                     "<p><strong>⏳ Requested At:</strong> " + formattedDate + "</p>" +
                     "</div>" +
                     "<p style='text-align: center; margin-top: 20px;'>" +
-                    "<a href='" + url + "/dashboard/hackathons/" + request.getHackathonId() +
+                    "<a href='" + url + "/dashboard/hackathons/requests"+
                     "' style='background-color: #1a73e8; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>" +
                     "Review Request & Manage Hackathon</a>" +
                     "</p>" +
@@ -194,7 +194,7 @@ public class HackathonRequestService {
             String body = "<div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border-radius: 8px; border: 1px solid #ddd;'>" +
                     headerMessage +
                     "<p style='font-size: 16px;'>Dear <strong>" + requestedUser.getUsername() + "</strong>,</p>" +
-                    "<p style='font-size: 16px;'>Your request to join <strong>" + request.getHackathonTitle() + "</strong> has been " +
+                    "<p style='font-size: 16px;'>Your request to join <strong>" + request.getHackathonTitle() +""+ "</strong> has been " +
                     "<strong style='color: " + statusColor + ";'>" + statusText + "</strong>.</p>" +
                     "<div style='background-color: #f9f9f9; padding: 10px; border-radius: 6px;'>" +
                     "<p><strong>📌 Hackathon:</strong> " + request.getHackathonTitle() + "</p>" +
@@ -205,12 +205,12 @@ public class HackathonRequestService {
                     (isAccepted ?
                             "<p style='font-size: 16px;'>🎯 Get ready to innovate! Your request is accepted!!</p>" +
                                     "<p style='font-size: 16px;'>Access the hackathon details and connect with your team here:</p>" +
-                                    "<p style='text-align: center;'><a href='" + url + "/dashboard/hackathons/" + request.getHackathonId() +
+                                    "<p style='text-align: center;'><a href='" + url + "/dashboard/hackathons/requests/status" + request.getHackathonId() +
                                     "' style='background-color: #1a73e8; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>View Hackathon</a></p>"
                             :
                             "<p style='font-size: 16px;'>We appreciate your interest! Although this request wasn’t approved, keep an eye on upcoming hackathons. 🚀</p>" +
                                     "<p style='font-size: 16px;'>Find more opportunities to showcase your skills:</p>" +
-                                    "<p style='text-align: center;'><a href='" + url + "/dashboard/hackathons' style='background-color: #ff9800; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>Explore More Hackathons</a></p>") +
+                                    "<p style='text-align: center;'><a href='" + url + "/dashboard/hackathons/requests/status' style='background-color: #ff9800; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: inline-block;'>Explore More Hackathons</a></p>") +
                     "<br><p style='font-size: 16px;'>Best Regards,<br><strong>CodeAmigos Team</strong></p>" +
                     "</div>";
 

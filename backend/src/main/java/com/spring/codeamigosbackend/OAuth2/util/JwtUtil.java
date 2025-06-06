@@ -16,7 +16,7 @@ public class JwtUtil {
     private static Dotenv dotenv = Dotenv.load();
     private static final String SECRET_KEY = dotenv.get("JWT_SECRET_KEY"); // Store in env variable
     private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 24 hour
+    private static final long EXPIRATION_TIME = 5 * 24 * 60 * 60 * 1000; // 5 days
 
     public static String generateToken(String id, String username, String email,String status) {
         Map<String, Object> claims = new HashMap<>();
@@ -41,7 +41,6 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
 
 
     public static String getUserIdFromToken(String token) {

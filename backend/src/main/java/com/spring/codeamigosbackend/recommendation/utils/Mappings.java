@@ -9,9 +9,8 @@ import java.util.Map;
 import java.util.function.BiPredicate;
 
 public class Mappings {
-    // Helper class to store dependency-framework mapping
     @Getter @Setter @ToString @AllArgsConstructor @NoArgsConstructor
-    public static class DependencyFramework { // dependency to framework mapping ( react -> React )
+    public static class DependencyFramework {
         String dependency;
         String framework;
         BiPredicate<String, String> checker;
@@ -22,58 +21,44 @@ public class Mappings {
         LANGUAGE_TO_CONFIG.put("Java", Arrays.asList("pom.xml", "build.gradle"));
         LANGUAGE_TO_CONFIG.put("JavaScript", Arrays.asList("package.json"));
         LANGUAGE_TO_CONFIG.put("TypeScript", Arrays.asList("package.json"));
-        LANGUAGE_TO_CONFIG.put("Python", Arrays.asList("requirements.txt", "pyproject.toml"));
+        LANGUAGE_TO_CONFIG.put("Python", Arrays.asList("requirements.txt", "pyproject.toml", "setup.py"));
         LANGUAGE_TO_CONFIG.put("PHP", Arrays.asList("composer.json"));
         LANGUAGE_TO_CONFIG.put("Ruby", Arrays.asList("Gemfile"));
         LANGUAGE_TO_CONFIG.put("Go", Arrays.asList("go.mod"));
         LANGUAGE_TO_CONFIG.put("Rust", Arrays.asList("Cargo.toml"));
         LANGUAGE_TO_CONFIG.put("Swift", Arrays.asList("Package.swift"));
         LANGUAGE_TO_CONFIG.put("Dart", Arrays.asList("pubspec.yaml"));
-        LANGUAGE_TO_CONFIG.put("C#", Arrays.asList("project.json", "csproj"));
+        LANGUAGE_TO_CONFIG.put("C#", Arrays.asList("csproj")); // Removed project.json
+        LANGUAGE_TO_CONFIG.put("GDScript", Arrays.asList("project.godot"));
+        LANGUAGE_TO_CONFIG.put("C++", Arrays.asList("uproject", "CMakeLists.txt"));
+        LANGUAGE_TO_CONFIG.put("Kotlin", Arrays.asList("build.gradle", "pom.xml"));
+        LANGUAGE_TO_CONFIG.put("Scala", Arrays.asList("build.sbt"));
+        LANGUAGE_TO_CONFIG.put("Elixir", Arrays.asList("mix.exs"));
     }
-    // Config file to dependency-framework mapping
+
     public static final Map<String, List<DependencyFramework>> CONFIG_TO_DEPENDENCY_FRAMEWORK = new HashMap<>();
     static {
-        // Checker for package.json: look for dependency in quotes
         BiPredicate<String, String> packageJsonChecker = (content, dep) -> content.contains("\"" + dep + "\"");
-
-        // Checker for pom.xml: look for dependency within <artifactId> tags
         BiPredicate<String, String> pomXmlChecker = (content, dep) -> content.contains("<artifactId>" + dep + "</artifactId>");
-
-        // Checker for build.gradle: look for dependency in single or double quotes
-        BiPredicate<String, String> gradleChecker = (content, dep) ->
-                content.contains("'" + dep + "'") || content.contains("\"" + dep + "\"");
-
-        // Checker for requirements.txt: look for dependency as a line
+        BiPredicate<String, String> gradleChecker = (content, dep) -> content.contains(dep);
         BiPredicate<String, String> requirementsChecker = (content, dep) -> content.contains(dep);
-
-        // Checker for pyproject.toml: look for dependency in quotes
         BiPredicate<String, String> pyprojectChecker = (content, dep) -> content.contains("\"" + dep + "\"");
-
-        // Checker for composer.json: look for dependency in quotes
+        BiPredicate<String, String> setupPyChecker = (content, dep) -> content.contains("'" + dep + "'") || content.contains("\"" + dep + "\"");
         BiPredicate<String, String> composerChecker = (content, dep) -> content.contains("\"" + dep + "\"");
-
-        // Checker for Gemfile: look for gem dependency
         BiPredicate<String, String> gemfileChecker = (content, dep) -> content.contains("gem \"" + dep + "\"");
-
-        // Checker for go.mod: look for dependency
         BiPredicate<String, String> goModChecker = (content, dep) -> content.contains(dep);
-
-        // Checker for Cargo.toml: look for dependency in quotes
         BiPredicate<String, String> cargoChecker = (content, dep) -> content.contains(dep);
-
-        // Checker for Package.swift: look for dependency
         BiPredicate<String, String> swiftChecker = (content, dep) -> content.contains(dep);
-
-        // Checker for pubspec.yaml: look for dependency
         BiPredicate<String, String> pubspecChecker = (content, dep) -> content.contains(dep + ":");
-
-        // Checker for .csproj/project.json: look for dependency
-        BiPredicate<String, String> csprojChecker = (content, dep) -> content.contains("<PackageReference Include=\"" + dep + "\"");
-
+        BiPredicate<String, String> csprojChecker = (content, dep) -> content.contains("<PackageReference Include=\"" + dep + "\"") || content.contains("<Reference Include=\"" + dep + "\"");
+        BiPredicate<String, String> godotChecker = (content, dep) -> content.contains("[application]") || content.contains("config_version");
+        BiPredicate<String, String> uprojectChecker = (content, dep) -> content.contains("\"EngineAssociation\"") || content.contains("\"Modules\"");
+        BiPredicate<String, String> sbtChecker = (content, dep) -> content.contains(dep);
+        BiPredicate<String, String> mixChecker = (content, dep) -> content.contains(":" + dep);
 
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("package.json", Arrays.asList(
                 new DependencyFramework("react", "React", packageJsonChecker),
+                new DependencyFramework("react-native", "React Native", packageJsonChecker),
                 new DependencyFramework("express", "Express", packageJsonChecker),
                 new DependencyFramework("next", "Next.js", packageJsonChecker),
                 new DependencyFramework("vue", "Vue.js", packageJsonChecker),
@@ -81,73 +66,80 @@ public class Mappings {
                 new DependencyFramework("nestjs", "NestJS", packageJsonChecker),
                 new DependencyFramework("@angular/core", "Angular", packageJsonChecker),
                 new DependencyFramework("svelte", "Svelte", packageJsonChecker),
-                new DependencyFramework("remix", "Remix", packageJsonChecker)
+                new DependencyFramework("remix", "Remix", packageJsonChecker),
+                new DependencyFramework("phaser", "Phaser", packageJsonChecker),
+                new DependencyFramework("gatsby", "Gatsby", packageJsonChecker),
+                new DependencyFramework("ember-cli", "Ember.js", packageJsonChecker)
         ));
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("pom.xml", Arrays.asList(
-                new DependencyFramework("spring-boot-starter-web", "Spring Boot", pomXmlChecker)
+                new DependencyFramework("spring-boot-starter-web", "Spring Boot", pomXmlChecker),
+                new DependencyFramework("libgdx", "LibGDX", pomXmlChecker),
+                new DependencyFramework("ktor-server-core", "Ktor", pomXmlChecker)
         ));
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("build.gradle", Arrays.asList(
-                new DependencyFramework("spring-boot-starter-web", "Spring Boot", gradleChecker)
+                new DependencyFramework("spring-boot-starter-web", "Spring Boot", gradleChecker),
+                new DependencyFramework("com.badlogic.gdx", "LibGDX", gradleChecker),
+                new DependencyFramework("io.ktor", "Ktor", gradleChecker)
         ));
-        // Python frameworks (requirements.txt)
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("requirements.txt", Arrays.asList(
                 new DependencyFramework("flask", "Flask", requirementsChecker),
                 new DependencyFramework("django", "Django", requirementsChecker),
                 new DependencyFramework("fastapi", "FastAPI", requirementsChecker)
         ));
-
-        // Python frameworks (pyproject.toml)
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("pyproject.toml", Arrays.asList(
                 new DependencyFramework("flask", "Flask", pyprojectChecker),
                 new DependencyFramework("django", "Django", pyprojectChecker),
                 new DependencyFramework("fastapi", "FastAPI", pyprojectChecker)
         ));
-
-        // PHP frameworks (composer.json)
+        CONFIG_TO_DEPENDENCY_FRAMEWORK.put("setup.py", Arrays.asList(
+                new DependencyFramework("flask", "Flask", setupPyChecker),
+                new DependencyFramework("django", "Django", setupPyChecker),
+                new DependencyFramework("fastapi", "FastAPI", setupPyChecker)
+        ));
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("composer.json", Arrays.asList(
                 new DependencyFramework("laravel/framework", "Laravel", composerChecker)
         ));
-
-        // Ruby frameworks (Gemfile)
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("Gemfile", Arrays.asList(
                 new DependencyFramework("rails", "Ruby on Rails", gemfileChecker)
         ));
-
-        // Go frameworks (go.mod)
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("go.mod", Arrays.asList(
                 new DependencyFramework("github.com/gin-gonic/gin", "Gin", goModChecker)
         ));
-
-        // Rust frameworks (Cargo.toml)
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("Cargo.toml", Arrays.asList(
                 new DependencyFramework("actix-web", "Actix Web", cargoChecker),
                 new DependencyFramework("rocket", "Rocket", cargoChecker)
         ));
-
-        // Swift frameworks (Package.swift)
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("Package.swift", Arrays.asList(
                 new DependencyFramework("github.com/vapor/vapor", "Vapor", swiftChecker)
         ));
-
-        // Dart/Flutter frameworks (pubspec.yaml)
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("pubspec.yaml", Arrays.asList(
                 new DependencyFramework("flutter", "Flutter", pubspecChecker)
         ));
-
-        // C# frameworks (csproj/project.json)
         CONFIG_TO_DEPENDENCY_FRAMEWORK.put("csproj", Arrays.asList(
-                new DependencyFramework("Microsoft.AspNetCore", "ASP.NET Core", csprojChecker)
+                new DependencyFramework("Microsoft.AspNetCore", "ASP.NET Core", csprojChecker),
+                new DependencyFramework("UnityEngine", "Unity", csprojChecker)
         ));
-        CONFIG_TO_DEPENDENCY_FRAMEWORK.put("project.json", Arrays.asList(
-                new DependencyFramework("Microsoft.AspNetCore", "ASP.NET Core", csprojChecker)
+        CONFIG_TO_DEPENDENCY_FRAMEWORK.put("project.godot", Arrays.asList(
+                new DependencyFramework("godot", "Godot", godotChecker)
         ));
-
-
+        CONFIG_TO_DEPENDENCY_FRAMEWORK.put("uproject", Arrays.asList(
+                new DependencyFramework("UnrealEngine", "Unreal Engine", uprojectChecker)
+        ));
+        CONFIG_TO_DEPENDENCY_FRAMEWORK.put("CMakeLists.txt", Arrays.asList(
+                new DependencyFramework("UnrealEngine", "Unreal Engine", uprojectChecker) // Fallback for C++
+        ));
+        CONFIG_TO_DEPENDENCY_FRAMEWORK.put("build.sbt", Arrays.asList(
+                new DependencyFramework("com.typesafe.play", "Play Framework", sbtChecker)
+        ));
+        CONFIG_TO_DEPENDENCY_FRAMEWORK.put("mix.exs", Arrays.asList(
+                new DependencyFramework("phoenix", "Phoenix", mixChecker)
+        ));
     }
-    // Framework to file extensions mapping
+
     public static final Map<String, List<String>> FRAMEWORK_TO_FILE_EXTENSIONS = new HashMap<>();
     static {
         FRAMEWORK_TO_FILE_EXTENSIONS.put("React", Arrays.asList(".jsx", ".tsx"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("React Native", Arrays.asList(".jsx", ".tsx"));
         FRAMEWORK_TO_FILE_EXTENSIONS.put("Express", Arrays.asList(".js", ".ts"));
         FRAMEWORK_TO_FILE_EXTENSIONS.put("Spring Boot", Arrays.asList(".java"));
         FRAMEWORK_TO_FILE_EXTENSIONS.put("Next.js", Arrays.asList(".jsx", ".tsx"));
@@ -168,5 +160,15 @@ public class Mappings {
         FRAMEWORK_TO_FILE_EXTENSIONS.put("Vapor", Arrays.asList(".swift"));
         FRAMEWORK_TO_FILE_EXTENSIONS.put("Flutter", Arrays.asList(".dart"));
         FRAMEWORK_TO_FILE_EXTENSIONS.put("ASP.NET Core", Arrays.asList(".cs"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("Unity", Arrays.asList(".cs"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("Godot", Arrays.asList(".gd", ".cs"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("Phaser", Arrays.asList(".js", ".ts"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("LibGDX", Arrays.asList(".java"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("Unreal Engine", Arrays.asList(".cpp", ".h"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("Ktor", Arrays.asList(".kt"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("Play Framework", Arrays.asList(".scala"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("Phoenix", Arrays.asList(".ex", ".exs"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("Gatsby", Arrays.asList(".js", ".tsx"));
+        FRAMEWORK_TO_FILE_EXTENSIONS.put("Ember.js", Arrays.asList(".ts", ".js"));
     }
 }

@@ -87,7 +87,7 @@ public class GithubApiService {
                   name
                   target {
                     ... on Commit {
-                      history(first: 100, author: {emails: ["%s"]}) {
+                      history(first: 150, author: {emails: ["%s"]}) {
                         edges {
                           node {
                             oid
@@ -101,7 +101,7 @@ public class GithubApiService {
                     }
                   }
                 }
-                languages(first: 2) {
+                languages(first: 3 ,  orderBy: {field: SIZE, direction: DESC}) {
                   edges {
                     size
                   }
