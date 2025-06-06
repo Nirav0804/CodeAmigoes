@@ -80,14 +80,14 @@ public class GithubApiService {
         return String.format("""
         query {
           user(login: "%s") {
-            repositories(first: 15, orderBy: {field: PUSHED_AT, direction: DESC}) {
+            repositories(first: 25, orderBy: {field: PUSHED_AT, direction: DESC}) {
               nodes {
                 name
                 defaultBranchRef {
                   name
                   target {
                     ... on Commit {
-                      history(first: 150, author: {emails: ["%s"]}) {
+                      history(first: 100, author: {emails: ["%s"]}) {
                         edges {
                           node {
                             oid
