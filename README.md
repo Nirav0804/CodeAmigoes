@@ -85,9 +85,9 @@ Our goal: **Make hackathon team building seamless and rewarding.**
 ### ⚡ Performance
 
 - **Redis Caching**\
-  Optimized hackathon fetching 70% faster, ensuring hackathon data loads almost instantly.
+  Optimized hackathon fetching 50% faster, ensuring hackathon data loads almost instantly.
 - **Executor Framework (Java)**\
-  Speeds up framework-detection calculations by 80%, providing near real-time framework detection.
+  Speeds up framework-detection calculations by 70%, providing near real-time framework detection.
 
 ---
 
