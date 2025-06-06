@@ -20,45 +20,44 @@ function formatMessageWithLinks(text) {
 
 const gradientHeader = "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400";
 
-// Custom open button inspired by your image
+// Floating open button
 function ChatbotOpenButton({ onClick }) {
   return (
-<motion.button
-  whileHover={{ scale: 1.08, boxShadow: "0 0 0 8px rgba(124,58,237,0.15)" }}
-  whileTap={{ scale: 0.96 }}
-  onClick={onClick}
-  aria-label="Open chatbot"
-  className="w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-all border-none outline-none focus:outline-none"
-  style={{
-    background: "radial-gradient(circle at 70% 30%, #60a5fa 0%,rgb(128, 103, 206) 60%, #34d399 100%)",
-    boxShadow: "0 4px 24px 0 rgba(80, 70, 229, 0.25)",
-    border: "none",
-  }}
->
-  <motion.span
-    animate={{ rotate: 360 }}
-    transition={{
-      repeat: Infinity,
-      duration: 2,
-      ease: "linear",
-    }}
-    className="block"
-  >
-    <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
-      <circle cx="19" cy="19" r="16" fill="#181C2F" />
-      <rect x="12" y="13" width="14" height="12" rx="6" fill="url(#botGradient)" />
-      <rect x="15" y="17" width="2" height="4" rx="1" fill="#fff" opacity="0.85" />
-      <rect x="21" y="17" width="2" height="4" rx="1" fill="#fff" opacity="0.85" />
-      <defs>
-        <linearGradient id="botGradient" x1="12" y1="13" x2="26" y2="25" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#a78bfa" />
-          <stop offset="1" stopColor="#60a5fa" />
-        </linearGradient>
-      </defs>
-    </svg>
-  </motion.span>
-</motion.button>
-
+    <motion.button
+      whileHover={{ scale: 1.08, boxShadow: "0 0 0 8px rgba(124,58,237,0.15)" }}
+      whileTap={{ scale: 0.96 }}
+      onClick={onClick}
+      aria-label="Open chatbot"
+      className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-xl transition-all border-none outline-none focus:outline-none"
+      style={{
+        background: "radial-gradient(circle at 70% 30%, #60a5fa 0%,rgb(128, 103, 206) 60%, #34d399 100%)",
+        boxShadow: "0 4px 24px 0 rgba(80, 70, 229, 0.25)",
+        border: "none",
+      }}
+    >
+      <motion.span
+        animate={{ rotate: 360 }}
+        transition={{
+          repeat: Infinity,
+          duration: 2,
+          ease: "linear",
+        }}
+        className="block"
+      >
+        <svg width="34" height="34" viewBox="0 0 38 38" fill="none">
+          <circle cx="19" cy="19" r="16" fill="#181C2F" />
+          <rect x="12" y="13" width="14" height="12" rx="6" fill="url(#botGradient)" />
+          <rect x="15" y="17" width="2" height="4" rx="1" fill="#fff" opacity="0.85" />
+          <rect x="21" y="17" width="2" height="4" rx="1" fill="#fff" opacity="0.85" />
+          <defs>
+            <linearGradient id="botGradient" x1="12" y1="13" x2="26" y2="25" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#a78bfa" />
+              <stop offset="1" stopColor="#60a5fa" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </motion.span>
+    </motion.button>
   );
 }
 
@@ -71,6 +70,7 @@ const Chatbot = () => {
   const [isBotTyping, setIsBotTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Scroll to bottom on new message
   useEffect(() => {
     if (isOpen && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -99,19 +99,17 @@ const Chatbot = () => {
 
   const handleSend = async () => {
     if (!userInput.trim()) return;
-
-    // console.log("inside handlesned ")
     const userMessage = { sender: "user", text: userInput };
     setMessages((prev) => [...prev, userMessage]);
     setUserInput("");
     setIsBotTyping(true);
-    // Generate and store session_id in localStorage or sessionStorage
+
+    // Session logic
     const generateSessionId = () => {
       const sessionId = `session-${Date.now()}-${Math.random()}`;
       localStorage.setItem("session_id", sessionId);
       return sessionId;
     };
-    // Call this only if session_id is not already set
     const getSessionId = () => {
       return localStorage.getItem("session_id") || generateSessionId();
     };
@@ -121,8 +119,7 @@ const Chatbot = () => {
         query: userInput,
         user_id: "default_user"
       };
-      // console.log("before api hit ")
-      // ## Change the url here 
+      // Replace with your API endpoint
       const response = await fetch("https://api.codeamigos.tech/api/chatbot/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -131,7 +128,6 @@ const Chatbot = () => {
       });
 
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
-      
       const text = await response.text();
       let botReplyText;
       try {
@@ -139,7 +135,6 @@ const Chatbot = () => {
       } catch {
         botReplyText = text || "Sorry, I couldn't understand.";
       }
-      
       setMessages((prev) => [...prev, { sender: "bot", text: botReplyText }]);
     } catch (error) {
       setMessages((prev) => [
@@ -151,8 +146,9 @@ const Chatbot = () => {
     }
   };
 
+  // Responsive width/height for mobile and desktop
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div className="fixed bottom-4 right-4 z-50">
       {!isOpen ? (
         <ChatbotOpenButton onClick={() => setIsOpen(true)} />
       ) : (
@@ -160,8 +156,9 @@ const Chatbot = () => {
           initial="hidden"
           animate="visible"
           variants={chatbotVariants}
-          className="w-[350px] max-h-[500px] bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-2xl flex flex-col"
+          className="w-[95vw] max-w-[380px] h-[70vh] sm:w-[350px] sm:max-w-[380px] sm:h-[500px] bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-2xl flex flex-col"
         >
+          {/* Header */}
           <div className="p-4 border-b border-gray-700/50 flex justify-between items-center bg-gradient-to-r from-blue-900/30 to-purple-900/30">
             <div className="flex items-center gap-2">
               <motion.img
@@ -181,6 +178,7 @@ const Chatbot = () => {
               </svg>
             </button>
           </div>
+          {/* Messages */}
           <div className="flex-1 p-3 overflow-y-auto space-y-2 text-sm bg-gradient-to-b from-[#0f172a] to-[#1e293b]">
             {messages.map((msg, idx) => (
               <motion.div
@@ -190,7 +188,7 @@ const Chatbot = () => {
                 className={`p-3 rounded-2xl max-w-[85%] relative shadow-md ${
                   msg.sender === "user"
                     ? "bg-gray-700/80 text-white self-end ml-auto backdrop-blur-sm"
-      : "bg-gradient-to-br from-purple-300/90 via-purple-300/90 to-fuchsia-300/90 text-gray-900 self-start"
+                    : "bg-gradient-to-br from-purple-300/90 via-purple-300/90 to-fuchsia-300/90 text-gray-900 self-start"
                 }`}
               >
                 <div
@@ -213,6 +211,7 @@ const Chatbot = () => {
             )}
             <div ref={messagesEndRef} />
           </div>
+          {/* Input */}
           <div className="p-3 border-t border-gray-700/50 bg-gradient-to-r from-blue-900/30 to-purple-900/30">
             <div className="flex items-center gap-2">
               <input
