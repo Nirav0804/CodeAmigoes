@@ -144,9 +144,9 @@ const HackathonRegistrationForm = () => {
     { value: "Spring Boot", label: "Spring Boot" },
     { value: "React", label: "React" },
     { value: "Express", label: "Express" },
-    { value: "Next.js", label: "Next.js" },
-    { value: "Vue.js", label: "Vue.js" },
-    { value: "Nuxt.js", label: "Nuxt.js" },
+    { value: "NextJs", label: "Next.js" },
+    { value: "VueJs", label: "Vue.js" },
+    { value: "NuxtJs", label: "Nuxt.js" },
     { value: "NestJS", label: "NestJS" },
     { value: "Angular", label: "Angular" },
     { value: "Svelte", label: "Svelte" },
@@ -161,7 +161,7 @@ const HackathonRegistrationForm = () => {
     { value: "Rocket", label: "Rocket" },
     { value: "Vapor", label: "Vapor" },
     { value: "Flutter", label: "Flutter" },
-    { value: "ASP.NET Core", label: "ASP.NET Core" },
+    { value: "ASP Dot NET Core", label: "ASP.NET Core" },
   ];
 
   const getAvailableOptions = (currentIndex) => {
