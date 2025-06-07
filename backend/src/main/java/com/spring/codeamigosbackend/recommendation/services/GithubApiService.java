@@ -37,13 +37,13 @@ public class GithubApiService {
         JsonNode data = response.getBody().get("data");
         logger.info("Github API response: " + data.toString());
         if (data == null) {
-            System.out.println("No data found in response");
+            logger.info("No data found in response");
             return new ArrayList<>();
         }
 
         JsonNode repositories = data.get("user").get("repositories").get("nodes");
         if (repositories == null) {
-            System.out.println("No repositories found for user: " + username);
+            logger.info("No repositories found for user: " + username);
             return new ArrayList<>();
         }
 
@@ -52,7 +52,7 @@ public class GithubApiService {
             String name = repo.get("name").asText();
             JsonNode defaultBranchRef = repo.get("defaultBranchRef");
             if (defaultBranchRef == null || defaultBranchRef.get("name") == null) {
-                System.out.println("Skipping repo " + name + ": No default branch found");
+                logger.info("Skipping repo " + name + ": No default branch found");
                 continue;
             }
             String defaultBranch = defaultBranchRef.get("name").asText();
@@ -120,28 +120,19 @@ public class GithubApiService {
         """, username, email);
     }
 
-    /**
-     * Processes multiple repositories in parallel to detect frameworks.
-     * Uses a thread pool with a capped number of threads for framework detection.
-     * @param repositories List of repositories to process
-     * @param owner The repository owner
-     * @param accessToken GitHub access token for authentication
-     * @return Map of repository to its detected frameworks
-     */
     public Map<RepositoryInfo, List<String>> getFrameworksForRepositories(List<RepositoryInfo> repositories, String owner, String accessToken) {
-        int threadPoolSize = Math.min(repositories.size(), 10); // Cap at 10 threads for framework detection
+        int threadPoolSize = Math.min(repositories.size(), 10);
         ExecutorService frameworkExecutor = Executors.newFixedThreadPool(threadPoolSize);
         Map<RepositoryInfo, List<String>> repoToFrameworks = new ConcurrentHashMap<>();
         List<Future<Void>> frameworkFutures = new ArrayList<>();
 
-        // THis part executed concurrently
         for (RepositoryInfo repo : repositories) {
             Callable<Void> task = () -> {
                 try {
                     List<String> frameworks = getFrameworkFromRepository(repo, owner, accessToken);
                     repoToFrameworks.put(repo, frameworks);
                 } catch (Exception e) {
-                    System.err.println("Error processing repo " + repo.getName() + ": " + e.getMessage());
+                    logger.error("Error processing repo " + repo.getName() + ": " + e.getMessage(), e);
                     repoToFrameworks.put(repo, Collections.emptyList());
                 }
                 return null;
@@ -149,51 +140,50 @@ public class GithubApiService {
             frameworkFutures.add(frameworkExecutor.submit(task));
         }
 
-        // This waiting logic is serializable
-        // Once main thread gets the output from the first thread then only does it go for the second one
         for (Future<Void> future : frameworkFutures) {
             try {
-                future.get(30, TimeUnit.SECONDS); // Timeout after 30 seconds per task
+                future.get(60, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
-                System.err.println("Task timed out: " + e.getMessage());
+                logger.error("Task timed out: " + e.getMessage(), e);
             } catch (Exception e) {
-                System.err.println("Error retrieving result: " + e.getMessage());
+                logger.error("Error retrieving result: " + e.getMessage(), e);
             }
         }
 
-        frameworkExecutor.shutdown(); // This is just a advisory method .
+        frameworkExecutor.shutdown();
         try {
-            if (!frameworkExecutor.awaitTermination(60, TimeUnit.SECONDS)) { // If this returns false then shut down immediately meaning if the task not completed in the given time then just simply shutdown
-                frameworkExecutor.shutdownNow();  // This shuts down the frameworkExecutor service then and there
+            if (!frameworkExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
+                frameworkExecutor.shutdownNow();
             }
         } catch (InterruptedException e) {
-//          // If error then also shut down the frameworkExecutor service then and there .
             frameworkExecutor.shutdownNow();
-//            Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt();
         }
         return repoToFrameworks;
     }
 
-    /**
-     * Counts the number of files associated with each framework across repositories.
-     * Processes commits in parallel with a thread pool sized based on the number of commits.
-     * @param repoToFrameworks Map of repositories to their detected frameworks
-     * @param owner The repository owner
-     * @param accessToken GitHub access token for authentication
-     * @return Map of framework to the count of associated files
-     */
     public Map<String, Integer> countFrameworkFiles(Map<RepositoryInfo, List<String>> repoToFrameworks, String owner, String accessToken) {
+        logger.info("Starting framework file count for owner: {}, repositories: {}", owner, repoToFrameworks.size());
         Map<String, Set<String>> globalFrameworkToFiles = new ConcurrentHashMap<>();
 
         for (Map.Entry<RepositoryInfo, List<String>> entry : repoToFrameworks.entrySet()) {
             RepositoryInfo repo = entry.getKey();
             List<String> frameworks = entry.getValue();
 
-            if (frameworks.isEmpty() || repo.getCommitShas().isEmpty()) {
-                continue; // Skip repositories with no frameworks or commits
+            if (frameworks.isEmpty()) {
+                logger.warn("Skipping repository {}: No frameworks found", repo.getName());
+                continue;
+            }
+            if (repo.getCommitShas().isEmpty()) {
+                logger.warn("Skipping repository {}: No commits found", repo.getName());
+                continue;
             }
 
-            int commitThreadPoolSize = Math.min(repo.getCommitShas().size(), 100); // Cap at 100 threads for commit processing
+            logger.debug("Processing repository: {}, frameworks: {}, commits: {}",
+                    repo.getName(), frameworks, repo.getCommitShas().size());
+
+            int commitThreadPoolSize = Math.min(repo.getCommitShas().size(), 100);
+            logger.debug("Creating commit executor with {} threads for repository {}", commitThreadPoolSize, repo.getName());
             ExecutorService commitExecutor = Executors.newFixedThreadPool(commitThreadPoolSize);
             List<Future<Void>> commitFutures = new ArrayList<>();
 
@@ -204,22 +194,35 @@ public class GithubApiService {
             for (String commitSha : repo.getCommitShas()) {
                 Callable<Void> task = () -> {
                     String commitUrl = "https://api.github.com/repos/" + owner + "/" + repo.getName() + "/commits/" + commitSha;
+                    logger.debug("Fetching commit {} for repository {}", commitSha, repo.getName());
                     try {
                         ResponseEntity<JsonNode> response = restTemplate.exchange(commitUrl, HttpMethod.GET, entity, JsonNode.class);
                         JsonNode commitData = response.getBody();
-                        JsonNode files = commitData.get("files");
-
-                        if (files == null || !files.isArray()) {
+                        if (commitData == null) {
+                            logger.warn("No commit data returned for commit {} in repository {}", commitSha, repo.getName());
                             return null;
                         }
 
+                        JsonNode files = commitData.get("files");
+                        if (files == null || !files.isArray()) {
+                            logger.warn("No files found in commit {} for repository {}", commitSha, repo.getName());
+                            return null;
+                        }
+
+                        logger.trace("Processing {} files in commit {} for repository {}", files.size(), commitSha, repo.getName());
                         for (JsonNode file : files) {
                             String filename = file.get("filename").asText();
+                            if (filename.contains("node_modules")) {
+                                logger.trace("Skipping file in node_modules: {}", filename);
+                                continue;
+                            }
                             String repoFilePath = repo.getName() + "/" + filename;
                             for (String framework : frameworks) {
                                 List<String> extensions = Mappings.FRAMEWORK_TO_FILE_EXTENSIONS.getOrDefault(framework, Collections.emptyList());
                                 for (String ext : extensions) {
                                     if (filename.endsWith(ext)) {
+                                        logger.trace("Found file {} matching framework {} (extension: {}) in repository {}",
+                                                repoFilePath, framework, ext, repo.getName());
                                         globalFrameworkToFiles.computeIfAbsent(framework, k -> new HashSet<>()).add(repoFilePath);
                                         break;
                                     }
@@ -227,7 +230,7 @@ public class GithubApiService {
                             }
                         }
                     } catch (Exception e) {
-                        System.err.println("Error fetching commit " + commitSha + " for repo " + repo.getName() + ": " + e.getMessage());
+                        logger.error("Error fetching commit {} for repository {}: {}", commitSha, repo.getName(), e.getMessage(), e);
                     }
                     return null;
                 };
@@ -236,30 +239,44 @@ public class GithubApiService {
 
             for (Future<Void> future : commitFutures) {
                 try {
-                    future.get(30, TimeUnit.SECONDS); // Timeout after 30 seconds per task
+                    future.get(30, TimeUnit.SECONDS);
                 } catch (TimeoutException e) {
-                    System.err.println("Task timed out: " + e.getMessage());
+                    logger.error("Task timed out for repository {}: {}", repo.getName(), e.getMessage(), e);
                 } catch (Exception e) {
-                    System.err.println("Error retrieving result: " + e.getMessage());
+                    logger.error("Error retrieving result for repository {}: {}", repo.getName(), e.getMessage(), e);
                 }
             }
 
             commitExecutor.shutdown();
             try {
-                if (!commitExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
+                if (!commitExecutor.awaitTermination(90, TimeUnit.SECONDS)) {
+                    logger.warn("Commit executor for repository {} did not terminate within 60 seconds, forcing shutdown", repo.getName());
                     commitExecutor.shutdownNow();
+                } else {
+                    logger.debug("Commit executor for repository {} terminated successfully", repo.getName());
                 }
             } catch (InterruptedException e) {
+                logger.error("Interrupted while awaiting termination for repository {}: {}", repo.getName(), e.getMessage(), e);
                 commitExecutor.shutdownNow();
                 Thread.currentThread().interrupt();
             }
+
+            int totalFilesProcessed = globalFrameworkToFiles.values().stream().mapToInt(Set::size).sum();
+            logger.info("Processed {} files for repository {}", totalFilesProcessed, repo.getName());
         }
 
         Map<String, Integer> frameworkToFileCounts = new HashMap<>();
         for (Map.Entry<String, Set<String>> entry : globalFrameworkToFiles.entrySet()) {
             frameworkToFileCounts.put(entry.getKey(), entry.getValue().size());
+            logger.info("Framework {}: {} files", entry.getKey(), entry.getValue().size());
+            logger.info("Framework {}: {} files", entry.getKey(), entry.getValue().toString());
         }
 
+        if (frameworkToFileCounts.isEmpty()) {
+            logger.warn("No frameworks detected for owner: {}", owner);
+        }
+
+        logger.info("Completed framework file count for owner: {}, total frameworks: {}", owner, frameworkToFileCounts.size());
         return frameworkToFileCounts;
     }
 
@@ -268,12 +285,11 @@ public class GithubApiService {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        // Got data of all the files
         ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, entity, JsonNode.class);
         JsonNode tree = response.getBody().get("tree");
 
         List<String> configFilesToLookFor = new ArrayList<>();
-        for (RepositoryInfo.Language lang : repo.getTopLanguages()) { // Loop max twice only as 2 languages at max
+        for (RepositoryInfo.Language lang : repo.getTopLanguages()) {
             String languageName = lang.getName();
             if (Mappings.LANGUAGE_TO_CONFIG.containsKey(languageName)) {
                 configFilesToLookFor.addAll(Mappings.LANGUAGE_TO_CONFIG.get(languageName));
@@ -281,10 +297,14 @@ public class GithubApiService {
         }
 
         List<String> configFilePaths = new ArrayList<>();
-        for (JsonNode item : tree) { // For each file ...
+        for (JsonNode item : tree) {
             if (item.get("type").asText().equals("blob")) {
                 String filePath = item.get("path").asText();
-                for (String configFile : configFilesToLookFor) {  // Check if it matches one of the config files we are looking for
+                if (filePath.contains("node_modules")) {
+                    logger.debug("Skipping file in node_modules: {}", filePath);
+                    continue;
+                }
+                for (String configFile : configFilesToLookFor) {
                     if (filePath.endsWith(configFile)) {
                         configFilePaths.add(filePath);
                         break;
@@ -293,11 +313,11 @@ public class GithubApiService {
             }
         }
 
-        List<String> detectedFrameworks = new ArrayList<>();
+        Set<String> detectedFrameworks = new HashSet<>();
         for (String configPath : configFilePaths) {
             String configFileName = configPath.substring(configPath.lastIndexOf("/") + 1);
             if (!Mappings.CONFIG_TO_DEPENDENCY_FRAMEWORK.containsKey(configFileName)) {
-                System.out.println("No dependency-framework mapping for: " + configFileName);
+                logger.warn("No dependency-framework mapping for: {}", configFileName);
                 continue;
             }
 
@@ -306,16 +326,15 @@ public class GithubApiService {
             JsonNode contentNode = contentResponse.getBody();
 
             if (!contentNode.has("content")) {
-                System.out.println("No content found for file: " + configPath);
+                logger.warn("No content found for file: {}", configPath);
                 continue;
             }
-            String contentBase64 = contentNode.get("content").asText();
-            contentBase64 = contentBase64.replaceAll("\n", "");
+            String contentBase64 = contentNode.get("content").asText().replaceAll("\n", "");
             String content;
             try {
                 content = new String(Base64.getDecoder().decode(contentBase64));
             } catch (IllegalArgumentException e) {
-                System.err.println("Failed to decode Base64 content for file " + configPath + ": " + e.getMessage());
+                logger.error("Failed to decode Base64 content for file {}: {}", configPath, e.getMessage(), e);
                 continue;
             }
 
@@ -323,12 +342,12 @@ public class GithubApiService {
             for (Mappings.DependencyFramework df : dependencyFrameworks) {
                 if (df.getChecker().test(content, df.getDependency())) {
                     detectedFrameworks.add(df.getFramework());
-                    System.out.println("Detected framework: " + df.getFramework() + " for config file: " + configPath);
+                    logger.info("Detected framework: {} for config file: {}", df.getFramework(), configPath);
                 }
             }
         }
 
-        System.out.println("Detected frameworks: " + detectedFrameworks);
-        return detectedFrameworks;
+        logger.info("Detected frameworks for repository {}: {}", repo.getName(), detectedFrameworks);
+        return new ArrayList<>(detectedFrameworks);
     }
 }
