@@ -412,6 +412,13 @@ public class UserController {
     }
     @GetMapping("/ping")
     public ResponseEntity<String> ping() {
-        return ResponseEntity.ok("ping");
+        try { 
+            redisTemplate.opsForValue().set("heartbeat", Instant.now().toString());
+            return ResponseEntity.ok("ping - heartbeat sent");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                             .body("ping - heartbeat failed: " + e.getMessage());
     }
+}
+
 }
