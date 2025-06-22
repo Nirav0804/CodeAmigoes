@@ -270,7 +270,7 @@ const ProfileDashboard = () => {
             />
           )}
 
-          {!codechefData ? (
+          {/* {!codechefData ? (
             <>
               <CardShimmer />
               <CardShimmer />
@@ -294,7 +294,7 @@ const ProfileDashboard = () => {
                 imgUrl="x"
               />
             </>
-          )}
+          )} */}
 
           {!githubData ? (
             <CardShimmer />

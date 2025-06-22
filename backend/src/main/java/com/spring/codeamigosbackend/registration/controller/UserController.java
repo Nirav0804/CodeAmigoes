@@ -16,6 +16,7 @@ import com.razorpay.RazorpayException;
 import com.razorpay.RazorpayClient;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
+import io.lettuce.core.RedisClient;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.codec.binary.Hex;
@@ -24,6 +25,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 // For ResponseEntity return type
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 // For @PostMapping annotation
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +57,8 @@ public class UserController {
     private final PaymentOrderRepository paymentOrderRepository;
     private final JwtUtil jwtUtil;
     private final RabbitMqProducer rabbitMqProducer;
+
+    private final RedisTemplate redisTemplate;
 
     private final UserRepository userRepository;
 
