@@ -104,7 +104,7 @@ const ProfileDashboard = () => {
   const [userData, setUserData] = useState({});
   const [githubData, setGithubData] = useState(null);
   const [leetcodeData, setLeetcodeData] = useState(null);
-  const [codechefData, setCodechefData] = useState(null);
+  // const [codechefData, setCodechefData] = useState(null);
 
   const username = params.username;
 
@@ -132,14 +132,14 @@ const ProfileDashboard = () => {
         .catch((error) =>
           console.error("Error fetching LeetCode data:", error)
         );
-      axios
-        .get(
-          `https://codechef-api.vercel.app/handle/${userData.codechefUsername}`
-        )
-        .then((response) => setCodechefData(response.data))
-        .catch((error) =>
-          console.error("Error fetching CodeChef data:", error)
-        );
+      // axios
+      //   .get(
+      //     `https://codechef-api.vercel.app/handle/${userData.codechefUsername}`
+      //   )
+      //   .then((response) => setCodechefData(response.data))
+      //   .catch((error) =>
+      //     console.error("Error fetching CodeChef data:", error)
+      //   );
     }
   }, [success, userData]);
 
@@ -179,7 +179,7 @@ const ProfileDashboard = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left Side - Profile Section */}
         <div className="flex flex-col gap-6 w-full lg:w-[28rem]">
-          {!success || !codechefData || !githubData ? (
+          {!success || !githubData ? (
             <>
               <ProfileSectionShimmer />
               {/* Social Media Cards Grid with Shimmer */}
@@ -193,7 +193,7 @@ const ProfileDashboard = () => {
             <>
               <ProfileSection
                 imageUrl={githubData.avatar_url}
-                countryFlagUrl={codechefData.countryFlag}
+                // countryFlagUrl={codechefData.countryFlag}
                 name={userData.displayName}
                 username={username}
                 githubUsername={userData.githubUsername}
