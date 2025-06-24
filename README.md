@@ -38,7 +38,7 @@ Our goal: **Make hackathon team building seamless and rewarding.**
 
 - Link **GitHub**, **LeetCode**, and **CodeChef**
 - Showcase tech stacks (React, Spring Boot, Django, etc.)
-- Add **Instagram**, **LinkedIn**, **X (Twitter)**, **portfolio**, **cover image**, and **bio** to enhance your profile
+- Add **Instagram**, **LinkedIn**, **X (Twitter)**, **Resume**, **portfolio**, **cover image**, and **bio** to enhance your profile
 
 ### 📋 Hackathon Registration
 
@@ -57,10 +57,10 @@ Our goal: **Make hackathon team building seamless and rewarding.**
 - Powered by **Web Crypto API + AES + RSA**
 - End-to-end encrypted conversations, safe from prying eyes
 
-### 🤖 ML-Powered Hackathon Classification
+### 🤖 Hackathon Finder Chatbot
 
-- **ML Model with Token Optimization**\
-  Trained to detect and fetch **upcoming** and **ongoing hackathons** from multiple sources
+- Integrated Groq API to fetch real-time hackathon data from multiple sources.
+- Used prompt engineering and keyword filtering to extract ongoing and upcoming events accurately.
 
 ---
 
@@ -142,7 +142,7 @@ Our goal: **Make hackathon team building seamless and rewarding.**
 | **Message Queue** | RabbitMQ 🐇 (with Dead Letter Queue ☠️📩) |
 | **Multithreading** | Executor Framework 🧵 (Java) |
 | **ML Model** | Flask 🧪 + Groq 🤖 |
-| **Deployment** | Render, GitHub Pages, Amazon MQ, Docker, DNS Management 🌍 |
+| **Deployment** | Render, GitHub Pages, Amazon MQ, Docker, Gunicon, DNS Management 🌍 |
 
 ---
 
